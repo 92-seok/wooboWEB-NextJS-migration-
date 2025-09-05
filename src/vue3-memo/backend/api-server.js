@@ -17,17 +17,15 @@ app.get('/api/memos', async (req, res) => {
 });
 
 app.post('/api/memos', async (req, res) => {
-  console.log(req.body.content);
-  await mysql.query(`INSERT INTO memos (content) VALUES (?)`, [req.body.content]);
+  await mysql.query(`INSERT INTO memos (content) VALUES('${req.body.content}')`);
   const result  = await mysql.query("SELECT * from memos");
   res.send(result);
 });
 
-app.put('/api/memos/:idx', (req, res) => {
-  console.log(req.params.idx);
-  console.log(req.body);
-  memos[req.params.idx] = req.body.content;
-  res.send(memos);
+app.put('/api/memos/:id', async (req, res) => {
+  await mysql.query(`UPDATE memos SET content = '${req.body.content}' WHERE id = ${req.params.id}`);
+  const result  = await mysql.query("SELECT * from memos");
+  res.send(result);
 });
 
 // 서버 실행

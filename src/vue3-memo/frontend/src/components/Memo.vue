@@ -22,6 +22,9 @@ export default {
     
     const add = () => {
       const content = prompt("메모 내용을 입력하세요.");
+      if(!content) {
+        return alert("메모 내용을 입력하세요.");
+      }
 
       axios.post("/api/memos", { content }).then((res) => {
         state.data = res.data;
@@ -29,10 +32,10 @@ export default {
     };
 
     const edit = (id) => {
-      const content = prompt("메모 내용을 입력하세요.", state.data[id]);
-      console.log(id);
+      const content = prompt("메모 내용을 입력하세요.", state.data.findLast(d => d.id === id).content);
+
       axios.put("/api/memos/" + id, {content}).then((res) => {
-        state.date = res.data;
+        state.data = res.data;
       });
     }
 
