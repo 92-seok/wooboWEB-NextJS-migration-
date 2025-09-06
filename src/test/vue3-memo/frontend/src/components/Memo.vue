@@ -30,7 +30,7 @@ export default {
     const add = async () => {
       const content = prompt("메모 내용을 입력하세요.");
       if(!content) return;
-      const res = await axios.put(`/api/memos/`, { content });
+      const res = await axios.post(`/api/memos/`, { content });
       state.data = res.data;
     };
 
