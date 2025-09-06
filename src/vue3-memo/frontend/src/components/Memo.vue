@@ -4,51 +4,60 @@
       <button class="btn btn-primary" @click="add()">+ 추가</button>
     </div>
     <ul>
-      <li v-for="d in state.data" :key="d.id" @:click="edit(d.id)">{{ d.content }}</li>
+      <li v-for="d in state.data" :key="d.id" @click="edit(d.id)">
+        {{ d.content }}
+        <button @click.stop="remove(d.id)">삭제</button>
+      </li>
     </ul>
   </div>
 </template>
 <script>
-import { reactive } from "vue";
+import { reactive, onMounted } from "vue";
 import axios from "axios";
 
 export default {
-
   name: 'MemoComponent',
   setup() {
-    const state = reactive({
-      data: []
-    });
-    
-    const add = () => {
-      const content = prompt("메모 내용을 입력하세요.");
-      if(!content) {
-        return alert("메모 내용을 입력하세요.");
-      }
+    const state = reactive({ data: [] });
 
-      axios.post("/api/memos", { content }).then((res) => {
-        state.data = res.data;
-      })
+    // read
+    const fetchdata = async () => {
+      const res = await axios.get("/api/memos");
+      state.data = res.data;
     };
 
-    const edit = (id) => {
-      const content = prompt("메모 내용을 입력하세요.", state.data.findLast(d => d.id === id).content);
-
-      axios.put("/api/memos/" + id, {content}).then((res) => {
-        state.data = res.data;
-      });
-    }
-
-    axios.get("/api/memos")
-    .then((res) => {
+    // CREATE
+    const add = async () => {
+      const content = prompt("메모 내용을 입력하세요.");
+      if(!content) return;
+      const res = await axios.put(`/api/memos/`, { content });
       state.data = res.data;
-    })
+    };
 
-    return { state, add, edit }
-  },
-}
+    // UPDATE
+    const edit = async (id) => {
+      const target = state.data.find(d => d.id === id);
+      const content = prompt("메모 수정.", target?.content);
+      if(!content) return;
+      const res = await axios.put(`/api/memos/${id}`, { content });
+      state.data = res.data;
+    };
+
+     // DELETE
+    const remove = async (id) => {
+      if (!confirm("정말 삭제하시겠습니까?")) return;
+      const res = await axios.delete(`/api/memos/${id}`);
+      state.data = res.data;
+    };
+    
+    
+    onMounted(fetchdata);
+
+    return { state, add, edit, remove }
+  }
+};
 </script>
-<!-- scoped : 현재 컴포넌트에서만 css를 적용하겠다 -->
+
 <style leng="scss" scoped> 
   .memo {
     .act {
