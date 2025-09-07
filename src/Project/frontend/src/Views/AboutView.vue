@@ -1,15 +1,13 @@
 <template>
     <div>
-About
+        About
+        Version: {{ version }}
     </div>
 </template>
 
-<script>
-    export default {
-        
-    }
+<script setup>
+import { version } from 'vue';
+
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

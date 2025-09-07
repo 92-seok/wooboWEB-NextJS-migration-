@@ -1,13 +1,19 @@
 <template>
     <div>
-        HOME
+        dddd
+        {{ Title }}
     </div>
 </template>
 
-<scrip setup>
+<script setup>
 
-</scrip>
+import { onMounted, inject } from 'vue';
+const { Title } = 'HOME';
+onMounted(() => {
+    console.log('ddd');
+    document.title = inject('$title');
+});
 
-<style lang="scss" scoped>
+</script>
 
-</style>
+<style lang="scss" scoped></style>

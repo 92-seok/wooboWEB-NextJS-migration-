@@ -1,7 +1,5 @@
 <template>
-    <div>
-        Monitor
-    </div>
+    <RouterView />
 </template>
 
 <script setup>
