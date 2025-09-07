@@ -3,7 +3,8 @@
     <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">WooBo</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -14,19 +15,29 @@
             <li class="nav-item">
               <RouterLink class="nav-link" active-class="active" to="/about">About</RouterLink>
             </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" active-class="active" to="/posts">
+                게시글
+              </RouterLink>
+            </li>
           </ul>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
+          <button class="btn btn-outline-light" type="button" @click="goPage">글쓰기</button>
         </div>
       </div>
     </nav>
   </header>
 </template>
+
 <script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const goPage = () => {
+  router.push({
+    name: 'PostCreate',
+  });
+};
+
 
 </script>
-<style lang="scss" scoped>
-  
-</style>
+<style lang="scss" scoped></style>
