@@ -18,6 +18,7 @@ WBEarly / #woobosys@early!
   woobolab@woobosys.com / Woobosys4781!
   
   [운영지원시스템]
+  REST API 키 7c07fc2ca189d5e0f3b51a2a4c6ef4fb
   JavaScript 키 a21fca6df45467b72c4cff24ec14cb6b
 ```
 
