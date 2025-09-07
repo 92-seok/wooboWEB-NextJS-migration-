@@ -16,7 +16,9 @@ WBEarly / #woobosys@early!
 ```bash
 카카오 API 계정 ( https://developers.kakao.com )
   woobolab@woobosys.com / Woobosys4781!
-  JavaScript 키 f4592e97c349ab41d02ff73bd314a201
+  
+  [운영지원시스템]
+  JavaScript 키 a21fca6df45467b72c4cff24ec14cb6b
 ```
 
 ```bash
