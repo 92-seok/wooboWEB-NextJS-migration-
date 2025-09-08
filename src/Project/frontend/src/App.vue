@@ -24,7 +24,7 @@ export default {
   },
   // Form 이벤트
   mounted() {
-    console.log(`프로그램 시작! (${this.$title})`); // 전역변수 Vue3 Style
+    console.log(`프로그램 시작! (${this.$title})`); // 전역변수 Vue2 Style
   },
 }
 </script>
@@ -42,7 +42,7 @@ export default {
 
 // Form 이벤트
   onMounted(() => {
-    console.log(`프로그램 시작! (${inject('$title')})`); // 전역변수 Vue2 Style
+    console.log(`프로그램 시작! (${inject('$title')})`); // 전역변수 Vue3 Style
   });
 </script>
 -->
