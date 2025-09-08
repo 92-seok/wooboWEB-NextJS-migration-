@@ -10,6 +10,7 @@ import MonitorView from "@/Views/MonitorView.vue";
 import ControlView from "@/Views/ControlView.vue";
 import SettingView from "@/Views/SettingView.vue";
 import AboutView from "@/Views/AboutView.vue";
+import LoginView from "@/Views/LoginView.vue";
 
 const routes = [
   { path: "/", component: HomeView },
@@ -18,6 +19,7 @@ const routes = [
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
   { path: "/about", component: AboutView },
+  { path: "/login", component: LoginView },
 ];
 
 const router = createRouter({
