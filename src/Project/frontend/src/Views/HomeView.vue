@@ -1,6 +1,5 @@
 <template>
     <div>
-        dddd
         {{ Title }}
     </div>
 </template>
@@ -10,7 +9,7 @@
 import { onMounted, inject } from 'vue';
 const { Title } = 'HOME';
 onMounted(() => {
-    console.log('ddd');
+    console.log('onMounted()::HomeView');
     document.title = inject('$title');
 });
 

@@ -1,32 +1,34 @@
 <template>
-    <v-bottom-navigation v-model="menu_idx" :bg-color="color" height="75">
+    <v-footer>
+        <v-bottom-navigation v-model="menu_idx" :bg-color="color">
 
-        <v-btn @click="GoMenu('/home')">
-            <v-icon>mdi-map</v-icon>
-            <span>지도</span>
-        </v-btn>
+            <v-btn @click="GoMenu('/home')">
+                <v-icon>mdi-map</v-icon>
+                <span>지도</span>
+            </v-btn>
 
-        <v-btn @click="GoMenu('/monitor')">
-            <v-icon>mdi-television-play</v-icon>
-            <span>모니터링</span>
-        </v-btn>
+            <v-btn @click="GoMenu('/monitor')">
+                <v-icon>mdi-television-play</v-icon>
+                <span>모니터링</span>
+            </v-btn>
 
-        <v-btn @click="GoMenu('/control')">
-            <v-icon>mdi-tools</v-icon>
-            <span>제어</span>
-        </v-btn>
+            <v-btn @click="GoMenu('/control')">
+                <v-icon>mdi-tools</v-icon>
+                <span>제어</span>
+            </v-btn>
 
-        <v-btn @click="GoMenu('/setting')">
-            <v-icon>mdi-book</v-icon>
-            <span>관리</span>
-        </v-btn>
+            <v-btn @click="GoMenu('/setting')">
+                <v-icon>mdi-book</v-icon>
+                <span>관리</span>
+            </v-btn>
 
-        <v-btn @click="GoMenu('/about')">
-            <v-icon>mdi-account</v-icon>
-            <span>계정</span>
-        </v-btn>
+            <v-btn @click="GoMenu('/about')">
+                <v-icon>mdi-account</v-icon>
+                <span>계정</span>
+            </v-btn>
 
-    </v-bottom-navigation>
+        </v-bottom-navigation>
+    </v-footer>
 </template>
 
 <script setup>
@@ -36,7 +38,7 @@ import { computed, ref, defineModel } from 'vue'
 import { useRouter } from 'vue-router'
 
 // reactive status
-const menu_idx = defineModel({ default: 0 })
+const menu_idx = defineModel()
 const color = ref('blue-grey');
 
 // router
