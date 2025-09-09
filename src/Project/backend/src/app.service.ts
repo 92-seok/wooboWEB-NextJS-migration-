@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { NmsDevice } from './entities/nms_device.entity';
 
 @Injectable()
@@ -17,8 +17,8 @@ export class AppService {
   // 모든 NMS 디바이스 조회
   async getAllDevices(): Promise<NmsDevice[]> {
     try {
-      return await this.nmsDeviceRepository.find({
-        order: { CD_DIST_OBSV: 'ASC' },
+      return await this.nmsDeviceRepository.findBy({
+        GB_OBSV: In(['01', '02', '03', '04', '06', '08', '21']),
       });
     } catch (error) {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
