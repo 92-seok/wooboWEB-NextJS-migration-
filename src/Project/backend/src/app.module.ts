@@ -19,7 +19,7 @@ import { NmsDevice } from './entities/nms_device.entity';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [NmsDevice],
-      synchronize: true, // 기존 DB이므로 false로 설정
+      synchronize: false, // 기존 DB이므로 false로 설정
       logging: process.env.NODE_ENV === 'development',
     }),
     TypeOrmModule.forFeature([NmsDevice]),
