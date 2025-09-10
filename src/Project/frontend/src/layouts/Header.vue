@@ -1,7 +1,8 @@
 <template v-slot:append>
-    <v-system-bar color="primary">
+    <v-system-bar color="#0D47A1">
+        <label align="left">우보온라인</label>
+        <v-icon class="ms-2" icon="@../public/favicon.ico"></v-icon>
         <!--
-            <v-icon class="ms-2" icon="mdi-wifi-strength-4"></v-icon>
             <v-icon class="ms-2" icon="mdi-signal-cellular-outline"></v-icon>
             <v-icon class="ms-2" icon="mdi-battery"></v-icon>
             -->
@@ -13,7 +14,9 @@
         <!--
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
             -->
-        <v-app-bar-title>Title</v-app-bar-title>
+        <v-app-bar-title>
+            <button>메뉴</button>
+        </v-app-bar-title>
 
     </v-app-bar>
 </template>
