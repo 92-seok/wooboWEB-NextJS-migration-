@@ -28,10 +28,10 @@ onMounted(async () => {
 })
 
 const headers = [
-  { key: 'GB_OBSV', title: '종류' },
+  //{ key: 'GB_OBSV', title: '종류' },
   { key: 'NM_DIST_OBSV', title: '장비명' },
-  { key: 'LastStatus', title: '통신상태' },
   { key: 'LastDate', title: '통신시간' },
+  { key: 'LastStatus', title: '통신상태' },
   { key: 'DATA', title: '데이터' },
 ]
 </script>

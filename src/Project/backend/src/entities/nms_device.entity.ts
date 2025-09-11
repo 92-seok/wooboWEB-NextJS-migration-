@@ -16,6 +16,15 @@ export class NmsDevice {
   })
   CD_DIST_OBSV: string;
 
+  
+  @Column({
+    name: 'JHACode',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+  })
+  JHACode: string;
+
   @Column({
     name: 'NM_DIST_OBSV',
     type: 'varchar',
