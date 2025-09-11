@@ -15,7 +15,8 @@
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
             -->
         <v-app-bar-title>
-            <button>메뉴(강우,수위,변위,경사,적설,침수)</button>
+            <button>메뉴(강우,변위,경사,적설,침수)</button>
+            <button>수위</button>
         </v-app-bar-title>
 
     </v-app-bar>

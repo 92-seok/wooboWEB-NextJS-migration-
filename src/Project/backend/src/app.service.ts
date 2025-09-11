@@ -25,9 +25,16 @@ export class AppService {
 
   async getMonitorDevices(): Promise<NmsDevice[]> {
     try {
+      return await this.nmsDeviceRepository
+        .createQueryBuilder()
+        .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '21')`)
+        .orderBy('LastDate', 'DESC')
+        .getMany();
+      ///*
       return await this.nmsDeviceRepository.findBy({
         GB_OBSV: In(['01', '02', '03', '04', '06', '08', '21']),
       });
+      //*/
     } catch (error) {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
     }
