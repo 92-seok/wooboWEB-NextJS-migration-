@@ -13,7 +13,7 @@ import AboutView from "@/Views/AboutView.vue";
 import LoginView from "@/Views/LoginView.vue";
 
 const routes = [
-  { path: "/", component: HomeView },
+  //{ path: "/", component: HomeView },
   { path: "/", component: MonitorView },
   { path: "/home", component: HomeView },
   { path: "/monitor", component: MonitorView },

@@ -1,6 +1,6 @@
 <template v-slot:append>
     <v-system-bar color="#0D47A1">
-        <label align="left">우보온라인</label>
+        //<label align="left">우보온라인</label>
         <v-icon class="ms-2" icon="@../public/favicon.ico"></v-icon>
         <!--
             <v-icon class="ms-2" icon="mdi-signal-cellular-outline"></v-icon>

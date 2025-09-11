@@ -15,7 +15,8 @@ export class AppController {
   @Get('devices')
   async getAllDevices() {
     try {
-      const devices = await this.appService.getAllDevices();
+      //const devices = await this.appService.getAllDevices();
+      const devices = await this.appService.getMonitorDevices();
       return {
         success: true,
         data: devices,
