@@ -15,7 +15,7 @@ import * as directives from "vuetify/directives";
 const vuetify = createVuetify({
   components,
   directives,
-  // 아이콘 사용 mdi
+  // 아이콘 셋 사용 mdi
   icons: {
     defaultSet: "mdi", // This is already the default value - only for display purposes
   },
