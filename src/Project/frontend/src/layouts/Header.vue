@@ -41,15 +41,16 @@ setInterval(() => {
 }, 1000);
 
 onMounted(() => {
-    console.log('onMounted()::Header');
+    console.log('Header.vue::onMounted()');
 });
 
-
+// theme
 const theme = ref('light')
 
-function onClick(e) {
-    emit('click:btnClick', e);
-    console.log(e);
+function onClick() {
+    console.log('Header.vue::onClick()');
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
+    emit('click:btnClick', theme.value);
 }
 
 </script>

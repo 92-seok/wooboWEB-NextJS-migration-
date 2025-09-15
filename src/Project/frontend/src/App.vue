@@ -58,8 +58,7 @@ onMounted(() => {
 
 // Child 이벤트
 const btnEvent = (e) => {
-  theme.value = theme.value === 'light' ? 'dark' : 'light'
-  console.log(theme.value + e);
+  theme.value = e;
 };
 
 </script>
