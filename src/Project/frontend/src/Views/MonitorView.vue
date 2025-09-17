@@ -1,11 +1,18 @@
 <template>
   <v-card title="SENSOR" flat>
     <template v-slot:text>
-      <v-text-field v-model="search" label="센서 검색" density="compact" prepend-inner-icon="mdi-magnify" variant="outlined"></v-text-field>
+      <v-text-field v-model="search" label="센서 검색" density="compact" prepend-inner-icon="mdi-magnify"
+        variant="outlined"></v-text-field>
     </template>
     <v-card-text class="pa-0">
-      <v-data-table :headers="headers" :header-props="{ align: 'center', sortIcon: null }" :items="devices"
-        :search="search" :cell-props="{ align: 'center' }" disable-sort items-per-page-text="페이지당 표시 수"
+      <v-data-table 
+        :headers="headers" 
+        :header-props="{ align: 'center', sortIcon: null }" 
+        :items="devices"
+        :search="search" 
+        :cell-props="{ align: 'center' }" 
+        disable-sort 
+        items-per-page-text="페이지당 표시 수"
         density="compact" :mobile-breakpoint="0" class="table-fit pa-0" />
     </v-card-text>
   </v-card>
@@ -73,12 +80,15 @@ const headers = [
 }
 
 .search-box {
-  max-width: 250px;     /* 폭 줄이기 */
-  font-size: 0.8rem;    /* 글자 크기 줄이기 */
+  max-width: 250px;
+  /* 폭 줄이기 */
+  font-size: 0.8rem;
+  /* 글자 크기 줄이기 */
 }
 
 :deep(.search-box .v-field) {
-  min-height: 32px;     /* 입력창 높이 줄이기 */
+  min-height: 32px;
+  /* 입력창 높이 줄이기 */
 }
 
 /* 열 개수에 따라 자동 균등 분배 */
