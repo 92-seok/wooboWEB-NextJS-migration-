@@ -16,7 +16,6 @@ export class NmsDevice {
   })
   CD_DIST_OBSV: string;
 
-  
   @Column({
     name: 'JHACode',
     type: 'varchar',

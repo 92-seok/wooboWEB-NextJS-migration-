@@ -2,16 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { NmsDevice } from './entities/nms_device.entity';
+import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
 
 @Injectable()
 export class AppService {
   constructor(
     @InjectRepository(NmsDevice)
     private nmsDeviceRepository: Repository<NmsDevice>,
+    @InjectRepository(TcmCouDngrAdm)
+    private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
   ) {}
 
   getHello(): string {
     return 'Hello World!';
+  }
+
+  // 지역 조회
+  async getAreaList(): Promise<TcmCouDngrAdm[]> {
+    try {
+      return await this.tcmCouDngrAdmRepository.findBy({});
+    } catch (error) {
+      throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
+    }
   }
 
   // 모든 NMS 디바이스 조회

@@ -12,6 +12,19 @@ export class AppController {
   // }
 
   // 모든 NMS 디바이스 조회
+  @Get('areaList')
+  async getAreaList() {
+    try {
+      const result = await this.appService.getAreaList();
+      return {
+        success: true,
+        data: result,
+        message: '지역 목록을 성공적으로 조회했습니다.',
+        count: result.length,
+      };
+    } catch (error) {}
+  }
+
   @Get('devices')
   async getAllDevices() {
     try {

@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';;
+import { AppService } from './app.service';
+
 import { NmsDevice } from './entities/nms_device.entity';
+import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
 
 @Module({
   imports: [
@@ -18,13 +20,13 @@ import { NmsDevice } from './entities/nms_device.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [NmsDevice],
-      synchronize: false, // 기존 DB이므로 false로 설정
+      entities: [NmsDevice, TcmCouDngrAdm],
+      synchronize: true, // 기존 DB이므로 false로 설정
       logging: process.env.NODE_ENV === 'development',
     }),
-    TypeOrmModule.forFeature([NmsDevice]),
+    TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm]),
   ],
-  controllers: [ AppController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
