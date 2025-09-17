@@ -16,8 +16,14 @@
         variant="outlined"></v-text-field>
     </template>
     <v-card-text class="pa-0">
-      <v-data-table :headers="headers" :header-props="{ align: 'center', sortIcon: null }" :items="devices"
-        :search="search" :cell-props="{ align: 'center' }" disable-sort items-per-page-text="페이지당 표시 수"
+      <v-data-table 
+        :headers="headers" 
+        :header-props="{ align: 'center', sortIcon: null }" 
+        :items="devices"
+        :search="search" 
+        :cell-props="{ align: 'center' }" 
+        disable-sort 
+        items-per-page-text="페이지당 표시 수"
         density="compact" :mobile-breakpoint="0" class="table-fit pa-0" />
     </v-card-text>
   </v-card>

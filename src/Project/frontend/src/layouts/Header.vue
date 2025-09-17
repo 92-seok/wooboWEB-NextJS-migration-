@@ -24,7 +24,7 @@
     </v-app-bar>
     <v-navigation-drawer>
         <v-list>
-            <v-list-item title="aaa" />
+            <v-list-item title="" />
         </v-list>
     </v-navigation-drawer>
 </template>
