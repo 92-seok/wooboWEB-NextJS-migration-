@@ -57,7 +57,7 @@
       </template>
 
       <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-        <v-tooltip location="top">
+        <v-tooltip location="top" open-on-click>
           <!-- activator 슬롯 -->
           <template v-slot:activator="{ props }">
             <div class="text-center" v-bind="props" style="cursor: pointer;">
@@ -71,7 +71,7 @@
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
-        <v-tooltip location="top">
+        <v-tooltip location="top" open-on-click>
           <!-- activator 슬롯 -->
           <template v-slot:activator="{ props }">
             <div v-bind="props" style="font-size: x-small; cursor: pointer;">
