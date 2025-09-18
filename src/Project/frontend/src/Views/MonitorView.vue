@@ -31,7 +31,7 @@
     <!-- 데이터 테이블 -->
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
       :header-props="{ align: 'center', sortIcon: null, }" :cell-props="{ align: 'center' }" :mobile-breakpoint="0"
-      density="compact" class="table-fit pa-0" items-per-page="15" items-per-page-text="페이지당 표시 수">
+      density="compact" class="table-fit pa-0" items-per-page="50" items-per-page-text="페이지당 표시 수">
 
       <template v-slot:[`item.GB_OBSV`]="{ item }">
         <th style="width:10px" />
