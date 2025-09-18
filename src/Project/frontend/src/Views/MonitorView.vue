@@ -32,7 +32,11 @@
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
       :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
       :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page="50"
-      items-per-page-text="페이지당 표시 수">
+      items-per-page-text="페이지당 표시 수" v-model:page="page" v-model:items-per-page="itemsPerPage">
+
+      <template v-slot:[`item.index`]="{ index }">
+        {{ index + 1 + (page - 1) * itemsPerPage }}
+      </template>
 
       <template v-slot:[`item.GB_OBSV`]="{ item }">
         <th style="width:10px" />
@@ -59,15 +63,13 @@
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
-        <div style="font-size: 9px;">
-          {{ item.LastDate }}
-        </div>
+        <div style="font-size: x-small;"> {{ item.LastDate }} </div>
       </template>
 
       <template v-slot:[`item.LastStatus`]="{ item }">
         <div class="text-center">
-          <v-chip :color="item.LastStatus == 'OK' ? 'green' : 'red'" :text="item.LastStatus == 'OK' ? '정상' : '점검필요'"
-            class="text-uppercase" size="x-small" label></v-chip>
+          <v-chip class="text-uppercase" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
+            :text="item.LastStatus == 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
         </div>
       </template>
     </v-data-table>
@@ -88,6 +90,8 @@ const search = ref('')
 const devices = ref([])
 const areaList_selected = ref('%')
 
+const page = ref(1)
+const itemsPerPage = ref(50)
 
 onMounted(async () => {
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
@@ -135,6 +139,7 @@ const OnChange_AreaList = async () => {
 
 
 const headers = [
+  { key: 'index', title: '', width: '25px', sortable: false },
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'LastDate', title: '통신시간', },
