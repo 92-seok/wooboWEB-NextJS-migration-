@@ -57,24 +57,17 @@
       </template>
 
       <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-        <v-tooltip location="top">
-          <!-- activator 슬롯 -->
-          <template v-slot:activator="{ props }">
-            <div class="text-center" v-bind="props" style="cursor: pointer;" @click="showTooltip">
-              <strong>{{ item.NM_DIST_OBSV }}</strong>
-            </div>
-          </template>
-
-          <!-- tooltip 내용 -->
-          <span>{{ item.DTL_ADRES }}</span>
-        </v-tooltip>
+        <!-- activator 슬롯 -->
+        <div class="text-center" style="cursor: pointer;" @click="showSnackbar(item.DTL_ADRES)">
+          <strong>{{ item.NM_DIST_OBSV }}</strong>
+        </div>
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
-        <v-tooltip location="top">
+        <v-tooltip v-model="item.tooltip" location="top">
           <!-- activator 슬롯 -->
           <template v-slot:activator="{ props }">
-            <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip">
+            <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip(item)">
               {{ item.LastDate }}
             </div>
           </template>
@@ -92,11 +85,14 @@
       </template>
     </v-data-table>
   </v-card>
-
+  <!-- Snackbar -->
+  <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
+    {{ snackbar.message }}
+  </v-snackbar>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'
 import axios from 'axios'
 
 
@@ -123,11 +119,20 @@ onBeforeUnmount(() => {
   }
 })
 
-const tooltip = ref(false)
-function showTooltip() {
-  tooltip.value = true
+const snackbar = reactive({
+  show: false,
+  message: ''
+})
+
+function showSnackbar(msg) {
+  snackbar.message = `${msg}`
+  snackbar.show = true
+}
+
+function showTooltip(item) {
+  item.tooltip = true
   setTimeout(() => {
-    tooltip.value = false
+    item.tooltip = false
   }, 2000) // 2초 후 자동 닫힘
 }
 
