@@ -20,14 +20,14 @@ export class AppService {
   // 지역 조회
   async getAreaList(): Promise<TcmCouDngrAdm[]> {
     try {
-      return await this.tcmCouDngrAdmRepository.findBy({});
+      return await this.tcmCouDngrAdmRepository.findBy({ USE_YN: 'Y' });
     } catch (error) {
       throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
     }
   }
 
   // 모든 NMS 디바이스 조회
-  async getAllDevices(): Promise<NmsDevice[]> {
+  async getDevices(): Promise<NmsDevice[]> {
     try {
       return await this.nmsDeviceRepository.findBy({});
     } catch (error) {
@@ -35,12 +35,14 @@ export class AppService {
     }
   }
 
-  async getMonitorDevices(): Promise<NmsDevice[]> {
+  async getMonitorDevices(where: string): Promise<NmsDevice[]> {
     try {
       return await this.nmsDeviceRepository
         .createQueryBuilder()
         .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '21')`)
-        .orderBy('LastDate', 'DESC')
+        .andWhere(where)
+        .orderBy('CD_DIST_OBSV', 'ASC')
+        .printSql()
         .getMany();
       ///*
       return await this.nmsDeviceRepository.findBy({

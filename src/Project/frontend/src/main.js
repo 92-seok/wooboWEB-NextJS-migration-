@@ -21,7 +21,7 @@ const vuetify = createVuetify({
   },
   // 테마 사용 system
   theme: {
-    defaultTheme: "system", // light, dark, system
+    defaultTheme: "light", // light, dark, system
   },
 });
 

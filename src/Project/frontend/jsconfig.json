@@ -2,11 +2,15 @@
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
-    "baseUrl": "./",
     "moduleResolution": "node",
+    // Base Path
+    "baseUrl": "./src",
+    // Path Alias
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
-  }
+  },
+  // 소스코드가 아닌 파일
+  "exclude": ["/node_modules", "/dist", "/.*/"]
 }

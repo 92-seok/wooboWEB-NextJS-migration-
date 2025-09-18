@@ -1,18 +1,20 @@
 import { Entity, Column, PrimaryColumn, JoinColumn } from 'typeorm';
 
-@Entity({ name: 'nms_device' }) // 테이블명 지정
+@Entity({ name: 'nms_device2' }) // 테이블명 지정
 export class NmsDevice {
   @PrimaryColumn({
-    name: 'BDong_CD',
+    name: 'BDONG_CD',
     type: 'varchar',
     length: 10,
+    comment: '법정동코드 10자리',
   })
-  BDong_CD: string;
+  BDONG_CD: string;
 
   @PrimaryColumn({
     name: 'CD_DIST_OBSV',
     type: 'varchar',
     length: 10,
+    comment: '장비번호',
   })
   CD_DIST_OBSV: string;
 
@@ -21,6 +23,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 10,
     nullable: true,
+    comment: '지역번호',
   })
   JHACode: string;
 
@@ -29,6 +32,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 30,
     nullable: true,
+    comment: '장비명칭',
   })
   NM_DIST_OBSV: string;
 
@@ -37,6 +41,7 @@ export class NmsDevice {
     type: 'char',
     length: 2,
     nullable: true,
+    comment: '장비구분코드',
   })
   GB_OBSV: number;
 
@@ -45,6 +50,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 20,
     nullable: true,
+    comment: '프로토콜',
   })
   ConnModel: string;
 
@@ -53,6 +59,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 20,
     nullable: true,
+    comment: '전화번호',
   })
   ConnPhone: string;
 
@@ -61,6 +68,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 20,
     nullable: true,
+    comment: 'IP번호(000.000.000.000)',
   })
   ConnIP: string;
 
@@ -69,6 +77,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 5,
     nullable: true,
+    comment: 'PORT번호(00000)',
   })
   ConnPort: string;
 
@@ -77,6 +86,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 10,
     nullable: true,
+    comment: '마지막상태(start, ing, end, fail, error)',
   })
   LastStatus: string;
 
@@ -85,6 +95,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 20,
     nullable: true,
+    comment: '마지막시간(성공시)',
   })
   LastDate: string;
 
@@ -92,6 +103,7 @@ export class NmsDevice {
     name: 'ErrorChk',
     type: 'int',
     nullable: true,
+    comment: '오류횟수(0:오류)',
   })
   ErrorChk: number;
 
@@ -100,6 +112,7 @@ export class NmsDevice {
     type: 'char',
     length: 2,
     nullable: true,
+    comment: "사용유무('1','0')",
   })
   USE_YN: string;
 
@@ -107,6 +120,7 @@ export class NmsDevice {
     name: 'LAT',
     type: 'double',
     nullable: true,
+    comment: '위도',
   })
   LAT: string;
 
@@ -114,6 +128,7 @@ export class NmsDevice {
     name: 'LON',
     type: 'double',
     nullable: true,
+    comment: '경도',
   })
   LON: number;
 
@@ -122,6 +137,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 100,
     nullable: true,
+    comment: '주소',
   })
   DTL_ADRES: string;
 
@@ -130,6 +146,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 500,
     nullable: true,
+    comment: '데이터',
   })
   DATA: string;
 
@@ -138,6 +155,7 @@ export class NmsDevice {
     type: 'varchar',
     length: 10,
     nullable: true,
+    comment: '단위',
   })
   UNIT: string;
 
