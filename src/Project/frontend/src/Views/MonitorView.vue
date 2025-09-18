@@ -57,10 +57,10 @@
       </template>
 
       <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-        <v-tooltip location="top" open-on-click>
+        <v-tooltip location="top">
           <!-- activator 슬롯 -->
           <template v-slot:activator="{ props }">
-            <div class="text-center" v-bind="props" style="cursor: pointer;">
+            <div class="text-center" v-bind="props" style="cursor: pointer;" @click="showTooltip">
               <strong>{{ item.NM_DIST_OBSV }}</strong>
             </div>
           </template>
@@ -71,10 +71,10 @@
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
-        <v-tooltip location="top" open-on-click>
+        <v-tooltip location="top">
           <!-- activator 슬롯 -->
           <template v-slot:activator="{ props }">
-            <div v-bind="props" style="font-size: x-small; cursor: pointer;">
+            <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip">
               {{ item.LastDate }}
             </div>
           </template>
@@ -122,6 +122,14 @@ onBeforeUnmount(() => {
     clearInterval(refresh_timer);
   }
 })
+
+const tooltip = ref(false)
+function showTooltip() {
+  tooltip.value = true
+  setTimeout(() => {
+    tooltip.value = false
+  }, 2000) // 2초 후 자동 닫힘
+}
 
 const OnTimer_Refresh = async () => {
   process_time.value--;
