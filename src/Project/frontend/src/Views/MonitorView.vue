@@ -57,13 +57,31 @@
       </template>
 
       <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-        <div class="text-center">
-          <strong>{{ item.NM_DIST_OBSV }}</strong>
-        </div>
+        <v-tooltip location="top">
+          <!-- activator 슬롯 -->
+          <template v-slot:activator="{ props }">
+            <div class="text-center" v-bind="props" style="cursor: pointer;">
+              <strong>{{ item.NM_DIST_OBSV }}</strong>
+            </div>
+          </template>
+
+          <!-- tooltip 내용 -->
+          <span>{{ item.DTL_ADRES }}</span>
+        </v-tooltip>
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
-        <div style="font-size: x-small;"> {{ item.LastDate }} </div>
+        <v-tooltip location="top">
+          <!-- activator 슬롯 -->
+          <template v-slot:activator="{ props }">
+            <div v-bind="props" style="font-size: x-small; cursor: pointer;">
+              {{ item.LastDate }}
+            </div>
+          </template>
+
+          <!-- tooltip 내용 -->
+          <span>{{ item.LastDate }}</span>
+        </v-tooltip>
       </template>
 
       <template v-slot:[`item.LastStatus`]="{ item }">

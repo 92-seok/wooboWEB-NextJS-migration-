@@ -47,6 +47,7 @@ export class AppController {
             .replace('_침수', ''),
           LastDate: item.LastDate,
           LastStatus: item.LastStatus,
+          DTL_ADRES: item.DTL_ADRES,
           DATA: item.DATA,
         })),
       };
