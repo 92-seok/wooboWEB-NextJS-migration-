@@ -30,8 +30,8 @@
 
     <!-- 데이터 테이블 -->
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
-      :header-props="{ align: 'center', sortIcon: null, }" :cell-props="{ align: 'center' }" :mobile-breakpoint="0"
-      density="compact" class="table-fit pa-0" items-per-page="50" items-per-page-text="페이지당 표시 수">
+      :header-props="{ align: 'center' }" :cell-props="{ align: 'center' }" :mobile-breakpoint="0" density="compact"
+      class="table-fit pa-0" items-per-page="50" items-per-page-text="페이지당 표시 수">
 
       <template v-slot:[`item.GB_OBSV`]="{ item }">
         <th style="width:10px" />
@@ -57,8 +57,10 @@
         </div>
       </template>
 
-      <template v-slot:[`item.rating`]="{ item }">
-        <v-rating :model-value="item.rating" color="orange-darken-2" density="compact" size="small" readonly></v-rating>
+      <template v-slot:[`item.LastDate`]="{ item }">
+        <div style="font-size: 9px;">
+          {{ item.LastDate }}
+        </div>
       </template>
 
       <template v-slot:[`item.LastStatus`]="{ item }">
@@ -76,6 +78,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 
+
 let refresh_timer; // setInterval 핸들러
 const process_time = ref(30);
 
@@ -83,6 +86,7 @@ const areaList = ref([])
 const search = ref('')
 const devices = ref([])
 const areaList_selected = ref('%')
+
 
 onMounted(async () => {
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
@@ -130,11 +134,11 @@ const OnChange_AreaList = async () => {
 
 
 const headers = [
-  { key: 'GB_OBSV', title: '장비 종류', width: '70px' },
-  { key: 'NM_DIST_OBSV', title: '장비명' },
-  { key: 'LastDate', title: '통신시간' },
-  { key: 'LastStatus', title: '통신상태' },
-  { key: 'DATA', title: '데이터' },
+  { key: 'GB_OBSV', title: '장비 종류', width: '50px', },
+  { key: 'NM_DIST_OBSV', title: '장비명', },
+  { key: 'LastDate', title: '통신시간', },
+  { key: 'LastStatus', title: '통신상태', width: '60px', },
+  { key: 'DATA', title: '데이터', },
 ]
 </script>
 
