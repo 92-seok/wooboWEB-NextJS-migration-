@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn, JoinColumn } from 'typeorm';
 
-@Entity({ name: 'nms_device2' }) // 테이블명 지정
+@Entity({ name: 'nms_device' }) // 테이블명 지정
 export class NmsDevice {
   @PrimaryColumn({
     name: 'BDONG_CD',
