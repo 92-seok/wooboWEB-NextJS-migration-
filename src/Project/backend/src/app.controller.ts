@@ -36,7 +36,19 @@ export class AppController {
         success: true,
         message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
         count: devices.length,
-        data: devices,
+        data: devices.map((item) => ({
+          GB_OBSV: item.GB_OBSV,
+          NM_DIST_OBSV: item.NM_DIST_OBSV.replace('', '')
+            .replace('_강우', '')
+            .replace('_수위', '')
+            .replace('_변위', '')
+            .replace('_적설', '')
+            .replace('_경사', '')
+            .replace('_침수', ''),
+          LastDate: item.LastDate,
+          LastStatus: item.LastStatus,
+          DATA: item.DATA,
+        })),
       };
     } catch (error) {
       return {

@@ -27,7 +27,7 @@ import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
       database: process.env.DB_DATABASE,
       entities: [NmsDevice, TcmCouDngrAdm],
       synchronize: true, // 기존 DB이므로 false로 설정
-      logging: true,
+      logging: false,
     }),
     TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm]),
   ],

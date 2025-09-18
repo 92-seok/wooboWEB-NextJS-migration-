@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-select :items="areaList" :menu-props="{ scrim: true, scrollStrategy: 'close' }" label="지역"
-      @update:model-value="OnChange_AreaList"></v-select>
+    <v-select v-model="areaList_selected" :items="areaList" :menu-props="{ scrim: true, scrollStrategy: 'close' }"
+      label="지역" @update:model-value="OnChange_AreaList" />
     <!--
       <v-autocomplete :items="areaList" label="지역" chips multiple>
         <template v-slot:subheader="{ props }">
@@ -13,22 +13,25 @@
 
   <v-card flat>
 
+    <!-- 검색창 -->
     <v-card-title class="d-flex align-center pe-2">
       <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
       센서 목록
       <v-spacer></v-spacer>
 
-      <!--
-        <v-text-field v-model="search" density="compact" label="센서 검색" prepend-inner-icon="mdi-magnify"></v-text-field>
-        -->
       <v-text-field v-model="search" density="compact" label="센서 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
-        flat hide-details></v-text-field>
+        flat hide-details />
     </v-card-title>
 
-    <v-divider></v-divider>
-    <v-data-table v-model:search="search" :filter-keys="['name']" :items="devices" :headers="headers"
+    <!-- 프로그레스 타이머 -->
+    <v-progress-linear color="primary" v-model="process_time" :height="10" max="30" />
+
+    <v-divider />
+
+    <!-- 데이터 테이블 -->
+    <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
       :header-props="{ align: 'center', sortIcon: null, }" :cell-props="{ align: 'center' }" :mobile-breakpoint="0"
-      class="table-fit pa-0" items-per-page="25">
+      density="compact" class="table-fit pa-0" items-per-page="15" items-per-page-text="페이지당 표시 수">
 
       <template v-slot:[`item.GB_OBSV`]="{ item }">
         <th style="width:10px" />
@@ -67,53 +70,64 @@
     </v-data-table>
   </v-card>
 
-  <v-card title="SENSOR" flat>
-    <template v-slot:text>
-      <v-text-field v-model="search" label="센서 검색" density="compact" prepend-inner-icon="mdi-magnify"
-        variant="outlined"></v-text-field>
-    </template>
-    <v-card-text class="pa-0">
-      <v-data-table :headers="headers" :header-props="{ align: 'center', sortIcon: null }" :items="devices"
-        :search="search" :cell-props="{ align: 'center' }" disable-sort items-per-page-text="페이지당 표시 수"
-        density="compact" :mobile-breakpoint="0" class="table-fit pa-0" />
-    </v-card-text>
-  </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+
+let refresh_timer; // setInterval 핸들러
+const process_time = ref(30);
 
 const areaList = ref([])
 const search = ref('')
 const devices = ref([])
-
-const OnChange_AreaList = async (e) => {
-  const response = await axios.get(`/api/devices?BDONG_CD=${e}`)
-  devices.value = response.data.data
-
-  console.log(devices.value);
-}
+const areaList_selected = ref('%')
 
 onMounted(async () => {
+  refresh_timer = setInterval(OnTimer_Refresh, 1000);
+  OnTimer_Refresh();
+  await Process();
+})
+
+onBeforeUnmount(() => {
+  if (refresh_timer) {
+    clearInterval(refresh_timer);
+  }
+})
+
+const OnTimer_Refresh = async () => {
+  process_time.value--;
+  if (process_time.value == 0) {
+    await Process();
+    process_time.value = 30;
+  }
+}
+
+const Process = async () => {
+  console.log("Process()");
+
+  const response_areaList = await axios.get('/api/areaList');
+
+  areaList.value = response_areaList.data.data.map(item => ({
+    title: item.RM, value: item.ADMCODE
+  }))
+
+  console.log(areaList.value);
+
+  await OnChange_AreaList();
+};
+
+const OnChange_AreaList = async () => {
   try {
-
-    const response_areaList = await axios.get('/api/areaList')
-
-    console.log(
-      areaList.value = response_areaList.data.data.map(item => ({
-        title: item.RM, value: item.ADMCODE
-      })));
-
-
-    //console.log(areaList.value);
-
-    const response = await axios.get('/api/devices')
+    const response = await axios.get(`/api/devices?BDONG_CD=${areaList_selected.value}`)
     devices.value = response.data.data
+    //console.log(devices.value);
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
-})
+}
+
 
 const headers = [
   { key: 'GB_OBSV', title: '장비 종류', width: '70px' },

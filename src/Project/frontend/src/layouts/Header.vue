@@ -15,12 +15,11 @@
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
             -->
         <v-app-bar-title>
-            <button>메뉴(강우,변위,경사,적설,침수)</button>
-            <button>수위</button>
+            <button>메뉴(강우,수위,변위,경사,적설,침수)</button>
         </v-app-bar-title>
 
-        <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" text="" slim
-            @click="onClick"></v-btn>
+        <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" text="" @click="onClick"
+            slim />
     </v-app-bar>
     <v-navigation-drawer>
         <v-list>
