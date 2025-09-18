@@ -30,8 +30,9 @@
 
     <!-- 데이터 테이블 -->
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
-      :header-props="{ align: 'center' }" :cell-props="{ align: 'center' }" :mobile-breakpoint="0" density="compact"
-      class="table-fit pa-0" items-per-page="50" items-per-page-text="페이지당 표시 수">
+      :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
+      :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page="50"
+      items-per-page-text="페이지당 표시 수">
 
       <template v-slot:[`item.GB_OBSV`]="{ item }">
         <th style="width:10px" />
@@ -66,7 +67,7 @@
       <template v-slot:[`item.LastStatus`]="{ item }">
         <div class="text-center">
           <v-chip :color="item.LastStatus == 'OK' ? 'green' : 'red'" :text="item.LastStatus == 'OK' ? '정상' : '점검필요'"
-            class="text-uppercase" size="small" label></v-chip>
+            class="text-uppercase" size="x-small" label></v-chip>
         </div>
       </template>
     </v-data-table>
@@ -134,10 +135,10 @@ const OnChange_AreaList = async () => {
 
 
 const headers = [
-  { key: 'GB_OBSV', title: '장비 종류', width: '50px', },
+  { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'LastDate', title: '통신시간', },
-  { key: 'LastStatus', title: '통신상태', width: '60px', },
+  { key: 'LastStatus', title: '통신상태', },
   { key: 'DATA', title: '데이터', },
 ]
 </script>
