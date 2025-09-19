@@ -28,7 +28,7 @@ export class AppController {
     let where: string;
 
     if (bdong_cd === undefined) where = '1=1';
-    else where = `BDONG_CD like '${bdong_cd}%'`;
+    else where = `BDONG_CD like '${bdong_cd.substring(0, 4)}%'`;
 
     try {
       const devices = await this.appService.getMonitorDevices(where);
@@ -42,12 +42,18 @@ export class AppController {
             .replace('_강우', '')
             .replace('_수위', '')
             .replace('_변위', '')
+            .replace('_함수비', '')
             .replace('_적설', '')
             .replace('_경사', '')
-            .replace('_침수', ''),
+            .replace('_침수', '')
+            .replace('_예경보', '')
+            .replace('_전광판', '')
+            .replace('_차단기', ''),
           LastDate: item.LastDate,
           LastStatus: item.LastStatus,
           DTL_ADRES: item.DTL_ADRES,
+          LAT: item.LAT,
+          LON: item.LON,
           DATA: item.DATA,
         })),
       };

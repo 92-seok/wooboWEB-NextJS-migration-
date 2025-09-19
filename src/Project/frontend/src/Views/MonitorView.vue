@@ -16,15 +16,21 @@
     <!-- 검색창 -->
     <v-card-title class="d-flex align-center pe-2">
       <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
-      센서 목록
+      장비 목록
       <v-spacer></v-spacer>
 
-      <v-text-field v-model="search" density="compact" label="센서 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
+      <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
         flat hide-details />
     </v-card-title>
 
     <!-- 프로그레스 타이머 -->
-    <v-progress-linear color="primary" v-model="process_time" :height="10" max="30" />
+    <v-progress-linear color="primary" v-model="process_time" :height="5" max="30" />
+
+    <v-divider />
+
+    <v-card height="30">
+
+    </v-card>
 
     <v-divider />
 
@@ -50,6 +56,9 @@
           <div v-if="item.GB_OBSV === '03'">
             <v-img :src="require('@/assets/dplace.png')" height="30" />
           </div>
+          <div v-if="item.GB_OBSV === '20'">
+            <v-img :src="require('@/assets/gate.png')" height="30" />
+          </div>
           <div v-if="item.GB_OBSV === '21'">
             <v-img :src="require('@/assets/flood.png')" height="30" />
           </div>
@@ -58,9 +67,11 @@
 
       <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
         <!-- activator 슬롯 -->
-        <div class="text-center" style="cursor: pointer;" @click="showSnackbar(item.DTL_ADRES)">
+        <v-btn @click="openGuideDialog(item)">
           <strong>{{ item.NM_DIST_OBSV }}</strong>
-        </div>
+        </v-btn>
+
+
       </template>
 
       <template v-slot:[`item.LastDate`]="{ item }">
@@ -89,6 +100,21 @@
   <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
     {{ snackbar.message }}
   </v-snackbar>
+
+  <!-- 다이얼로그는 v-data-table 바깥에 위치 -->
+  <v-dialog v-model="dialog">
+    <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
+      <v-card-text class="text-center" v-if="selectedItem">
+        <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 길안내를 시작하시겠습니까?
+      </v-card-text>
+      <template v-slot:actions>
+        <v-spacer></v-spacer>
+        <v-btn @click="dialog = false">아니오</v-btn>
+        <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
+      </template>
+    </v-card>
+  </v-dialog>
+
 </template>
 
 <script setup>
@@ -103,11 +129,14 @@ const areaList = ref([])
 const search = ref('')
 const devices = ref([])
 const areaList_selected = ref('%')
+const selectedItem = ref(null)
 
 const page = ref(1)
 const itemsPerPage = ref(50)
-
+const os = ref(navigator.userAgent);
 onMounted(async () => {
+
+  console.log(os.value);
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
   OnTimer_Refresh();
   await Process();
@@ -124,10 +153,47 @@ const snackbar = reactive({
   message: ''
 })
 
-function showSnackbar(msg) {
-  snackbar.message = `${msg}`
-  snackbar.show = true
+function openGuideDialog(item) {
+  console.log(item);
+  selectedItem.value = item
+  dialog.value = true
 }
+
+function showSnackbar(item) {
+  snackbar.message = `${item.NM_DIST_OBSV}`
+  snackbar.show = true;
+  dialog.value = false;
+  let url = "";
+
+
+
+  if (os.value.indexOf("Android") > 0) {
+    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.example.myapp#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+  }
+  else if (os.value.indexOf("iPhone") > 0) {
+    url = `market://details?id=com.nhn.android.nmap`;
+  }
+  else {
+    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
+    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+  }
+
+  console.log(url);
+  window.location.href = url;
+  /*
+    //if (isAndroid) {
+      
+  
+      setTimeout(() => {
+        window.location.href = playStoreUrl;
+      }, 1000);
+    } else {
+      window.location.href = webNaverMapUrl;
+    }
+  */
+}
+
+const dialog = ref(false)
 
 function showTooltip(item) {
   item.tooltip = true

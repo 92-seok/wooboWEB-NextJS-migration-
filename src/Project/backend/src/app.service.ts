@@ -37,13 +37,22 @@ export class AppService {
 
   async getMonitorDevices(where: string): Promise<NmsDevice[]> {
     try {
+      console.log(
+        this.nmsDeviceRepository
+          .createQueryBuilder()
+          .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '20', '21')`)
+          .andWhere(where)
+          .orderBy('CD_DIST_OBSV', 'ASC')
+          .getSql(),
+      );
+
       return await this.nmsDeviceRepository
         .createQueryBuilder()
-        .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '21')`)
+        .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '20', '21')`)
         .andWhere(where)
         .orderBy('CD_DIST_OBSV', 'ASC')
-        .printSql()
         .getMany();
+
       ///*
       return await this.nmsDeviceRepository.findBy({
         GB_OBSV: In(['01', '02', '03', '04', '06', '08', '21']),

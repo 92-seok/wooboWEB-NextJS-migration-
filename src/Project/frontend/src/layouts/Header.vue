@@ -15,7 +15,7 @@
             <v-app-bar-nav-icon></v-app-bar-nav-icon>
             -->
         <v-app-bar-title>
-            <button>메뉴(강우,수위,변위,경사,적설,침수)</button>
+            <button>운영지원시스템</button>
         </v-app-bar-title>
 
         <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" text="" @click="onClick"
