@@ -37,7 +37,7 @@
     <!-- 데이터 테이블 -->
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
       :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
-      :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page="50"
+      :mobile-breakpoint="0" density="compact" class="table-fit pa-0"
       items-per-page-text="페이지당 표시 수" v-model:page="page" v-model:items-per-page="itemsPerPage">
 
       <template v-slot:[`item.index`]="{ index }">
@@ -126,13 +126,13 @@ let refresh_timer; // setInterval 핸들러
 const process_time = ref(30);
 
 const areaList = ref([])
-const search = ref('')
+const search = ref(25)
 const devices = ref([])
 const areaList_selected = ref('%')
 const selectedItem = ref(null)
 
 const page = ref(1)
-const itemsPerPage = ref(50)
+const itemsPerPage = ref('')
 const os = ref(navigator.userAgent);
 onMounted(async () => {
 
@@ -233,7 +233,6 @@ const OnChange_AreaList = async () => {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
 }
-
 
 const headers = [
   { key: 'index', title: '', width: '25px', sortable: false },

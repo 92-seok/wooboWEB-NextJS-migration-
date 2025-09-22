@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity({
   name: 'tcm_cou_dngr_adm',

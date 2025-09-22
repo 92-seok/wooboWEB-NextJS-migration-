@@ -34,17 +34,17 @@ export class AppService {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
     }
   }
-
+  // 장비 모니터링 상태 조회
   async getMonitorDevices(where: string): Promise<NmsDevice[]> {
     try {
-      console.log(
-        this.nmsDeviceRepository
-          .createQueryBuilder()
-          .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '20', '21')`)
-          .andWhere(where)
-          .orderBy('CD_DIST_OBSV', 'ASC')
-          .getSql(),
-      );
+      // console.log(
+      //   this.nmsDeviceRepository
+      //     .createQueryBuilder()
+      //     .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '20', '21')`)
+      //     .andWhere(where)
+      //     .orderBy('CD_DIST_OBSV', 'ASC')
+      //     .getSql(),
+      // );
 
       return await this.nmsDeviceRepository
         .createQueryBuilder()
@@ -53,11 +53,34 @@ export class AppService {
         .orderBy('CD_DIST_OBSV', 'ASC')
         .getMany();
 
-      ///*
+      /*
       return await this.nmsDeviceRepository.findBy({
         GB_OBSV: In(['01', '02', '03', '04', '06', '08', '21']),
       });
-      //*/
+      */
+    } catch (error) {
+      throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
+    }
+  }
+
+  // 장비 컨트롤 상태 조회
+  async getControlDevices(where: string): Promise<NmsDevice[]> {
+    try {
+      // console.log(
+      //   this.nmsDeviceRepository
+      //     .createQueryBuilder()
+      //     .where(`GB_OBSV In('17', '18', '20')`)
+      //     .andWhere(where)
+      //     .orderBy('CD_DIST_OBSV', 'ASC')
+      //     .getSql(),
+      // );
+
+      return await this.nmsDeviceRepository
+        .createQueryBuilder()
+        .where(`GB_OBSV In('17', '18', '20')`)
+        .andWhere(where)
+        .orderBy('CD_DIST_OBSV', 'ASC')
+        .getMany();
     } catch (error) {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
     }

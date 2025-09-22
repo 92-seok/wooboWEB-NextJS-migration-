@@ -14,7 +14,7 @@ import LoginView from "@/Views/LoginView.vue";
 
 const routes = [
   //{ path: "/", component: HomeView },
-  { path: "/", component: MonitorView },
+  { path: "/", component: ControlView },
   { path: "/home", component: HomeView },
   { path: "/monitor", component: MonitorView },
   { path: "/control", component: ControlView },

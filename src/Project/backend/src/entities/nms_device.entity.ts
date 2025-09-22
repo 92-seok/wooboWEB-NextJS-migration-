@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'nms_device' }) // 테이블명 지정
 export class NmsDevice {
