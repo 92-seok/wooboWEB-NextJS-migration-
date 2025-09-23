@@ -1,12 +1,9 @@
 <template>
-  <v-responsive>
-
-    <v-app :theme="theme">
-      <Header @click:btn-click="btnEvent" />
-      <Main />
-      <Footer />
-    </v-app>
-  </v-responsive>
+  <v-app :theme="theme">
+    <Header @click:btn-click="btnEvent" />
+    <Main />
+    <Footer />
+  </v-app>
 </template>
 
 <!--
@@ -63,4 +60,11 @@ const btnEvent = (e) => {
 
 </script>
 
-<style></style>
+<style>
+html {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+</style>

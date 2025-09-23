@@ -21,11 +21,13 @@
         <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" text="" @click="onClick"
             slim />
     </v-app-bar>
-    <v-navigation-drawer>
-        <v-list>
-            <v-list-item title="" />
-        </v-list>
-    </v-navigation-drawer>
+    <!--
+        <v-navigation-drawer>
+            <v-list>
+                <v-list-item title="" />
+            </v-list>
+        </v-navigation-drawer>
+        -->
 </template>
 
 <script setup>

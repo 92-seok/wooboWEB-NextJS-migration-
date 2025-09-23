@@ -1,152 +1,196 @@
 <template>
   <v-container>
+    <!--
     <v-select v-model="areaList_selected" :items="areaList" :menu-props="{ scrim: true, scrollStrategy: 'close' }"
       label="지역" @update:model-value="OnChange_AreaList" />
-    <!--
-      <v-autocomplete :items="areaList" label="지역" chips multiple>
+    -->
+
+    <v-sheet class="mx-auto">
+      <v-slide-group center-active>
+        <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}</v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item v-for="(item, i) in filterAndSortArea(menu.filter)" :key="i" :value="i">
+              <v-list-item-title @click="OnChange_AreaList(item.value);">
+                {{ item.title }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-slide-group>
+
+      <v-autocomplete :items="areaList" label="지역 검색" variant="solo-filled" v-model="areaList_selected"
+        @update:model-value="OnChange_AreaList">
         <template v-slot:subheader="{ props }">
           <v-list-subheader class="font-weight-bold bg-primary">{{ props.title }}</v-list-subheader>
         </template>
-</v-autocomplete>
--->
-  </v-container>
+      </v-autocomplete>
+    </v-sheet>
 
-  <v-card flat>
+    <v-card flat>
 
-    <!-- 검색창 -->
-    <v-card-title class="d-flex align-center pe-2">
-      <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
-      장비 목록
-      <v-spacer></v-spacer>
-
-      <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
-        flat hide-details />
-    </v-card-title>
-
-    <!-- 프로그레스 타이머 -->
-    <v-progress-linear color="primary" v-model="process_time" :height="5" max="10" />
-
-    <v-divider />
-
-    <v-card height="30">
-
-    </v-card>
-
-    <v-divider />
-
-    <!-- 데이터 테이블 -->
-    <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
-      :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
-      :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page-text="페이지당 표시 수"
-      v-model:page="page" v-model:items-per-page="itemsPerPage">
-
-      <template v-slot:[`item.index`]="{ index }">
-        {{ index + 1 + (page - 1) * itemsPerPage }}
-      </template>
-
-      <template v-slot:[`item.GB_OBSV`]="{ item }">
-        <th style="width:10px" />
-        <v-card class="my-2" elevation="0">
-          <div v-if="item.GB_OBSV === '01'">
-            <v-img :src="require('@/assets/rain.png')" height="30" />
-          </div>
-          <div v-if="item.GB_OBSV === '02'">
-            <v-img :src="require('@/assets/water.png')" height="30" />
-          </div>
-          <div v-if="item.GB_OBSV === '03'">
-            <v-img :src="require('@/assets/dplace.png')" height="30" />
-          </div>
-          <div v-if="item.GB_OBSV === '20'">
-            <v-img :src="require('@/assets/gate.png')" height="30" />
-          </div>
-          <div v-if="item.GB_OBSV === '21'">
-            <v-img :src="require('@/assets/flood.png')" height="30" />
-          </div>
-        </v-card>
-      </template>
-
-      <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-        <!-- activator 슬롯 -->
-        <v-btn @click="openGuideDialog(item)">
-          <strong>{{ item.NM_DIST_OBSV }}</strong>
-        </v-btn>
-
-
-      </template>
-
-      <template v-slot:[`item.LastDate`]="{ item }">
-        <v-tooltip v-model="item.tooltip" location="top">
-          <!-- activator 슬롯 -->
-          <template v-slot:activator="{ props }">
-            <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip(item)">
-              {{ item.LastDate }}
-            </div>
-          </template>
-
-          <!-- tooltip 내용 -->
-          <span>{{ item.LastDate }}</span>
-        </v-tooltip>
-      </template>
-
-      <template v-slot:[`item.LastStatus`]="{ item }">
-        <div class="text-center">
-          <v-chip class="text-uppercase" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
-            :text="item.LastStatus == 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
-        </div>
-      </template>
-    </v-data-table>
-  </v-card>
-  <!-- Snackbar -->
-  <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
-    {{ snackbar.message }}
-  </v-snackbar>
-
-  <!-- 다이얼로그는 v-data-table 바깥에 위치 -->
-  <v-dialog v-model="dialog">
-    <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
-      <v-card-text class="text-center" v-if="selectedItem">
-        <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
-      </v-card-text>
-      <template v-slot:actions>
+      <!-- 검색창 -->
+      <v-card-title class="d-flex align-center pe-2">
+        <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
+        장비 목록
         <v-spacer></v-spacer>
-        <v-btn @click="dialog = false">아니오</v-btn>
-        <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
-      </template>
-    </v-card>
-  </v-dialog>
 
+        <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify"
+          variant="outlined" flat hide-details />
+      </v-card-title>
+
+      <!-- 프로그레스 타이머 -->
+      <v-progress-linear color="primary" v-model="process_time" :height="5" max="10" />
+
+      <v-divider />
+
+      <!-- 데이터 테이블 -->
+      <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
+        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
+        :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page-text="페이지당 표시 수"
+        v-model:page="page" v-model:items-per-page="itemsPerPage">
+
+        <template v-slot:[`item.index`]="{ index }">
+          {{ index + 1 + (page - 1) * itemsPerPage }}
+        </template>
+
+        <template v-slot:[`item.GB_OBSV`]="{ item }">
+          <th style="width:10px" />
+          <v-card class="my-2" elevation="0">
+            <div v-if="item.GB_OBSV === '01'">
+              <v-img :src="require('@/assets/rain.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '02'">
+              <v-img :src="require('@/assets/water.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '03'">
+              <v-img :src="require('@/assets/dplace.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '20'">
+              <v-img :src="require('@/assets/gate.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '21'">
+              <v-img :src="require('@/assets/flood.png')" height="30" />
+            </div>
+          </v-card>
+        </template>
+
+        <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
+          <!-- activator 슬롯 -->
+          <v-btn @click="openGuideDialog(item)">
+            <strong>{{ item.NM_DIST_OBSV }}</strong>
+          </v-btn>
+        </template>
+
+        <template v-slot:[`item.LastDate`]="{ item }">
+          <v-tooltip v-model="item.tooltip" location="top" hidden>
+            <!-- activator 슬롯 -->
+            <template v-slot:activator="{ props }">
+              <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip(item)">
+                {{ item.LastDate }}
+              </div>
+            </template>
+
+            <!-- tooltip 내용 -->
+            <span>{{ item.LastDate }}</span>
+          </v-tooltip>
+        </template>
+
+        <template v-slot:[`item.ErrorChk`]="{ item }">
+          <div class="text-center">
+            <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
+              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
+    <!-- Snackbar -->
+    <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
+      {{ snackbar.message }}
+    </v-snackbar>
+
+    <!-- 다이얼로그는 v-data-table 바깥에 위치 -->
+    <v-dialog v-model="dialog" width="70vw" max-width="500px">
+      <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
+        <v-card-text class="text-center" v-if="selectedItem">
+          <div>
+            <v-img class="mx-auto" :width="100" :src="require('@/assets/nmap.png')"></v-img>
+            <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
+          </div>
+        </v-card-text>
+        <template v-slot:actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="dialog = false">아니오</v-btn>
+          <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
+        </template>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'
 import axios from 'axios'
 
-
-let refresh_timer; // setInterval 핸들러
+let refresh_timer = null; // setInterval 핸들러
 const process_time = ref(10);
 
 const areaList = ref([])
-const search = ref(25)
-const devices = ref([])
 const areaList_selected = ref('%')
+const search = ref('')
+const devices = ref([])
 const selectedItem = ref(null)
 
 const page = ref(1)
-const itemsPerPage = ref('')
+const itemsPerPage = ref('50')
 const os = ref(navigator.userAgent);
+
+////////////////////////////////////////
+// EVENT 생명주기
+////////////////////////////////////////
 onMounted(async () => {
 
+  console.log("onMounted()");
   console.log(os.value);
+
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
-  OnTimer_Refresh();
+
   await Process();
 })
 
 onBeforeUnmount(() => {
-  if (refresh_timer) {
+  console.log("onBeforeUnmount()");
+
+  if (refresh_timer != null) {
     clearInterval(refresh_timer);
   }
 })
+////////////////////////////////////////
+const menuList = [
+  { name: '전라도', filter: ['전라'] },
+  { name: '경상도', filter: ['경상'] },
+  { name: '충청도', filter: ['충청'] },
+  { name: '강원도', filter: ['강원'] },
+  { name: '경기도', filter: ['경기'] },
+  { name: '인천/제주도', filter: ['인천', '제주'] },
+];
+
+const filterAndSortArea = (filterTerms) => {
+  return areaList.value
+    .filter(area => {
+      // 필터가 배열인 경우 OR 조건으로 처리
+      if (Array.isArray(filterTerms)) {
+        return filterTerms.some(term => area.title.includes(term));
+      }
+      // 단일 필터인 경우
+      return area.title.includes(filterTerms);
+    })
+    .toSorted((a, b) => a.title.localeCompare(b.title));
+};
+
 
 const snackbar = reactive({
   show: false,
@@ -163,6 +207,7 @@ function showSnackbar(item) {
   snackbar.message = `${item.NM_DIST_OBSV}`
   snackbar.show = true;
   dialog.value = false;
+
   let url = "";
 
   if (os.value.indexOf("Android") > 0) {
@@ -176,20 +221,8 @@ function showSnackbar(item) {
     url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
   }
 
-  console.log(url);
-  window.location.href = url;
-  //window.open(url, '_blank')
-  /*
-    //if (isAndroid) {
-      
-  
-      setTimeout(() => {
-        window.location.href = playStoreUrl;
-      }, 1000);
-    } else {
-      window.location.href = webNaverMapUrl;
-    }
-  */
+  //window.location.href = url;
+  window.open(url, '_blank')
 }
 
 const dialog = ref(false)
@@ -216,14 +249,16 @@ const Process = async () => {
 
   areaList.value = response_areaList.data.data.map(item => ({
     title: item.RM, value: item.ADMCODE
-  }))
-
-  console.log(areaList.value);
+  }));
 
   await OnChange_AreaList();
 };
 
-const OnChange_AreaList = async () => {
+const OnChange_AreaList = async (newArea) => {
+  if (newArea != null) {
+    areaList_selected.value = newArea;
+  }
+
   try {
     const response = await axios.get(`/api/devices?BDONG_CD=${areaList_selected.value}`)
     devices.value = response.data.data
@@ -237,8 +272,7 @@ const headers = [
   { key: 'index', title: '', width: '25px', sortable: false },
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
-  { key: 'LastDate', title: '통신시간', },
-  { key: 'LastStatus', title: '통신상태', },
+  { key: 'ErrorChk', title: '통신상태' },
   { key: 'DATA', title: '데이터', },
 ]
 </script>

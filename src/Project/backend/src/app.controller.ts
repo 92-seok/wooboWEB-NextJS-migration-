@@ -8,7 +8,7 @@ export class AppController {
   @Post()
   async Query(): Promise<any> {
     // TODO : 구현 예정
-    return { success: false, message: '아직 미구현입니다.'}
+    return { success: true, message: '아직 미구현입니다.' };
   }
 
   // 모든 NMS 디바이스 조회
@@ -18,16 +18,16 @@ export class AppController {
       const result = await this.appService.getAreaList();
       return {
         success: true,
-        data: result,
         message: '지역 목록을 성공적으로 조회했습니다.',
         count: result.length,
+        data: result,
       };
     } catch (err) {
       return {
-        success: true,
-        data: err,
+        success: false,
         message: '지역 목록을 조회 중 오류 발생.',
-        count: err.length,
+        count: 0,
+        data: null,
       };
     }
   }
@@ -58,6 +58,7 @@ export class AppController {
             .replace('_예경보', '')
             .replace('_전광판', '')
             .replace('_차단기', ''),
+          ErrorChk: item.ErrorChk,
           LastDate: item.LastDate,
           LastStatus: item.LastStatus,
           DTL_ADRES: item.DTL_ADRES,
@@ -120,7 +121,7 @@ export class AppController {
       };
     }
   }
-  
+
   /*
   @Put('/memo/:id')
   putMemo(
