@@ -27,6 +27,7 @@
         <template v-slot:subheader="{ props }">
           <v-list-subheader class="font-weight-bold bg-primary">{{ props.title }}</v-list-subheader>
         </template>
+        <template #no-data> </template>
       </v-autocomplete>
     </v-sheet>
 
@@ -39,7 +40,10 @@
         <v-spacer></v-spacer>
 
         <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify"
-          variant="outlined" flat hide-details />
+          variant="outlined" flat hide-details>
+
+        </v-text-field>
+
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
@@ -52,6 +56,10 @@
         :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
         :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page-text="페이지당 표시 수"
         v-model:page="page" v-model:items-per-page="itemsPerPage">
+
+        <template #no-data>
+          장비를 찾을 수 없습니다.
+        </template>
 
         <template v-slot:[`item.index`]="{ index }">
           {{ index + 1 + (page - 1) * itemsPerPage }}
