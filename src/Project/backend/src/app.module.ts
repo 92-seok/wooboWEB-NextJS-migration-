@@ -16,7 +16,7 @@ import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ['.env', '.env.development.local', '.env.development'],
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
