@@ -220,6 +220,7 @@ function showSnackbar(item) {
 
   if (os.value.indexOf("Android") > 0) {
     url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+    window.location.href = url;
   }
   else if (os.value.indexOf("iPhone") > 0) {
     url = `market://details?id=com.nhn.android.nmap`;
@@ -227,10 +228,8 @@ function showSnackbar(item) {
   else {
     //url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
     url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+    window.open(url, '_blank')
   }
-
-  //window.location.href = url;
-  window.open(url, '_blank')
 }
 
 const dialog = ref(false)
