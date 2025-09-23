@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import axios from 'axios'
 
 let refresh_timer = null; // setInterval 핸들러
@@ -164,16 +164,21 @@ onMounted(async () => {
   console.log("onMounted()");
   console.log(os.value);
 
+  if (refresh_timer) {
+    clearInterval(refresh_timer);
+  }
+
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
 
   await Process();
 })
 
-onBeforeUnmount(() => {
-  console.log("onBeforeUnmount()");
+onUnmounted(() => {
+  console.log("onUnmount()");
 
-  if (refresh_timer != null) {
+  if (refresh_timer) {
     clearInterval(refresh_timer);
+    refresh_timer = null;
   }
 })
 ////////////////////////////////////////

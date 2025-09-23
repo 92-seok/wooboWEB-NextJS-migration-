@@ -14,6 +14,7 @@ export class AppController {
   @Get('download')
   getDownload(@Res() res)
   {
+    res.setHeader("Content-disposition", "attachment; filename='com.woobo.online.apk'");
     return res.download("files/com.woobo.online.apk");
   }
 

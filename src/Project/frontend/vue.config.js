@@ -14,7 +14,7 @@ module.exports = {
       },
     },
     headers: {
-      "Cache-Control": "max-age=3600",
+      //"Cache-Control": "max-age=3600",
     },
   },
 };
