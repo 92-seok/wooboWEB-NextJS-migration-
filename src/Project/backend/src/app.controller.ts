@@ -75,6 +75,7 @@ export class AppController {
       };
     }
   }
+<<<<<<< Updated upstream
 
   @Get('control')
   async getControl(@Query('BDONG_CD') bdong_cd: string): Promise<any> {
@@ -120,4 +121,16 @@ export class AppController {
       };
     }
   }
+=======
+  /*
+  @Put('/memo/:id')
+  putMemo(
+    @Param('id') idx: string,
+    @Body('content') content: string,
+  ): string[] {
+    console.log(idx, content);
+    return this.appService.putMemo(idx, content);
+  }
+    */
+>>>>>>> Stashed changes
 }
