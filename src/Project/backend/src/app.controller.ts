@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller('api')
@@ -9,6 +9,12 @@ export class AppController {
   async Query(): Promise<any> {
     // TODO : 구현 예정
     return { success: true, message: '아직 미구현입니다.' };
+  }
+
+  @Get('download')
+  getDownload(@Res() res)
+  {
+    return res.download("files/com.woobo.online.apk");
   }
 
   // 모든 NMS 디바이스 조회

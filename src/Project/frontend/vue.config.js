@@ -7,7 +7,7 @@ module.exports = {
   devServer: {
     port: 80,
     host: "0.0.0.0",
-    allowedHosts: ["woobo.online"],
+    allowedHosts: ['woobo.online', 'localhost'],
     proxy: {
       "/api": {
         target: "http://localhost:8080", // 백엔드 서버 주소
