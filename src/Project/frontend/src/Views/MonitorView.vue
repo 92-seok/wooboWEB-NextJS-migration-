@@ -37,8 +37,8 @@
     <!-- 데이터 테이블 -->
     <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
       :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
-      :mobile-breakpoint="0" density="compact" class="table-fit pa-0"
-      items-per-page-text="페이지당 표시 수" v-model:page="page" v-model:items-per-page="itemsPerPage">
+      :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page-text="페이지당 표시 수"
+      v-model:page="page" v-model:items-per-page="itemsPerPage">
 
       <template v-slot:[`item.index`]="{ index }">
         {{ index + 1 + (page - 1) * itemsPerPage }}
@@ -165,21 +165,20 @@ function showSnackbar(item) {
   dialog.value = false;
   let url = "";
 
-
-
   if (os.value.indexOf("Android") > 0) {
-    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.example.myapp#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
   }
   else if (os.value.indexOf("iPhone") > 0) {
     url = `market://details?id=com.nhn.android.nmap`;
   }
   else {
-    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
+    //url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
     url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
   }
 
   console.log(url);
   window.location.href = url;
+  //window.open(url, '_blank')
   /*
     //if (isAndroid) {
       
