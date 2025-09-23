@@ -24,7 +24,7 @@
     </v-card-title>
 
     <!-- 프로그레스 타이머 -->
-    <v-progress-linear color="primary" v-model="process_time" :height="5" max="30" />
+    <v-progress-linear color="primary" v-model="process_time" :height="5" max="10" />
 
     <v-divider />
 
@@ -105,7 +105,7 @@
   <v-dialog v-model="dialog">
     <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
       <v-card-text class="text-center" v-if="selectedItem">
-        <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 길안내를 시작하시겠습니까?
+        <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
       </v-card-text>
       <template v-slot:actions>
         <v-spacer></v-spacer>
@@ -123,7 +123,7 @@ import axios from 'axios'
 
 
 let refresh_timer; // setInterval 핸들러
-const process_time = ref(30);
+const process_time = ref(10);
 
 const areaList = ref([])
 const search = ref(25)
@@ -206,7 +206,7 @@ const OnTimer_Refresh = async () => {
   process_time.value--;
   if (process_time.value == 0) {
     await Process();
-    process_time.value = 30;
+    process_time.value = 10;
   }
 }
 
