@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { version } from 'vue'; // version 전역변수 사용
+//import { version } from 'vue'; // version 전역변수 사용
 
 </script>
 

@@ -43,7 +43,7 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="primary" v-model="process_time" :height="5" max="10" />
+      <v-progress-linear color="primary" v-model="process_time" :height="5" max="20" />
 
       <v-divider />
 
@@ -136,7 +136,7 @@ import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'
 import axios from 'axios'
 
 let refresh_timer = null; // setInterval 핸들러
-const process_time = ref(10);
+const process_time = ref(20);
 
 const areaList = ref([])
 const areaList_selected = ref('%')
@@ -238,7 +238,7 @@ const OnTimer_Refresh = async () => {
   process_time.value--;
   if (process_time.value == 0) {
     await Process();
-    process_time.value = 10;
+    process_time.value = 20;
   }
 }
 
