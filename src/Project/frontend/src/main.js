@@ -50,3 +50,4 @@ app.config.globalProperties.$title = "운영지원시스템"; // Vue2 방식
 
 // 프로그램 마운트(실행)
 app.use(router).use(vuetify).mount("#app");
+//res.setHeader('Cache-Control', 'max-age=31536000, no-cache, no-store, must-revalidate');

@@ -12,10 +12,12 @@ export class AppController {
   }
 
   @Get('download')
-  getDownload(@Res() res)
-  {
-    res.setHeader("Content-disposition", "attachment; filename='com.woobo.online.apk'");
-    return res.download("files/com.woobo.online.apk");
+  async getDownload(@Res() res) {
+    res.setHeader(
+      'Content-disposition',
+      "attachment; filename='com.woobo.online.apk'",
+    );
+    return await res.download('files/com.woobo.online.apk');
   }
 
   // 모든 NMS 디바이스 조회
@@ -53,6 +55,7 @@ export class AppController {
         message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
         count: devices.length,
         data: devices.map((item) => ({
+          CD_DIST_OBSV: item.CD_DIST_OBSV,
           GB_OBSV: item.GB_OBSV,
           NM_DIST_OBSV: item.NM_DIST_OBSV.replace('', '')
             .replace('_강우', '')

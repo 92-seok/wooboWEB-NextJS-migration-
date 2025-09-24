@@ -1,6 +1,6 @@
 <template>
     <div>
-        Setting
+        <span>Setting</span>
         <div>
             <v-progress-circular :model-value="value" :width="15" :size="100" color="primary" indeterminate>
                 {{ value }}

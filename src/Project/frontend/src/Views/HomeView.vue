@@ -1,5 +1,5 @@
 <template>
-    <div id="map"></div>
+    <div id="map" />
 </template>
 
 <script setup>
@@ -10,9 +10,9 @@ const markers = ref([]);
 const infowindow = ref(null);
 
 const initMap = () => {
-    var lat = '35.5730';
-    var lon = '127.1283';
-    var zoom_level = 12;
+    var lat = '35.3';
+    var lon = '128.0';
+    var zoom_level = 13;
     var zoom_level_max = 14;
 
     const mapContainer = document.getElementById("map");
@@ -34,6 +34,8 @@ const initMap = () => {
 };
 
 onMounted(() => {
+    console.log("onMounted()");
+
     if (window.kakao && window.kakao.maps) {
         initMap();
     } else {
@@ -106,14 +108,6 @@ const displayInfoWindow = () => {
     width: 100vw;
     height: 100vh;
 }
-
-.button-group {
-    margin: 10px 0px;
-}
-
-button {
-    margin: 0 3px;
-}
 </style>
 <!--
 
@@ -122,11 +116,9 @@ button {
 import { onMounted, inject } from 'vue';
 const { Title } = 'HOME';
 onMounted(() => {
-    console.log('onMounted()::HomeView');
     document.title = inject('$title');
 });
 
-import kakao from ''
 //스크립트 태그 생성
 const script = document.createElement("script");
 //스크립트 태그에 src 속성 추가

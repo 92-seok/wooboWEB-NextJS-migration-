@@ -6,6 +6,29 @@
   </v-app>
 </template>
 
+<!-- Composition Style -->
+<script setup>
+
+// Layouts
+import Header from './layouts/Header.vue'
+import Main from './layouts/Main.vue'
+import Footer from './layouts/Footer.vue'
+
+// 전역변수 사용
+import { onMounted, inject, ref } from 'vue'
+
+// Form 이벤트
+onMounted(() => {
+  console.log(`프로그램 시작(${inject('$title')})`); // 전역변수 Vue3 Style
+});
+
+// Child 이벤트
+const theme = ref();
+const btnEvent = (e) => {
+  theme.value = e;
+};
+</script>
+
 <!--
 <script>
 import Header from './layouts/Header.vue'
@@ -35,30 +58,6 @@ const theme = ref();
 }
 </script>
 -->
-
-// Composition Style
-<script setup>
-// Layout
-import Header from './layouts/Header.vue'
-import Main from './layouts/Main.vue'
-import Footer from './layouts/Footer.vue'
-
-// 전역변수 사용
-import { onMounted, inject, ref } from 'vue'
-
-const theme = ref();
-
-// Form 이벤트
-onMounted(() => {
-  console.log(`프로그램 시작! (${inject('$title')})`); // 전역변수 Vue3 Style
-});
-
-// Child 이벤트
-const btnEvent = (e) => {
-  theme.value = e;
-};
-
-</script>
 
 <style>
 html {

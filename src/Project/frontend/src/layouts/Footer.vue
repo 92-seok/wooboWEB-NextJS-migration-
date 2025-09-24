@@ -1,7 +1,6 @@
 <template>
     <v-footer>
-        <v-bottom-navigation v-model="menu_idx" :bg-color="color">
-
+        <v-bottom-navigation v-model="menu_idx" :bg-color="color" density="compact">
             <v-btn @click="GoMenu('/home')">
                 <v-icon>mdi-map</v-icon>
                 <span>지도</span>
@@ -19,13 +18,15 @@
 
             <v-btn @click="GoMenu('/setting')">
                 <v-icon>mdi-book</v-icon>
-                <span>관리</span>
+                <span font-color="yellow">관리</span>
             </v-btn>
 
-            <v-btn @click="GoMenu('/about')">
-                <v-icon>mdi-account</v-icon>
-                <span>계정</span>
-            </v-btn>
+            <!--
+                <v-btn @click="GoMenu('/about')">
+                    <v-icon>mdi-account</v-icon>
+                    <span>계정</span>
+                </v-btn>
+                -->
         </v-bottom-navigation>
     </v-footer>
 </template>
@@ -33,7 +34,7 @@
 <script setup>
 
 // import
-import { computed, ref, defineModel } from 'vue'
+import { ref, defineModel } from 'vue'
 import { useRouter } from 'vue-router'
 
 // reactive status
@@ -43,11 +44,7 @@ const color = ref('blue-grey');
 // router
 const router = useRouter();
 
-computed(() => {
-    console.log('computed');
-    return '';
-});
-
+// function
 function GoMenu(path) {
 
     if (router.currentRoute.value.fullPath == path) {
@@ -74,4 +71,4 @@ function GoMenu(path) {
 
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped></style>

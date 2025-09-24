@@ -39,7 +39,7 @@
             </v-card-title>
 
             <!-- 프로그레스 타이머 -->
-            <v-progress-linear color="primary" v-model="process_time" :height="5" max="30" />
+            <v-progress-linear color="primary" v-model="process_time" :height="5" max="20" />
 
             <v-divider />
 
@@ -130,12 +130,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'
+import { ref, onMounted, onUnmount, reactive } from 'vue'
 import axios from 'axios'
 
-
 let refresh_timer; // setInterval 핸들러
-const process_time = ref(30);
+const process_time = ref(20);
 
 const areaList = ref([])
 const search = ref('')
@@ -176,8 +175,8 @@ onMounted(async () => {
     await Process();
 })
 
-onBeforeUnmount(() => {
-    console.log("onBeforeUnmount()");
+onUnmount(() => {
+    console.log("onUnmount()");
 
     if (refresh_timer) {
         clearInterval(refresh_timer);
@@ -196,18 +195,22 @@ function openGuideDialog(item) {
 }
 
 function showSnackbar(item) {
+
     snackbar.message = `${item.NM_DIST_OBSV}`
     snackbar.show = true;
     dialog.value = false;
+
+    const NAVER_MAP_ANDROID_STORE = 'market://details?id=com.nhn.android.nmap'; // 네이버 지도 안드로이드 구글 플레이 링크
+    const NAVER_MAP_IOS_STORE = 'https://itunes.apple.com/app/id311867728?mt=8'; // 네이버 지도 iOS 앱 스토어 링크
+
     let url = "";
 
-
-
     if (os.value.indexOf("Android") > 0) {
-        url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.example.myapp#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+        url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
     }
     else if (os.value.indexOf("iPhone") > 0) {
-        url = `market://details?id=com.nhn.android.nmap`;
+        url = `itms-apps://itunes.apple.com/app/id311867728/`;
+        url = `nmap://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online;scheme=nmap;`;
     }
     else {
         url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
@@ -215,17 +218,6 @@ function showSnackbar(item) {
     }
 
     window.location.href = url;
-    /*
-      //if (isAndroid) {
-        
-    
-        setTimeout(() => {
-          window.location.href = playStoreUrl;
-        }, 1000);
-      } else {
-        window.location.href = webNaverMapUrl;
-      }
-    */
 }
 
 const dialog = ref(false)
@@ -241,7 +233,7 @@ const OnTimer_Refresh = async () => {
     process_time.value--;
     if (process_time.value == 0) {
         await Process();
-        process_time.value = 30;
+        process_time.value = 20;
     }
 }
 

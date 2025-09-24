@@ -1,15 +1,14 @@
 <template>
   <v-container>
-    <!--
-    <v-select v-model="areaList_selected" :items="areaList" :menu-props="{ scrim: true, scrollStrategy: 'close' }"
-      label="지역" @update:model-value="OnChange_AreaList" />
-    -->
-
-    <v-sheet class="mx-auto">
-      <v-slide-group center-active>
+    <!-- 지역 메뉴 (전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
+    <v-sheet class="mx-auto" elevation="8">
+      <v-slide-group v-model="model" center-active>
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
-            <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}</v-btn>
+            <v-scale-transition>
+
+              <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}{{ index }}</v-btn>
+            </v-scale-transition>
           </template>
 
           <v-list>
@@ -22,6 +21,7 @@
         </v-menu>
       </v-slide-group>
 
+      <!-- 지역 검색 창-->
       <v-autocomplete :items="areaList" label="지역 검색" variant="solo-filled" v-model="areaList_selected"
         @update:model-value="OnChange_AreaList">
         <template v-slot:subheader="{ props }">
@@ -32,8 +32,7 @@
     </v-sheet>
 
     <v-card flat>
-
-      <!-- 검색창 -->
+      <!--장비 검색 창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
         장비 목록
@@ -47,18 +46,28 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="primary" v-model="process_time" :height="5" max="20" />
+      <v-progress-linear color="primary" v-model="process_time" :height="5" :max="refresh_time" />
 
       <v-divider />
 
       <!-- 데이터 테이블 -->
-      <v-data-table :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices" :headers="headers"
-        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :cell-props="{ align: 'center' }"
-        :mobile-breakpoint="0" density="compact" class="table-fit pa-0" items-per-page-text="페이지당 표시 수"
-        v-model:page="page" v-model:items-per-page="itemsPerPage">
+      <v-data-table class="table-fit pa-0" :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices"
+        :headers="headers" :header-props="{ align: 'center', style: 'font-weight: bold;' }"
+        :cell-props="{ align: 'center' }" :mobile-breakpoint="0" density="compact" items-per-page-text="페이지당 표시 수"
+        v-model:page="page" v-model:items-per-page="itemsPerPage" show-expand item-value="CD_DIST_OBSV">
 
         <template #no-data>
           장비를 찾을 수 없습니다.
+        </template>
+
+
+        <!-- expanded-item 슬롯에 확장 시 보여줄 콘텐츠를 추가합니다 -->
+        <template v-slot:[`expanded-item`]="{ item, headers }">
+          <tr>
+            <td :colspan="headers.length">
+              <p>추가 정보: {{ item.LAT }}</p>
+            </td>
+          </tr>
         </template>
 
         <template v-slot:[`item.index`]="{ index }">
@@ -88,7 +97,7 @@
 
         <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
           <!-- activator 슬롯 -->
-          <v-btn @click="openGuideDialog(item)">
+          <v-btn @click="openGuideDialog(item)" variant="text">
             <strong>{{ item.NM_DIST_OBSV }}</strong>
           </v-btn>
         </template>
@@ -115,6 +124,7 @@
         </template>
       </v-data-table>
     </v-card>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
       {{ snackbar.message }}
@@ -143,15 +153,22 @@
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import axios from 'axios'
 
+////////////////////////////////////////
+// 프로세스 타이머
+////////////////////////////////////////
 let refresh_timer = null; // setInterval 핸들러
-const process_time = ref(20);
+const refresh_time = ref(20);
+const process_time = ref(refresh_time.value);
+////////////////////////////////////////
+const model = ref(null)
+const model2 = ref(null)
 
 const areaList = ref([])
 const areaList_selected = ref('%')
 const search = ref('')
 const devices = ref([])
 const selectedItem = ref(null)
-
+const expandedItems = ref([]);
 const page = ref(1)
 const itemsPerPage = ref('50')
 const os = ref(navigator.userAgent);
@@ -250,20 +267,23 @@ const OnTimer_Refresh = async () => {
   process_time.value--;
   if (process_time.value == 0) {
     await Process();
-    process_time.value = 20;
+    process_time.value = refresh_time.value;
   }
 }
 
 const Process = async () => {
   console.log("Process()");
 
-  const response_areaList = await axios.get('/api/areaList');
+  try {
+    const response_areaList = await axios.get('/api/areaList');
 
-  areaList.value = response_areaList.data.data.map(item => ({
-    title: item.RM, value: item.ADMCODE
-  }));
+    areaList.value = response_areaList.data.data.map(item => ({
+      title: item.RM, value: item.ADMCODE
+    }));
 
-  await OnChange_AreaList();
+    await OnChange_AreaList();
+  }
+  catch (ex) { console.log(ex) }
 };
 
 const OnChange_AreaList = async (newArea) => {
@@ -281,7 +301,8 @@ const OnChange_AreaList = async (newArea) => {
 }
 
 const headers = [
-  { key: 'index', title: '', width: '25px', sortable: false },
+  { key: 'data-table-expand', width: 10, align: 'end' },
+  { key: 'index', width: '25px', sortable: false },
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'ErrorChk', title: '통신상태' },
