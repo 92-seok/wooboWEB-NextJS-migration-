@@ -130,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmount, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import axios from 'axios'
 
 let refresh_timer; // setInterval 핸들러
@@ -175,7 +175,7 @@ onMounted(async () => {
     await Process();
 })
 
-onUnmount(() => {
+onUnmounted(() => {
     console.log("onUnmount()");
 
     if (refresh_timer) {
@@ -264,7 +264,6 @@ const OnChange_AreaList = async (newArea) => {
         console.log('데이터를 가져오는 중 오류 발생: ', err)
     }
 }
-
 
 const headers = [
     { key: 'index', title: '', width: '50px', sortable: true },

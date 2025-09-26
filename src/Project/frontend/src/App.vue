@@ -1,8 +1,10 @@
 <template>
   <v-app :theme="theme">
     <Header @click:btn-click="btnEvent" />
+     <!-- <HeaderTest></HeaderTest> -->
     <Main />
     <Footer />
+    <!-- <FooterTest /> -->
   </v-app>
 </template>
 
@@ -11,8 +13,10 @@
 
 // Layouts
 import Header from './layouts/Header.vue'
+// import HeaderTest from './layouts/HeaderTest.vue'
 import Main from './layouts/Main.vue'
 import Footer from './layouts/Footer.vue'
+// import FooterTest from './layouts/FooterTest.vue'
 
 // 전역변수 사용
 import { onMounted, inject, ref } from 'vue'

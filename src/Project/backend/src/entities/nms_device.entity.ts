@@ -122,7 +122,7 @@ export class NmsDevice {
     nullable: true,
     comment: '위도',
   })
-  LAT: string;
+  LAT: number;
 
   @Column({
     name: 'LON',

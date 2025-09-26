@@ -11,17 +11,19 @@ import ControlView from "@/Views/ControlView.vue";
 import SettingView from "@/Views/SettingView.vue";
 import AboutView from "@/Views/AboutView.vue";
 import LoginView from "@/Views/LoginView.vue";
+import TestView from "@/Views/TestView.vue";
 
 const routes = [
   //{ path: "/", component: HomeView },
   //{ path: "/", component: ControlView },
-  { path: "/", component: MonitorView },
+  { path: "/", component: HomeView },
   { path: "/home", component: HomeView },
   { path: "/monitor", component: MonitorView },
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
   { path: "/about", component: AboutView },
   { path: "/login", component: LoginView },
+  { path: "/test", component: TestView },
 ];
 
 const router = createRouter({

@@ -85,4 +85,6 @@ export class AppService {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
     }
   }
+
+  async
 }
