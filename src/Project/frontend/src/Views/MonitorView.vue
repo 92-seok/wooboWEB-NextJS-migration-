@@ -77,7 +77,7 @@
         <template v-slot:[`item.GB_OBSV`]="{ item }">
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
-            <div v-if="item.GB_OBSV === '01'">
+             <div v-if="item.GB_OBSV === '01'">
               <v-img :src="require('@/assets/rain.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '02'">
@@ -85,6 +85,21 @@
             </div>
             <div v-if="item.GB_OBSV === '03'">
               <v-img :src="require('@/assets/dplace.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '06'">
+              <v-img :src="require('@/assets/snow.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '08'">
+              <v-img :src="require('@/assets/tilt.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '15'">
+              <v-img :src="require('@/assets/dplace.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '17'">
+                <v-img :src="require('@/assets/broad.png')" height="30" />
+            </div>
+            <div v-if="item.GB_OBSV === '18'">
+                <v-img :src="require('@/assets/display.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '20'">
               <v-img :src="require('@/assets/gate.png')" height="30" />
@@ -200,11 +215,11 @@ onUnmounted(() => {
 })
 ////////////////////////////////////////
 const menuList = [
-  { name: '전라도', filter: ['전라'] },
+  { name: '전라도', filter: ['전라', '광주'] },
   { name: '경상도', filter: ['경상'] },
   { name: '충청도', filter: ['충청'] },
   { name: '강원도', filter: ['강원'] },
-  { name: '경기도', filter: ['경기'] },
+  { name: '경기도', filter: ['경기', '서울'] },
   { name: '인천/제주도', filter: ['인천', '제주'] },
 ];
 
