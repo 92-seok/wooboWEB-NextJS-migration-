@@ -12,6 +12,11 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 
+// FontAwesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+
 // Vuetify Lab
 import { VPie } from "vuetify/labs/VPie";
 
@@ -47,6 +52,9 @@ app.config.warnHandler = (err) => {
 // 전역변수 설정
 app.provide("$title", "운영지원시스템"); // Vue3 방식
 app.config.globalProperties.$title = "운영지원시스템"; // Vue2 방식
+
+library.add(fas) // FontAwesome
+app.component('font-awesome-icon', FontAwesomeIcon) // FontAwesome
 
 // 프로그램 마운트(실행)
 app.use(router).use(vuetify).mount("#app");

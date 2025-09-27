@@ -1,112 +1,132 @@
 <template>
-    <div id="map" />
+  <div id="map" />
 </template>
 
 <script setup>
 import { ref, onMounted, toRaw } from "vue";
+import axios from "axios";
 
 const map = ref(null);
 const markers = ref([]);
 const infowindow = ref(null);
 
 const initMap = () => {
-    var lat = '35.3';
-    var lon = '128.0';
-    var zoom_level = 13;
-    var zoom_level_max = 14;
+  var lat = '35.3';
+  var lon = '128.0';
+  var zoom_level = 13;
+  var zoom_level_max = 14;
 
-    const mapContainer = document.getElementById("map");
-    const mapOption = {
-        center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
-        level: zoom_level, // 지도의 확대 레벨
-        maxLevel: zoom_level_max, // 최대의 최대 레벨
-    };
+  const mapContainer = document.getElementById("map");
+  const mapOption = {
+    center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
+    level: zoom_level, // 지도의 확대 레벨
+    maxLevel: zoom_level_max, // 최대의 최대 레벨
+  };
 
-    map.value = new kakao.maps.Map(mapContainer, mapOption);
-    /* 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다*/
-    var mapTypeControl = new kakao.maps.MapTypeControl();
-    map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
-    map.value.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+  map.value = new kakao.maps.Map(mapContainer, mapOption);
+  /* 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다*/
+  var mapTypeControl = new kakao.maps.MapTypeControl();
+  map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+  map.value.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
 
-    /* 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다. */
-    var zoomControl = new kakao.maps.ZoomControl();
-    map.value.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+  /* 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다. */
+  var zoomControl = new kakao.maps.ZoomControl();
+  map.value.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 };
 
-onMounted(() => {
-    console.log("onMounted()");
-
-    if (window.kakao && window.kakao.maps) {
-        initMap();
-    } else {
-        const script = document.createElement("script");
-        /* global kakao */
-        script.onload = () => kakao.maps.load(initMap);
-        script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
-        document.head.appendChild(script);
-    }
-});
-
 const changeSize = (size) => {
-    const container = document.getElementById("map");
-    container.style.width = `${size}px`;
-    container.style.height = `${size}px`;
-    toRaw(map.value).relayout();
+  const container = document.getElementById("map");
+  container.style.width = `${size}px`;
+  container.style.height = `${size}px`;
+  toRaw(map.value).relayout();
 };
 
 const displayMarker = (markerPositions) => {
-    if (markers.value.length > 0) {
-        markers.value.forEach((marker) => marker.setMap(null));
-    }
+  if (markers.value.length > 0) {
+    markers.value.forEach((marker) => marker.setMap(null));
+  }
 
-    const positions = markerPositions.map(
-        (position) => new kakao.maps.LatLng(...position)
+  const positions = markerPositions.map(
+    (pos) => new kakao.maps.LatLng(pos[0], pos[1])
+  );
+
+  if (positions.length > 0) {
+    markers.value = positions.map(
+      (position) =>
+        new kakao.maps.Marker({
+          map: toRaw(map.value),
+          position,
+        })
     );
 
-    if (positions.length > 0) {
-        markers.value = positions.map(
-            (position) =>
-                new kakao.maps.Marker({
-                    map: toRaw(map.value),
-                    position,
-                })
-        );
+    const bounds = positions.reduce(
+      (bounds, latlng) => bounds.extend(latlng),
+      new kakao.maps.LatLngBounds()
+    );
 
-        const bounds = positions.reduce(
-            (bounds, latlng) => bounds.extend(latlng),
-            new kakao.maps.LatLngBounds()
-        );
-
-        toRaw(map.value).setBounds(bounds);
-    }
+    toRaw(map.value).setBounds(bounds);
+  }
 };
 
 const displayInfoWindow = () => {
-    if (infowindow.value && toRaw(infowindow.value).getMap()) {
-        toRaw(map.value).setCenter(toRaw(infowindow.value).getPosition());
-        return;
-    }
+  if (infowindow.value && toRaw(infowindow.value).getMap()) {
+    toRaw(map.value).setCenter(toRaw(infowindow.value).getPosition());
+    return;
+  }
 
-    var iwContent = '<div style="padding:5px;">Hello World!</div>',
-        iwPosition = new kakao.maps.LatLng(33.450701, 126.570667),
-        iwRemoveable = true;
+  var iwContent = '<div style="padding:5px;">Hello World!</div>',
+    iwPosition = new kakao.maps.LatLng(33.450701, 126.570667),
+    iwRemoveable = true;
 
-    infowindow.value = new kakao.maps.InfoWindow({
-        map: toRaw(map.value),
-        position: iwPosition,
-        content: iwContent,
-        removable: iwRemoveable,
-    });
+  infowindow.value = new kakao.maps.InfoWindow({
+    map: toRaw(map.value),
+    position: iwPosition,
+    content: iwContent,
+    removable: iwRemoveable,
+  });
 
-    toRaw(map.value).setCenter(iwPosition);
+  toRaw(map.value).setCenter(iwPosition);
 };
+
+
+onMounted(async () => {
+  console.log("onMounted()");
+
+  if (window.kakao && window.kakao.maps) {
+    initMap();
+  } else {
+    const script = document.createElement("script");
+    /* global kakao */
+    script.onload = () => kakao.maps.load(initMap);
+    script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
+    document.head.appendChild(script);
+  }
+
+
+  try {
+    const response = await axios.get(`/api/devices`)
+    const devices = response.data.data
+    // console.log(devices);
+
+    const positions = devices
+      .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
+      .map(row => [Number(row.LAT), Number(row.LON)]);
+
+
+    displayMarker(positions);
+
+  } catch (err) {
+    console.log('데이터를 가져오는 중 오류 발생: ', err)
+  }
+
+});
 </script>
 
 
 <style scoped>
 #map {
-    width: 100vw;
-    height: 100vh;
+  width: 100vw;
+  height: 100vh;
 }
 </style>
 <!--
