@@ -1,16 +1,24 @@
 <template>
-    <div>
-        <span>Setting</span>
+
+  <v-container>
+    <v-row>
+      <v-col cols="12" md="6">
+
         <div>
+          <span>Setting</span>
+          <div>
             <v-progress-circular :model-value="value" :width="15" :size="100" color="primary" indeterminate>
-                {{ value }}
+              {{ value }}
             </v-progress-circular>
+          </div>
         </div>
-    </div>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 const value = ref(0);
 
@@ -23,9 +31,11 @@ onMounted(() => {
         value.value += 10;
     }, 1000);
 });
-onBeforeUnmount(() => {
+
+onUnmounted(() => {
     clearInterval(interval);
 });
+
 </script>
 
 <style scoped>

@@ -7,7 +7,7 @@
           <template v-slot:activator="{ props }">
             <v-scale-transition>
 
-              <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}{{ index }}</v-btn>
+              <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}</v-btn>
             </v-scale-transition>
           </template>
 

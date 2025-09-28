@@ -21,12 +21,10 @@
                 <span font-color="yellow">관리</span>
             </v-btn>
 
-            <!--
                 <v-btn @click="GoMenu('/about')">
                     <v-icon>mdi-account</v-icon>
                     <span>계정</span>
                 </v-btn>
-                -->
         </v-bottom-navigation>
     </v-footer>
 </template>

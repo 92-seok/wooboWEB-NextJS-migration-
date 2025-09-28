@@ -2,7 +2,7 @@
     <v-container>
         <v-layout>
             <v-flex>
-                <v-card>
+                <v-card width="300">
                     <div class="pa-10">
                         <h1 style="text-align: center" class="mb-10">Login</h1>
                         <form>
