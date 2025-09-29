@@ -77,7 +77,7 @@
         <template v-slot:[`item.GB_OBSV`]="{ item }">
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
-             <div v-if="item.GB_OBSV === '01'">
+            <div v-if="item.GB_OBSV === '01'">
               <v-img :src="require('@/assets/rain.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '02'">
@@ -96,10 +96,10 @@
               <v-img :src="require('@/assets/dplace.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '17'">
-                <v-img :src="require('@/assets/broad.png')" height="30" />
+              <v-img :src="require('@/assets/broad.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '18'">
-                <v-img :src="require('@/assets/display.png')" height="30" />
+              <v-img :src="require('@/assets/display.png')" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '20'">
               <v-img :src="require('@/assets/gate.png')" height="30" />
@@ -321,7 +321,7 @@ const headers = [
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'ErrorChk', title: '통신상태' },
-  { key: 'DATA', title: '데이터', },
+  { key: 'DATA', title: '데이터' },
 ]
 </script>
 
