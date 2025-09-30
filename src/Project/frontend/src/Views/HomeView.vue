@@ -93,33 +93,39 @@ onMounted(async () => {
   console.log("onMounted()");
 
   if (window.kakao && window.kakao.maps) {
+    // console.log('window.kakao == true')
     initMap();
-  } else {
-    const script = document.createElement("script");
+    await loadMapData();
+  }
+  else {
     /* global kakao */
-    script.onload = () => kakao.maps.load(initMap);
+    const script = document.createElement("script");
     script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
     document.head.appendChild(script);
+    script.onload = async () => {
+      // console.log('script.onload()');
+      kakao.maps.load(initMap);
+      await loadMapData()
+    }
+
   }
 
+});
 
+const loadMapData = async () => {
   try {
     const response = await axios.get(`/api/devices`)
     const devices = response.data.data
-    // console.log(devices);
-
     const positions = devices
       .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
       .map(row => [Number(row.LAT), Number(row.LON)]);
-
 
     displayMarker(positions);
 
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
-
-});
+}
 </script>
 
 

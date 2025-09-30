@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Res, Body } from '@nestjs/common';
 import { AppService } from './app.service';
+import { post } from 'axios';
 
 @Controller('api')
 export class AppController {
@@ -101,6 +102,8 @@ export class AppController {
         message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
         count: controlDevices.length,
         data: controlDevices.map((item) => ({
+          BDONG_CD: item.BDONG_CD,
+          CD_DIST_OBSV: item.CD_DIST_OBSV,
           GB_OBSV: item.GB_OBSV,
           NM_DIST_OBSV: item.NM_DIST_OBSV.replace('', '')
             .replace('_강우', '')
@@ -128,6 +131,48 @@ export class AppController {
         message: error.message,
         count: 0,
         data: null,
+      };
+    }
+  }
+  @Post('sendBrd')
+  async postBrd(@Body() BODY: any, @Body('BDONG_CD') BDONG_CD: string, @Body('CD_DIST_OBSV') CD_DIST_OBSV: string, @Body('Message') Message: string, @Body('Auth') Auth: string ): Promise<any> {
+    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+
+    
+    try {
+      const controlDevices = await this.appService.insertBrdSend(BODY);
+      
+      return {
+        success: true,
+        BDONG_CD: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
+      };
+    } catch {
+      return {
+        success: false,
+        bdong_cd: BDONG_CD,
+      };
+    }
+  }
+
+  @Post('sendGate')
+  async postGate(@Body() BODY: any, @Body('BDONG_CD') BDONG_CD: string, @Body('CD_DIST_OBSV') CD_DIST_OBSV: string, @Body('Gate') Gate: string, @Body('Auth') Auth: string ): Promise<any> {
+    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Gate} ${Auth}`);
+
+    
+    try {
+      const controlDevices = await this.appService.insertGateControl(BODY);
+      
+      return {
+        success: true,
+        BDONG_CD: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
+      };
+    } catch {
+      return {
+        success: false,
+        bdong_cd: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
       };
     }
   }

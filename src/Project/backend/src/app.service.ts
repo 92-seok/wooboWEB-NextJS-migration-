@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+import dayjs from 'dayjs';
 import { NmsDevice } from './entities/nms_device.entity';
 import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
+import { NmsBrdSend } from '@entities/nms_brdsend.entity';
+import { NmsGateControl } from '@entities/nms_gatecontrol.entity';
 
 @Injectable()
 export class AppService {
@@ -11,6 +14,10 @@ export class AppService {
     private nmsDeviceRepository: Repository<NmsDevice>,
     @InjectRepository(TcmCouDngrAdm)
     private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
+    @InjectRepository(NmsBrdSend)
+    private NmsBrdSendRepository: Repository<NmsBrdSend>,
+    @InjectRepository(NmsGateControl)
+    private NmsGateControlRepository: Repository<NmsGateControl>,
   ) {}
 
   getHello(): string {
@@ -48,7 +55,9 @@ export class AppService {
 
       return await this.nmsDeviceRepository
         .createQueryBuilder()
-        .where(`GB_OBSV In('01', '02', '03', '04', '06', '08', '15', '17', '18', '19', '20', '21')`)
+        .where(
+          `GB_OBSV In('01', '02', '03', '04', '06', '08', '15', '17', '18', '19', '20', '21')`,
+        )
         .andWhere(where)
         .orderBy('GB_OBSV', 'ASC')
         .addOrderBy('CD_DIST_OBSV', 'ASC')
@@ -87,5 +96,40 @@ export class AppService {
     }
   }
 
-  async
+  async insertBrdSend(body): Promise<any> {
+    try {
+      const obj = new NmsBrdSend();
+
+      obj.BDONG_CD = body.BDONG_CD;
+      obj.CD_DIST_OBSV = body.CD_DIST_OBSV;
+      obj.RCMD = 'B010';
+      obj.Parm1 = '00000000';
+      obj.Parm2 = '1';
+      obj.Parm3 = body.Message;
+      obj.BStatus = 'start';
+      obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      obj.Auth = 'online';
+
+      return await this.NmsBrdSendRepository.insert(obj);
+    } catch (error) {
+      throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
+    }
+  }
+
+  async insertGateControl(body): Promise<any> {
+    try {
+      const obj = new NmsGateControl();
+
+      obj.BDONG_CD = body.BDONG_CD;
+      obj.CD_DIST_OBSV = body.CD_DIST_OBSV;
+      obj.Gate = body.Gate;
+      obj.GStatus = body.GStatus;
+      obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      obj.Auth = 'online';
+
+      return await this.NmsGateControlRepository.insert(obj);
+    } catch (error) {
+      throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
+    }
+  }
 }

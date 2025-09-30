@@ -11,6 +11,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // entity
 import { NmsDevice } from './entities/nms_device.entity';
 import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
+import { NmsBrdSend } from './entities/nms_brdsend.entity';
+import { NmsGateControl } from './entities/nms_gatecontrol.entity';
+
 
 @Module({
   imports: [
@@ -25,11 +28,11 @@ import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [NmsDevice, TcmCouDngrAdm],
+      entities: [NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl],
       synchronize: true, // 기존 DB이므로 false로 설정
       logging: false,
     }),
-    TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm]),
+    TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl]),
   ],
   controllers: [AppController],
   providers: [AppService],
