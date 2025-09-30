@@ -35,7 +35,7 @@
       <!--장비 검색 창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
-        장비 목록
+        <v-btn>장비 목록</v-btn>
         <v-spacer></v-spacer>
 
         <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify"
@@ -260,11 +260,12 @@ function showSnackbar(item) {
     window.location.href = url;
   }
   else if (os.value.indexOf("iPhone") > 0) {
-    url = `market://details?id=com.nhn.android.nmap`;
+    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+    window.open(url, '_blank')
   }
   else {
-    //url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
     url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
     window.open(url, '_blank')
   }
 }
