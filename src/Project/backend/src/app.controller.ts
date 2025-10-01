@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Param, Query, Res, Body } from '@nestjs/common';
+import { Controller, Get, Post, Query, Res, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AppService } from './app.service';
 import { post } from 'axios';
+
 
 @Controller('api')
 export class AppController {
@@ -187,6 +188,9 @@ export class AppController {
       };
     }
   }
+
+  
+
 
   /*
   @Put('/memo/:id')

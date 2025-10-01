@@ -102,13 +102,13 @@ export class AppService {
 
       obj.BDONG_CD = body.BDONG_CD;
       obj.CD_DIST_OBSV = body.CD_DIST_OBSV;
-      obj.RCMD = 'B010';
-      obj.Parm1 = '00000000';
-      obj.Parm2 = '1';
-      obj.Parm3 = body.Message;
-      obj.BStatus = 'start';
+      obj.RCMD = body.RCMD;
+      obj.Parm1 = body.Parm1;
+      obj.Parm2 = body.Parm2;
+      obj.Parm3 = body.Parm3;
+      obj.BStatus = body.BStatus;
       obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
-      obj.Auth = 'online';
+      obj.Auth = body.Auth;
 
       return await this.NmsBrdSendRepository.insert(obj);
     } catch (error) {
