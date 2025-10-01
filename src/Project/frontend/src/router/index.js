@@ -13,12 +13,13 @@ import AboutView from "@/Views/AboutView.vue";
 import LoginView from "@/Views/LoginView.vue";
 import DownloadView from "@/Views/DownloadView.vue";
 import TestView from "@/Views/TestView.vue";
+import MapView from "@/Views/MapView.vue";
 
 const routes = [
   //{ path: "/", component: HomeView },
   //{ path: "/", component: ControlView },
   { path: "/", component: DownloadView },
-  { path: "/home", component: HomeView },
+  // { path: "/home", component: HomeView },
   { path: "/monitor", component: MonitorView },
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
@@ -26,6 +27,7 @@ const routes = [
   { path: "/login", component: LoginView },
   { path: "/download", component: DownloadView },
   { path: "/test", component: TestView },
+  { path: "/map", component: MapView },
 ];
 
 const router = createRouter({

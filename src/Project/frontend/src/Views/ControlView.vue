@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container id="main_body">
     <v-sheet class="mx-auto">
       <v-slide-group center-active>
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
@@ -43,8 +43,20 @@
 
       <v-divider />
 
-      <v-card height="30">
-
+      <v-card class="d-flex flex-row" max-width="300">
+        <div>
+          <h2>전체</h2>
+        </div>
+      </v-card>
+      <v-card class="d-flex flex-row" max-width="300">
+        <div>
+          <h2>전체</h2>
+        </div>
+      </v-card>
+      <v-card class="d-flex flex-row" max-width="300">
+        <div>
+          <h2>전체</h2>
+        </div>
       </v-card>
 
       <v-divider />
@@ -105,7 +117,9 @@
 
 
       </v-data-table>
+      <div id="map"></div>
     </v-card>
+
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
       {{ snackbar.message }}
@@ -130,12 +144,16 @@
         <v-card title="제어 하시겠습니까?">
           <v-row justify="center" align="center">
             <v-col cols="12" align="center">
-              <v-btn elevation="10" class="gate-btn ma-3" :style="{background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff'}" @click="sendGate(selectedItem, 'open')">
+              <v-btn elevation="10" class="gate-btn ma-3"
+                :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }"
+                @click="sendGate(selectedItem, 'open')">
                 <v-img :src="require('@/assets/gate_open.png')" width="50px" heigh="40px" />
                 <strong>열기</strong>
               </v-btn>
 
-              <v-btn elevation="10" class="gate-btn ma-3" :style="{background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff'}" @click="sendGate(selectedItem, 'close')">
+              <v-btn elevation="10" class="gate-btn ma-3"
+                :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
+                @click="sendGate(selectedItem, 'close')">
                 <v-img :src="require('@/assets/gate_close.png')" width="50px" height="40px" />
                 <strong>닫기</strong>
               </v-btn>
@@ -144,6 +162,19 @@
           <template v-slot:actions>
             <v-spacer></v-spacer>
             <v-btn @click="dialog = false">취소</v-btn>
+          </template>
+        </v-card>
+      </div>
+      <div v-if="selectedItem.GB_OBSV === '18'" class="ga-3">
+        <v-card title="테스트 문구">
+          <v-card-text class="text-center" v-if="selectedItem">
+            <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"
+              placeholder="테스트 개발 준비 중입니다."></v-textarea>
+          </v-card-text>
+          <template v-slot:actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="dialog = false">취소</v-btn>
+            <v-btn color="primary" @click="sendBrd(selectedItem)">제어</v-btn>
           </template>
         </v-card>
       </div>
@@ -177,13 +208,19 @@
         </v-card>
       </template>
     </v-dialog> -->
+
+
   </v-container>
+
+
+
 
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import axios from 'axios'
+import dayjs from 'dayjs'
 
 let refresh_timer; // setInterval 핸들러
 const process_time = ref(20);
@@ -242,7 +279,12 @@ const sendBrd = async (item) => {
   const response = await axios.post('/api/sendBrd', {
     BDONG_CD: item.BDONG_CD,
     CD_DIST_OBSV: item.CD_DIST_OBSV,
-    Message: broadTestMessage.value,
+    RCMD: 'B010',
+    Parm1: '00000000',
+    Parm2: '1',
+    Parm3: broadTestMessage.value,
+    BStatus: 'start',
+    RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     Auth: 'online'
   });
   dialog.value = false;
@@ -261,6 +303,7 @@ const sendGate = async (item, gate) => {
     BDONG_CD: item.BDONG_CD,
     CD_DIST_OBSV: item.CD_DIST_OBSV,
     Gate: gate,
+    GStatus: 'start',
     Auth: 'online'
   });
   dialog.value = false;
@@ -358,11 +401,147 @@ const headers = [
   { key: 'LastStatus', title: '통신상태', },
   { key: 'sensorTest', title: '장비테스트', },
 ]
+
+// 카카오 맵 구현
+
+const map = ref(null);
+const markers = ref([]);
+const infowindow = ref(null);
+
+const initMap = () => {
+  var lat = '35.3';
+  var lon = '128.0';
+  var zoom_level = 13;
+  var zoom_level_max = 14;
+
+  const mapContainer = document.getElementById("map");
+  const mapOption = {
+    center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
+    level: zoom_level, // 지도의 확대 레벨
+    maxLevel: zoom_level_max, // 최대의 최대 레벨
+  };
+
+  map.value = new kakao.maps.Map(mapContainer, mapOption);
+
+  /* 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다*/
+  var mapTypeControl = new kakao.maps.MapTypeControl();
+  map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+  map.value.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+
+  /* 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다. */
+  var zoomControl = new kakao.maps.ZoomControl();
+  map.value.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+};
+
+const changeSize = (size) => {
+  const container = document.getElementById("map");
+  container.style.width = `${size}px`;
+  container.style.height = `${size}px`;
+  toRaw(map.value).relayout();
+};
+
+const displayMarker = (markerPositions) => {
+  if (markers.value.length > 0) {
+    markers.value.forEach((marker) => marker.setMap(null));
+  }
+
+  let positions = markerPositions.map(
+    (pos) => new kakao.maps.LatLng(pos[0], pos[1])
+  );
+
+  if (positions.length > 0) {
+    markers.value = positions.map(
+      (position) =>
+        new kakao.maps.Marker({
+          map: toRaw(map.value),
+          position,
+        })
+    );
+
+    const bounds = positions.reduce(
+      (bounds, latlng) => bounds.extend(latlng),
+      new kakao.maps.LatLngBounds()
+    );
+
+    toRaw(map.value).setBounds(bounds);
+  }
+};
+
+const displayInfoWindow = () => {
+  if (infowindow.value && toRaw(infowindow.value).getMap()) {
+    toRaw(map.value).setCenter(toRaw(infowindow.value).getPosition());
+    return;
+  }
+
+  var iwContent = '<div style="padding:5px;">Hello World!</div>',
+    iwPosition = new kakao.maps.LatLng(33.450701, 126.570667),
+    iwRemoveable = true;
+
+  infowindow.value = new kakao.maps.InfoWindow({
+    map: toRaw(map.value),
+    position: iwPosition,
+    content: iwContent,
+    removable: iwRemoveable,
+  });
+
+  toRaw(map.value).setCenter(iwPosition);
+};
+
+
+onMounted(async () => {
+  console.log("onMounted()");
+
+  if (window.kakao && window.kakao.maps) {
+    // console.log('window.kakao == true')
+    initMap();
+    await loadMapData();
+  }
+  else {
+    /* global kakao */
+    const script = document.createElement("script");
+    script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
+    document.head.appendChild(script);
+    script.onload = async () => {
+      // console.log('script.onload()');
+      kakao.maps.load(initMap);
+      await loadMapData()
+    }
+
+  }
+
+});
+
+const loadMapData = async () => {
+  try {
+    const response = await axios.get(`/api/devices`)
+    const devices = response.data.data
+    const positions = devices
+      .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
+      .map(row => [Number(row.LAT), Number(row.LON)]);
+
+    displayMarker(positions);
+
+  } catch (err) {
+    console.log('데이터를 가져오는 중 오류 발생: ', err)
+  }
+}
+
+window.onresize = () => {
+  console.log(changeSize())
+  changeSize();
+};
+
 </script>
 
 <style lang="scss" scoped>
 // scss를 이용하여 커스터마이징
 // scss 문법으로 :deep을 주어 해당 태그에 직접 접근하여 css 덮어쓰기
+
+// 카카오맵
+#map {
+  width: 100vw;
+  height: 500px;
+}
 
 .gate-btn {
   min-height: 100px;
