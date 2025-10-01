@@ -56,6 +56,7 @@ export class AppController {
         message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
         count: devices.length,
         data: devices.map((item) => ({
+          BDONG_CD: item.BDONG_CD,
           CD_DIST_OBSV: item.CD_DIST_OBSV,
           GB_OBSV: item.GB_OBSV,
           NM_DIST_OBSV: item.NM_DIST_OBSV.replace('', '')
@@ -135,13 +136,18 @@ export class AppController {
     }
   }
   @Post('sendBrd')
-  async postBrd(@Body() BODY: any, @Body('BDONG_CD') BDONG_CD: string, @Body('CD_DIST_OBSV') CD_DIST_OBSV: string, @Body('Message') Message: string, @Body('Auth') Auth: string ): Promise<any> {
+  async postBrd(
+    @Body() BODY: any,
+    @Body('BDONG_CD') BDONG_CD: string,
+    @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
+    @Body('Message') Message: string,
+    @Body('Auth') Auth: string,
+  ): Promise<any> {
     console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
-    
     try {
       const controlDevices = await this.appService.insertBrdSend(BODY);
-      
+
       return {
         success: true,
         BDONG_CD: BDONG_CD,
@@ -156,13 +162,18 @@ export class AppController {
   }
 
   @Post('sendGate')
-  async postGate(@Body() BODY: any, @Body('BDONG_CD') BDONG_CD: string, @Body('CD_DIST_OBSV') CD_DIST_OBSV: string, @Body('Gate') Gate: string, @Body('Auth') Auth: string ): Promise<any> {
+  async postGate(
+    @Body() BODY: any,
+    @Body('BDONG_CD') BDONG_CD: string,
+    @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
+    @Body('Gate') Gate: string,
+    @Body('Auth') Auth: string,
+  ): Promise<any> {
     console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Gate} ${Auth}`);
 
-    
     try {
       const controlDevices = await this.appService.insertGateControl(BODY);
-      
+
       return {
         success: true,
         BDONG_CD: BDONG_CD,

@@ -130,12 +130,16 @@
         <v-card title="제어 하시겠습니까?">
           <v-row justify="center" align="center">
             <v-col cols="12" align="center">
-              <v-btn elevation="10" class="gate-btn ma-3" :style="{background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff'}" @click="sendGate(selectedItem, 'open')">
+              <v-btn elevation="10" class="gate-btn ma-3"
+                :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }"
+                @click="sendGate(selectedItem, 'open')">
                 <v-img :src="require('@/assets/gate_open.png')" width="50px" heigh="40px" />
                 <strong>열기</strong>
               </v-btn>
 
-              <v-btn elevation="10" class="gate-btn ma-3" :style="{background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff'}" @click="sendGate(selectedItem, 'close')">
+              <v-btn elevation="10" class="gate-btn ma-3"
+                :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
+                @click="sendGate(selectedItem, 'close')">
                 <v-img :src="require('@/assets/gate_close.png')" width="50px" height="40px" />
                 <strong>닫기</strong>
               </v-btn>
@@ -197,13 +201,15 @@ const selectedItem = ref(null)
 const broadTestMessage = ref('');
 
 const menuList = [
-  { name: '전라도', filter: ['전라'] },
-  { name: '경상도', filter: ['경상'] },
-  { name: '충청도', filter: ['충청'] },
+  { name: '전국', filter: ['전국'] },
+  { name: '전라도', filter: ['전라', '광주'] },
+  { name: '경상도', filter: ['경상', '부산', '울산', '대구'] },
+  { name: '충청도', filter: ['충청', '대전', '세종'] },
   { name: '강원도', filter: ['강원'] },
-  { name: '경기도', filter: ['경기'] },
+  { name: '경기도', filter: ['경기', '서울'] },
   { name: '인천/제주도', filter: ['인천', '제주'] },
 ];
+
 const filterAndSortArea = (filterTerms) => {
   return areaList.value
     .filter(area => {

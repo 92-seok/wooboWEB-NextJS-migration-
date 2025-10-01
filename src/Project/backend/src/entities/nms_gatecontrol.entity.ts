@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity({
   name: 'nms_gatecontrol',
   comment: '',
 })
+@Index(['GStatus'])
 export class NmsGateControl {
   @PrimaryGeneratedColumn({
     name: 'IDX',
@@ -26,7 +27,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: 'wb_equip.CD_DIST_OBSV',
+    comment: '',
   })
   CD_DIST_OBSV: string;
 
@@ -35,7 +36,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '제어요청(OPEN, CLOSE)',
+    comment: '제어요청(open, close)',
   })
   Gate: string;
 
@@ -44,7 +45,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '',
+    comment: '경광등(on, off)',
   })
   Light: string;
 
@@ -53,7 +54,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '',
+    comment: '경고음(on, off)',
   })
   Parm2: string;
 
@@ -62,7 +63,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '제어상태',
+    comment: '제어상태(start, ing, end)',
   })
   GStatus: string;
 
@@ -80,7 +81,7 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '',
+    comment: '사용자 인증',
   })
   Auth: string;
 
@@ -89,7 +90,7 @@ export class NmsGateControl {
     type: 'datetime',
     nullable: true,
     comment: 'AUTO_CREATE',
-    default: () => 'current_timestamp'
+    default: () => 'current_timestamp',
   })
   dtmCreate: string;
 

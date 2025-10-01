@@ -1,10 +1,11 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
 
 @Entity({
   name: 'tcm_cou_dngr_adm',
   comment:
     '센싱정보 관리기관 정보\r\n\r\n1) ADMCODE : 법정동코드 (시군구5자리)\r\n6) USE_YN : 사용여부 사용(Y), 미사용 또는 삭제(N)',
 })
+@Index(['USE_YN'])
 export class TcmCouDngrAdm {
   @PrimaryColumn({
     name: 'ADMCODE',

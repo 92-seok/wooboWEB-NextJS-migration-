@@ -1,16 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity({
   name: 'nms_brdsend',
   comment: '',
 })
+@Index(['BStatus'])
 export class NmsBrdSend {
   @PrimaryGeneratedColumn({
-    name: 'SendCode',
+    name: 'IDX',
     type: 'int',
     comment: 'AUTO_PK',
   })
-  SendCode: number;
+  IDX: number;
 
   @Column({
     name: 'BDONG_CD',
@@ -124,7 +125,7 @@ export class NmsBrdSend {
     type: 'datetime',
     nullable: true,
     comment: 'AUTO_CREATE',
-    default: () => 'current_timestamp'
+    default: () => 'current_timestamp',
   })
   dtmCreate: string;
 
