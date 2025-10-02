@@ -3,7 +3,7 @@
 **파워쉘 권한설정**
 Set-ExecutionPolicy RemoteSigned
 
-** 도메인 주소 **
+**도메인 주소**
 woobo.online
 
 **IDC**
