@@ -1,10 +1,14 @@
 # web
 
 **파워쉘 권한설정**
+```bash
 Set-ExecutionPolicy RemoteSigned
+```
 
 **도메인 주소**
+```bash
 woobo.online
+```
 
 **IDC**
 ```bash
