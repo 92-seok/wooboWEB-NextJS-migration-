@@ -145,7 +145,7 @@
             <td :colspan="columns.length" class="py-2">
               <v-sheet rounded="lg" border>
                 <v-table density="compact">
-                  <tbody class="bg-surface-light">
+                  <tbody class="bg-surface-light" density="compact">
                     <tr>
                       <th>주소</th>
                       <th>위도</th>
@@ -161,7 +161,7 @@
                       <td class="py-2">{{ item.LON && item.LON.toFixed(4) }}</td>
                       <td class="py-2">
                         <v-btn @click="openGuideDialog(item)">
-                          <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="24" height="24" cover></v-img>
+                          <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="20" height="20" cover></v-img>
                         </v-btn>
                       </td>
                     </tr>

@@ -19,7 +19,7 @@ const routes = [
   //{ path: "/", component: HomeView },
   //{ path: "/", component: ControlView },
   { path: "/", component: DownloadView },
-  // { path: "/home", component: HomeView },
+  { path: "/home", component: HomeView },
   { path: "/monitor", component: MonitorView },
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
