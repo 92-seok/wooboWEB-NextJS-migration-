@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Query, Res, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Res,
+  Body,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { post } from 'axios';
-
 
 @Controller('api')
 export class AppController {
@@ -57,6 +65,7 @@ export class AppController {
         message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
         count: devices.length,
         data: devices.map((item) => ({
+          IDX: `${item.BDONG_CD}_${item.CD_DIST_OBSV}`,
           BDONG_CD: item.BDONG_CD,
           CD_DIST_OBSV: item.CD_DIST_OBSV,
           GB_OBSV: item.GB_OBSV,
@@ -188,9 +197,6 @@ export class AppController {
       };
     }
   }
-
-  
-
 
   /*
   @Put('/memo/:id')

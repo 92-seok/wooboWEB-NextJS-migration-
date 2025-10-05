@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <!-- 지역 메뉴 (전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
-    <v-sheet class="mx-auto" elevation="8">
+    <v-sheet class="mx-auto" elevation="1" color="black">
       <v-slide-group v-model="model" center-active>
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
@@ -51,23 +51,19 @@
       <v-divider />
 
       <!-- 데이터 테이블 -->
-      <v-data-table class="table-fit pa-0" :search="search" :filter-keys="['NM_DIST_OBSV']" :items="devices"
-        :headers="headers" :header-props="{ align: 'center', style: 'font-weight: bold;' }"
-        :cell-props="{ align: 'center' }" :mobile-breakpoint="0" density="compact" items-per-page-text="페이지당 표시 수"
-        v-model:page="page" v-model:items-per-page="itemsPerPage" show-expand item-value="CD_DIST_OBSV">
+      <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="compact" :search="search"
+        :filter-keys="['NM_DIST_OBSV']" :headers="headers"
+        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
+        :cell-props="{ align: 'center' }" item-value="IDX" show-expand v-model:page="page"
+        v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" :items-per-page-options="[
+          { value: 10, title: '10' },
+          { value: 25, title: '25' },
+          { value: 50, title: '50' },
+          { value: 100, title: '100' },
+        ]" multi-sort>
 
         <template #no-data>
           장비를 찾을 수 없습니다.
-        </template>
-
-
-        <!-- expanded-item 슬롯에 확장 시 보여줄 콘텐츠를 추가합니다 -->
-        <template v-slot:[`expanded-item`]="{ item, headers }">
-          <tr>
-            <td :colspan="headers.length">
-              <p>추가 정보: {{ item.LAT }}</p>
-            </td>
-          </tr>
         </template>
 
         <template v-slot:[`item.index`]="{ index }">
@@ -112,9 +108,9 @@
 
         <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
           <!-- activator 슬롯 -->
-          <v-btn @click="openGuideDialog(item)" variant="text">
+          <span>
             <strong>{{ item.NM_DIST_OBSV }}</strong>
-          </v-btn>
+          </span>
         </template>
 
         <template v-slot:[`item.LastDate`]="{ item }">
@@ -136,6 +132,36 @@
             <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
               :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
           </div>
+        </template>
+
+        <template v-slot:expanded-row="{ columns, item }">
+          <tr>
+            <td :colspan="columns.length" class="py-2">
+              <v-sheet rounded="lg" border>
+                <v-table density="compact">
+                  <tbody class="bg-surface-light">
+                    <tr>
+                      <th>주소</th>
+                      <th>위도</th>
+                      <th>경도</th>
+                      <th>길찾기</th>
+                    </tr>
+                  </tbody>
+
+                  <tbody>
+                    <tr>
+                      <td class="py-2"> {{ item.DTL_ADRES }} </td>
+                      <td class="py-2">{{ item.LAT.toFixed(4) }}</td>
+                      <td class="py-2">{{ item.LON.toFixed(4) }}</td>
+                      <td class="py-2" @click="openGuideDialog(item)">
+                        <v-img :src="require('@/assets/nmap.png')"></v-img>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-sheet>
+            </td>
+          </tr>
         </template>
       </v-data-table>
     </v-card>
