@@ -157,9 +157,7 @@
                       <td class="py-2">{{ item.LON.toFixed(4) }}</td>
                       <td class="py-2">
                         <v-btn @click="openGuideDialog(item)">
-                          <div>
-                            <v-img :src="require('@/assets/nmap.png')" cover width="30"></v-img>
-                          </div>
+                          <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="24" height="24" cover></v-img>
                         </v-btn>
                       </td>
                     </tr>
