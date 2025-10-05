@@ -66,6 +66,7 @@ export class AppController {
         count: devices.length,
         data: devices.map((item) => ({
           IDX: `${item.BDONG_CD}_${item.CD_DIST_OBSV}`,
+          SIDO_CD: item.BDONG_CD.slice(0, 4),
           BDONG_CD: item.BDONG_CD,
           CD_DIST_OBSV: item.CD_DIST_OBSV,
           GB_OBSV: item.GB_OBSV,

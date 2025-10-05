@@ -42,9 +42,7 @@
 
         <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify"
           variant="outlined" flat hide-details>
-
         </v-text-field>
-
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
@@ -108,6 +106,12 @@
           </v-card>
         </template>
 
+        <template v-slot:[`item.SIDO_CD`]="{ item }">
+          <span>
+            <strong>{{ item.SIDO_CD }}</strong>
+          </span>
+        </template>
+
         <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
           <!-- activator 슬롯 -->
           <span>
@@ -153,8 +157,8 @@
                   <tbody>
                     <tr>
                       <td class="py-2"> {{ item.DTL_ADRES }} </td>
-                      <td class="py-2">{{ item.LAT.toFixed(4) }}</td>
-                      <td class="py-2">{{ item.LON.toFixed(4) }}</td>
+                      <td class="py-2">{{ item.LAT && item.LAT.toFixed(4) }}</td>
+                      <td class="py-2">{{ item.LON && item.LON.toFixed(4) }}</td>
                       <td class="py-2">
                         <v-btn @click="openGuideDialog(item)">
                           <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="24" height="24" cover></v-img>
@@ -217,7 +221,7 @@ const expandedItems = ref([]);
 const page = ref(1)
 const itemsPerPage = ref('50')
 const os = ref(navigator.userAgent);
-
+const groupBy = ref([{ key: 'SIDO_CD', order: 'asc' }])
 ////////////////////////////////////////
 // EVENT 생명주기
 ////////////////////////////////////////
@@ -341,8 +345,12 @@ const OnChange_AreaList = async (newArea) => {
 
   try {
     const response = await axios.get(`/api/devices?BDONG_CD=${areaList_selected.value}`)
-    devices.value = response.data.data
-    //console.log(devices.value);
+
+    devices.value = response.data.data.map(item => ({
+      ...item,
+      SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
+    }));
+    console.log(devices.value);
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
@@ -351,6 +359,7 @@ const OnChange_AreaList = async (newArea) => {
 const headers = [
   { key: 'data-table-expand', width: 10, align: 'end' },
   { key: 'index', width: '25px', sortable: false },
+  { key: 'SIDO_CD', title: '지역', width: '65px', },
   { key: 'GB_OBSV', title: '종류', width: '65px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'ErrorChk', title: '통신상태' },
