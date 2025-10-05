@@ -1,12 +1,11 @@
 <template>
   <v-container>
     <!-- 지역 메뉴 (전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
-    <v-sheet class="mx-auto" elevation="1" color="black">
+    <v-sheet class="mx-auto" elevation="1">
       <v-slide-group v-model="model" center-active>
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-scale-transition>
-
               <v-btn class="pa-0" color="primary" v-bind="props">{{ menu.name }}</v-btn>
             </v-scale-transition>
           </template>
@@ -35,7 +34,10 @@
       <!--장비 검색 창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
-        <v-btn>장비 목록</v-btn>
+        <v-btn @click="Process()">
+          <span>장비 목록</span>
+          <v-icon icon="mdi-refresh"></v-icon>
+        </v-btn>
         <v-spacer></v-spacer>
 
         <v-text-field v-model="search" density="compact" label="장비 검색" prepend-inner-icon="mdi-magnify"
@@ -76,31 +78,31 @@
             <div v-if="item.GB_OBSV === '01'">
               <v-img :src="require('@/assets/rain.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '02'">
+            <div v-else-if="item.GB_OBSV === '02'">
               <v-img :src="require('@/assets/water.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '03'">
+            <div v-else-if="item.GB_OBSV === '03'">
               <v-img :src="require('@/assets/dplace.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '06'">
+            <div v-else-if="item.GB_OBSV === '06'">
               <v-img :src="require('@/assets/snow.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '08'">
+            <div v-else-if="item.GB_OBSV === '08'">
               <v-img :src="require('@/assets/tilt.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '15'">
+            <div v-else-if="item.GB_OBSV === '15'">
               <v-img :src="require('@/assets/dplace.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '17'">
+            <div v-else-if="item.GB_OBSV === '17'">
               <v-img :src="require('@/assets/broad.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '18'">
+            <div v-else-if="item.GB_OBSV === '18'">
               <v-img :src="require('@/assets/display.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '20'">
+            <div v-else-if="item.GB_OBSV === '20'">
               <v-img :src="require('@/assets/gate.png')" height="30" />
             </div>
-            <div v-if="item.GB_OBSV === '21'">
+            <div v-else-if="item.GB_OBSV === '21'">
               <v-img :src="require('@/assets/flood.png')" height="30" />
             </div>
           </v-card>
@@ -153,8 +155,12 @@
                       <td class="py-2"> {{ item.DTL_ADRES }} </td>
                       <td class="py-2">{{ item.LAT.toFixed(4) }}</td>
                       <td class="py-2">{{ item.LON.toFixed(4) }}</td>
-                      <td class="py-2" @click="openGuideDialog(item)">
-                        <v-img :src="require('@/assets/nmap.png')"></v-img>
+                      <td class="py-2">
+                        <v-btn @click="openGuideDialog(item)">
+                          <div>
+                            <v-img :src="require('@/assets/nmap.png')" cover width="30"></v-img>
+                          </div>
+                        </v-btn>
                       </td>
                     </tr>
                   </tbody>
@@ -310,7 +316,6 @@ const OnTimer_Refresh = async () => {
   process_time.value--;
   if (process_time.value == 0) {
     await Process();
-    process_time.value = refresh_time.value;
   }
 }
 
@@ -327,6 +332,8 @@ const Process = async () => {
     await OnChange_AreaList();
   }
   catch (ex) { console.log(ex) }
+
+  process_time.value = refresh_time.value;
 };
 
 const OnChange_AreaList = async (newArea) => {
@@ -346,7 +353,7 @@ const OnChange_AreaList = async (newArea) => {
 const headers = [
   { key: 'data-table-expand', width: 10, align: 'end' },
   { key: 'index', width: '25px', sortable: false },
-  { key: 'GB_OBSV', title: '종류', width: '50px', },
+  { key: 'GB_OBSV', title: '종류', width: '65px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   { key: 'ErrorChk', title: '통신상태' },
   { key: 'DATA', title: '데이터' },
