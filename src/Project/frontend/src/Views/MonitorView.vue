@@ -60,7 +60,7 @@
           { value: 25, title: '25' },
           { value: 50, title: '50' },
           { value: 100, title: '100' },
-        ]" multi-sort>
+        ]" multi-sort hover>
 
         <template #no-data>
           장비를 찾을 수 없습니다.
@@ -120,7 +120,7 @@
         </template>
 
         <template v-slot:[`item.LastDate`]="{ item }">
-          <v-tooltip v-model="item.tooltip" location="top" hidden>
+          <v-tooltip v-model="item.tooltip" location="top">
             <!-- activator 슬롯 -->
             <template v-slot:activator="{ props }">
               <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip(item)">
@@ -136,29 +136,43 @@
         <template v-slot:[`item.ErrorChk`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
+              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="small" label></v-chip>
           </div>
         </template>
 
         <template v-slot:expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length" class="py-2">
-              <v-sheet rounded="lg" border>
+              <v-sheet rounded-lg border text-align="center">
                 <v-table density="compact">
-                  <tbody class="bg-surface-light" density="compact">
+                  <thead class="bg-surface-light" density="compact">
                     <tr>
                       <th>주소</th>
                       <th>위도</th>
                       <th>경도</th>
-                      <th>길찾기</th>
                     </tr>
-                  </tbody>
-
+                  </thead>
+                  
                   <tbody>
                     <tr>
                       <td class="py-2"> {{ item.DTL_ADRES }} </td>
-                      <td class="py-2">{{ item.LAT && item.LAT.toFixed(4) }}</td>
-                      <td class="py-2">{{ item.LON && item.LON.toFixed(4) }}</td>
+                      <td class="py-2"> {{ item.LAT && item.LAT.toFixed(4) }} </td>
+                      <td class="py-2"> {{ item.LON && item.LON.toFixed(4) }} </td>
+                    </tr>
+                  </tbody>
+
+                  <thead class="bg-surface-light" density="compact">
+                    <tr>
+                      <th>통신시간</th>
+                      <th></th>
+                      <th>길찾기</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td class="py-2"> {{ item.LastDate }} </td>
+                      <td class="py-2"></td>
                       <td class="py-2">
                         <v-btn @click="openGuideDialog(item)">
                           <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="20" height="20" cover></v-img>
@@ -166,6 +180,7 @@
                       </td>
                     </tr>
                   </tbody>
+                  
                 </v-table>
               </v-sheet>
             </td>
@@ -357,7 +372,7 @@ const OnChange_AreaList = async (newArea) => {
 }
 
 const headers = [
-  { key: 'data-table-expand', width: 10, align: 'end' },
+  { key: 'data-table-expand', width: 35, align: 'center', sortable: false },
   { key: 'index', width: '25px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '65px', },
   { key: 'GB_OBSV', title: '종류', width: '65px', },
@@ -365,6 +380,10 @@ const headers = [
   { key: 'ErrorChk', title: '통신상태' },
   { key: 'DATA', title: '데이터' },
 ]
+
+function toggle(item) {
+  console.log(item);
+}
 </script>
 
 <style lang="scss" scoped>

@@ -43,21 +43,44 @@
 
       <v-divider />
 
-      <v-card class="d-flex flex-row" max-width="300">
-        <div>
-          <h2>전체</h2>
-        </div>
-      </v-card>
-      <v-card class="d-flex flex-row" max-width="300">
-        <div>
-          <h2>전체</h2>
-        </div>
-      </v-card>
-      <v-card class="d-flex flex-row" max-width="300">
-        <div>
-          <h2>전체</h2>
-        </div>
-      </v-card>
+      <!-- 장비 현황 카드 -->
+      <v-row class="d-flex mt-2 mb-2" style="justify-content: center;">
+        <v-col cols="4" class="text-center">
+          <v-card
+            :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
+            <v-card-title>
+              <strong>전체</strong>
+            </v-card-title>
+            <v-card-text class="text-h4">
+              {{ control.length }}
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="4" class="text-center">
+          <v-card
+            :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }">
+            <v-card-title>
+              <strong>정상</strong>
+            </v-card-title>
+            <v-card-text class="text-h4">
+              {{control.filter(item => item.LastStatus === 'OK').length}}
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="4" class="text-center">
+          <v-card
+            :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }">
+            <v-card-title>
+              <strong>점검필요</strong>
+            </v-card-title>
+            <v-card-text class="text-h4">
+              {{control.filter(item => item.LastStatus !== 'OK').length}}
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+
 
       <v-divider />
 
@@ -102,14 +125,14 @@
         <template v-slot:[`item.LastStatus`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
-              :text="item.LastStatus == 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
+              :text="item.LastStatus == 'OK' ? '정상' : '점검필요'" size="small" label></v-chip>
           </div>
         </template>
 
         <template v-slot:[`item.sensorTest`]="{ item }">
           <div class="text-center">
             <v-btn variant="outlined" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
-              :text="item.sensorTest == 'OK' ? '' : ''" size="x-small" label @click="openGuideDialog(item)">
+              :text="item.sensorTest == 'OK' ? '' : ''" size="small" label @click="openGuideDialog(item)">
               테스트하기
             </v-btn>
           </div>
@@ -121,7 +144,7 @@
     </v-card>
 
     <!-- Snackbar -->
-    <v-snackbar v-model="snackbar.show" :timeout="2000" location="bottom">
+    <v-snackbar v-model="snackbar.show" :timeout="1000" location="center" color="snackbar.color">
       {{ snackbar.message }}
     </v-snackbar>
 
@@ -136,7 +159,7 @@
           <template v-slot:actions>
             <v-spacer></v-spacer>
             <v-btn @click="dialog = false">취소</v-btn>
-            <v-btn color="primary" @click="sendBrd(selectedItem)">제어</v-btn>
+            <v-btn color="primary" :loading="loading" @click="sendBrd(selectedItem)">제어</v-btn>
           </template>
         </v-card>
       </div>
@@ -174,7 +197,7 @@
           <template v-slot:actions>
             <v-spacer></v-spacer>
             <v-btn @click="dialog = false">취소</v-btn>
-            <v-btn color="primary" @click="sendBrd(selectedItem)">제어</v-btn>
+            <v-btn color="primary" loading="loading" disabled="loading" @click="sendBrd(selectedItem)">제어</v-btn>
           </template>
         </v-card>
       </div>
@@ -230,8 +253,10 @@ const search = ref('')
 const control = ref([])
 const areaList_selected = ref('%')
 const selectedItem = ref(null)
+const dialog = ref(false);
+const broadTestMessage = ref("");
+const loading = ref(false);
 
-const broadTestMessage = ref('');
 
 const menuList = [
   { name: '전국', filter: ['전국'] },
@@ -276,27 +301,50 @@ onUnmounted(() => {
   }
 })
 
-const sendBrd = async (item) => {
-  console.log('aaaa' + item)
-  const response = await axios.post('/api/sendBrd', {
-    BDONG_CD: item.BDONG_CD,
-    CD_DIST_OBSV: item.CD_DIST_OBSV,
-    RCMD: 'B010',
-    Parm1: '00000000',
-    Parm2: '1',
-    Parm3: broadTestMessage.value,
-    BStatus: 'start',
-    RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    Auth: 'online'
-  });
-  dialog.value = false;
-  // areaList.value = response_areaList.data.data.map(item => ({
-  //   title: item.RM, value: item.ADMCODE
-  // }))
 
-  // await OnChange_AreaList();
-  // console.log(`${item.NM_DIST_OBSV}`)
-  // console.log(broadTestMessage.value)
+// 테스트 전송
+
+const sendBrd = async (item) => {
+  // console.log('제어 요청' + item)
+
+  if (loading.value) return; // 이미 로딩 중이면 무시
+  if (!item) {
+    showSnackbar('문구를 작성해주세요.', 'error');
+    return;
+  }
+  try {
+    loading.value = true; // 로딩 시작
+
+    // DB에 전송
+    const response = await axios.post('/api/sendBrd', {
+      BDONG_CD: item.BDONG_CD,
+      CD_DIST_OBSV: item.CD_DIST_OBSV,
+      RCMD: 'B010',
+      Parm1: '00000000',
+      Parm2: '1',
+      Parm3: broadTestMessage.value,
+      BStatus: 'start',
+      RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      Auth: 'online'
+    });
+
+    const ok = response.status >= 200 && response.status < 300;
+    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
+    if (ok && serverOk) {
+      showSnackbar("메세지가 성공적으로 전송되었습니다.", 'success');
+      broadTestMessage.value = "";
+      dialog.value = false;
+    } else {
+      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
+
+      showSnackbar(`전송실패: ${msg}`, 'error');
+    }
+  } catch (err) {
+    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
+    showSnackbar(msg, 'error');
+  } finally {
+    loading.value = false; // 로딩 종료
+  }
 }
 
 const sendGate = async (item, gate) => {
@@ -311,46 +359,26 @@ const sendGate = async (item, gate) => {
   dialog.value = false;
 }
 
-
 const snackbar = reactive({
   show: false,
-  message: ''
+  message: '',
+  color: 'success',
 })
 
 function openGuideDialog(item) {
   console.log(item);
   selectedItem.value = item
   dialog.value = true
-
 }
 
-function showSnackbar(item) {
-
-  snackbar.message = `${item.NM_DIST_OBSV}`
+function showSnackbar(message, color = 'success') {
+  snackbar.message = message;
   snackbar.show = true;
+  snackbar.color = color;
   dialog.value = false;
-
-  const NAVER_MAP_ANDROID_STORE = 'market://details?id=com.nhn.android.nmap'; // 네이버 지도 안드로이드 구글 플레이 링크
-  const NAVER_MAP_IOS_STORE = 'https://itunes.apple.com/app/id311867728?mt=8'; // 네이버 지도 iOS 앱 스토어 링크
-
-  let url = "";
-
-  if (os.value.indexOf("Android") > 0) {
-    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-  }
-  else if (os.value.indexOf("iPhone") > 0) {
-    url = `itms-apps://itunes.apple.com/app/id311867728/`;
-    url = `nmap://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online;scheme=nmap;`;
-  }
-  else {
-    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-  }
-
-  window.location.href = url;
 }
 
-const dialog = ref(false);
+
 
 // function showTooltip(item) {
 //     item.tooltip = true
@@ -406,132 +434,132 @@ const headers = [
 
 // 카카오 맵 구현
 
-const map = ref(null);
-const markers = ref([]);
-const infowindow = ref(null);
+// const map = ref(null);
+// const markers = ref([]);
+// const infowindow = ref(null);
 
-const initMap = () => {
-  var lat = '35.3';
-  var lon = '128.0';
-  var zoom_level = 13;
-  var zoom_level_max = 14;
+// const initMap = () => {
+//   var lat = '35.3';
+//   var lon = '128.0';
+//   var zoom_level = 13;
+//   var zoom_level_max = 14;
 
-  const mapContainer = document.getElementById("map");
-  const mapOption = {
-    center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
-    level: zoom_level, // 지도의 확대 레벨
-    maxLevel: zoom_level_max, // 최대의 최대 레벨
-  };
+//   const mapContainer = document.getElementById("map");
+//   const mapOption = {
+//     center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
+//     level: zoom_level, // 지도의 확대 레벨
+//     maxLevel: zoom_level_max, // 최대의 최대 레벨
+//   };
 
-  map.value = new kakao.maps.Map(mapContainer, mapOption);
+//   map.value = new kakao.maps.Map(mapContainer, mapOption);
 
-  /* 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다*/
-  var mapTypeControl = new kakao.maps.MapTypeControl();
-  map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
-  map.value.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+//   /* 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다*/
+//   var mapTypeControl = new kakao.maps.MapTypeControl();
+//   map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+//   map.value.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
 
-  /* 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다. */
-  var zoomControl = new kakao.maps.ZoomControl();
-  map.value.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-};
+//   /* 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다. */
+//   var zoomControl = new kakao.maps.ZoomControl();
+//   map.value.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+// };
 
-const changeSize = (size) => {
-  const container = document.getElementById("map");
-  container.style.width = `${size}px`;
-  container.style.height = `${size}px`;
-  toRaw(map.value).relayout();
-};
+// const changeSize = (size) => {
+//   const container = document.getElementById("map");
+//   container.style.width = `${size}px`;
+//   container.style.height = `${size}px`;
+//   toRaw(map.value).relayout();
+// };
 
-const displayMarker = (markerPositions) => {
-  if (markers.value.length > 0) {
-    markers.value.forEach((marker) => marker.setMap(null));
-  }
+// const displayMarker = (markerPositions) => {
+//   if (markers.value.length > 0) {
+//     markers.value.forEach((marker) => marker.setMap(null));
+//   }
 
-  let positions = markerPositions.map(
-    (pos) => new kakao.maps.LatLng(pos[0], pos[1])
-  );
+//   let positions = markerPositions.map(
+//     (pos) => new kakao.maps.LatLng(pos[0], pos[1])
+//   );
 
-  if (positions.length > 0) {
-    markers.value = positions.map(
-      (position) =>
-        new kakao.maps.Marker({
-          map: toRaw(map.value),
-          position,
-        })
-    );
+//   if (positions.length > 0) {
+//     markers.value = positions.map(
+//       (position) =>
+//         new kakao.maps.Marker({
+//           map: toRaw(map.value),
+//           position,
+//         })
+//     );
 
-    const bounds = positions.reduce(
-      (bounds, latlng) => bounds.extend(latlng),
-      new kakao.maps.LatLngBounds()
-    );
+//     const bounds = positions.reduce(
+//       (bounds, latlng) => bounds.extend(latlng),
+//       new kakao.maps.LatLngBounds()
+//     );
 
-    toRaw(map.value).setBounds(bounds);
-  }
-};
+//     toRaw(map.value).setBounds(bounds);
+//   }
+// };
 
-const displayInfoWindow = () => {
-  if (infowindow.value && toRaw(infowindow.value).getMap()) {
-    toRaw(map.value).setCenter(toRaw(infowindow.value).getPosition());
-    return;
-  }
+// const displayInfoWindow = () => {
+//   if (infowindow.value && toRaw(infowindow.value).getMap()) {
+//     toRaw(map.value).setCenter(toRaw(infowindow.value).getPosition());
+//     return;
+//   }
 
-  var iwContent = '<div style="padding:5px;">Hello World!</div>',
-    iwPosition = new kakao.maps.LatLng(33.450701, 126.570667),
-    iwRemoveable = true;
+//   var iwContent = '<div style="padding:5px;">Hello World!</div>',
+//     iwPosition = new kakao.maps.LatLng(33.450701, 126.570667),
+//     iwRemoveable = true;
 
-  infowindow.value = new kakao.maps.InfoWindow({
-    map: toRaw(map.value),
-    position: iwPosition,
-    content: iwContent,
-    removable: iwRemoveable,
-  });
+//   infowindow.value = new kakao.maps.InfoWindow({
+//     map: toRaw(map.value),
+//     position: iwPosition,
+//     content: iwContent,
+//     removable: iwRemoveable,
+//   });
 
-  toRaw(map.value).setCenter(iwPosition);
-};
+//   toRaw(map.value).setCenter(iwPosition);
+// };
 
 
 onMounted(async () => {
   console.log("onMounted()");
 
-  if (window.kakao && window.kakao.maps) {
-    // console.log('window.kakao == true')
-    initMap();
-    await loadMapData();
-  }
-  else {
-    /* global kakao */
-    const script = document.createElement("script");
-    script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
-    document.head.appendChild(script);
-    script.onload = async () => {
-      // console.log('script.onload()');
-      kakao.maps.load(initMap);
-      await loadMapData()
-    }
+  // if (window.kakao && window.kakao.maps) {
+  //   // console.log('window.kakao == true')
+  //   initMap();
+  //   await loadMapData();
+  // }
+  // else {
+  //   /* global kakao */
+  //   const script = document.createElement("script");
+  //   script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
+  //   document.head.appendChild(script);
+  //   script.onload = async () => {
+  //     // console.log('script.onload()');
+  //     kakao.maps.load(initMap);
+  //     await loadMapData()
+  //   }
 
-  }
+  // }
 
 });
 
-const loadMapData = async () => {
-  try {
-    const response = await axios.get(`/api/devices`)
-    const devices = response.data.data
-    const positions = devices
-      .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
-      .map(row => [Number(row.LAT), Number(row.LON)]);
+// const loadMapData = async () => {
+//   try {
+//     const response = await axios.get(`/api/devices`)
+//     const devices = response.data.data
+//     const positions = devices
+//       .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
+//       .map(row => [Number(row.LAT), Number(row.LON)]);
 
-    displayMarker(positions);
+//     displayMarker(positions);
 
-  } catch (err) {
-    console.log('데이터를 가져오는 중 오류 발생: ', err)
-  }
-}
+//   } catch (err) {
+//     console.log('데이터를 가져오는 중 오류 발생: ', err)
+//   }
+// }
 
-window.onresize = () => {
-  console.log(changeSize())
-  changeSize();
-};
+// window.onresize = () => {
+//   console.log(changeSize())
+//   changeSize();
+// };
 
 </script>
 
@@ -542,7 +570,7 @@ window.onresize = () => {
 // 카카오맵
 #map {
   width: 100vw;
-  height: 500px;
+  height: 800px;
 }
 
 .gate-btn {
