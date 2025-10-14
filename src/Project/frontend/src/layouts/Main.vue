@@ -1,9 +1,9 @@
 <template>
-    <v-main>
-        <v-container class="pa-0" fill-height fluid>
-            <RouterView />
-        </v-container>
-    </v-main>
+  <v-main>
+    <v-container class="pa-0 fill-height" fluid>
+      <RouterView />
+    </v-container>
+  </v-main>
 </template>
 
 <script setup>

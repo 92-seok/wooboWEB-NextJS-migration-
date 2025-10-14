@@ -13,6 +13,8 @@ import { NmsDevice } from './entities/nms_device.entity';
 import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
 import { NmsBrdSend } from './entities/nms_brdsend.entity';
 import { NmsGateControl } from './entities/nms_gatecontrol.entity';
+import { NmsUser } from 'domain/nms_user.entity';
+import { NmsUserAuthority } from 'domain/nms_user_authority';
 
 
 @Module({
@@ -28,11 +30,11 @@ import { NmsGateControl } from './entities/nms_gatecontrol.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl],
+      entities: [NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl, NmsUser, NmsUserAuthority],
       synchronize: true, // 기존 DB이므로 false로 설정
       logging: false,
     }),
-    TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl]),
+    TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl, NmsUser, NmsUserAuthority]),
   ],
   controllers: [AppController],
   providers: [AppService],

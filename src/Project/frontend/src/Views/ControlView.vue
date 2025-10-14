@@ -115,11 +115,9 @@
 
         <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
           <!-- activator 슬롯 -->
-          <v-btn>
+          <span>
             <strong>{{ item.NM_DIST_OBSV }}</strong>
-          </v-btn>
-
-
+          </span>
         </template>
 
         <template v-slot:[`item.LastStatus`]="{ item }">
@@ -137,8 +135,6 @@
             </v-btn>
           </div>
         </template>
-
-
       </v-data-table>
       <div id="map"></div>
     </v-card>
@@ -285,7 +281,7 @@ const page = ref(1)
 const itemsPerPage = ref(50)
 const os = ref(navigator.userAgent);
 onMounted(async () => {
-  console.log("onMounted()");
+  // console.log("onMounted()");
   console.log(os.value);
 
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
@@ -294,7 +290,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  console.log("onUnmount()");
+  // console.log("onUnmount()");
 
   if (refresh_timer) {
     clearInterval(refresh_timer);
@@ -303,7 +299,7 @@ onUnmounted(() => {
 
 
 // 테스트 전송
-
+// 방송장비 테스트 제어 함수
 const sendBrd = async (item) => {
   // console.log('제어 요청' + item)
 
@@ -347,29 +343,52 @@ const sendBrd = async (item) => {
   }
 }
 
+// 차단기 테스트 제어 함수
 const sendGate = async (item, gate) => {
-  console.log('aaaa' + item)
-  const response = await axios.post('/api/sendGate', {
-    BDONG_CD: item.BDONG_CD,
-    CD_DIST_OBSV: item.CD_DIST_OBSV,
-    Gate: gate,
-    GStatus: 'start',
-    Auth: 'online'
-  });
+  if (loading.value) return; // 이미 로딩 중이면 무시
+  if (!item) {
+    showSnackbar('문구를 작성해주세요.', 'error');
+    return;
+  }
+  try {
+    loading.value = true; // 로딩시작
+
+    // DB에 전송
+    const response = await axios.post('/api/sendGate', {
+      BDONG_CD: item.BDONG_CD,
+      CD_DIST_OBSV: item.CD_DIST_OBSV,
+      Gate: gate,
+      GStatus: 'start',
+      Auth: 'online'
+    });
+
+    const ok = response.status >= 200 && response.status < 300;
+    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
+    if (ok && serverOk) {
+      showSnackbar("장비 제어가 정상적으로 등록 되었습니다.", 'success');
+      broadTestMessage.value = "";
+      dialog.value = false;
+    } else {
+      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
+
+      showSnackbar(`전송실패: ${msg}`, 'error');
+    }
+  } catch (err) {
+    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
+    showSnackbar(msg, 'error');
+  } finally {
+    loading.value = false; // 로딩 종료
+  }
   dialog.value = false;
 }
 
+// 스낵바
 const snackbar = reactive({
   show: false,
   message: '',
   color: 'success',
 })
 
-function openGuideDialog(item) {
-  console.log(item);
-  selectedItem.value = item
-  dialog.value = true
-}
 
 function showSnackbar(message, color = 'success') {
   snackbar.message = message;
@@ -378,6 +397,11 @@ function showSnackbar(message, color = 'success') {
   dialog.value = false;
 }
 
+function openGuideDialog(item) {
+  console.log(item);
+  selectedItem.value = item
+  dialog.value = true
+}
 
 
 // function showTooltip(item) {
@@ -396,7 +420,7 @@ const OnTimer_Refresh = async () => {
 }
 
 const Process = async () => {
-  console.log("Process()");
+  // console.log("Process()");
 
   const response_areaList = await axios.get('/api/areaList');
 
@@ -405,7 +429,6 @@ const Process = async () => {
   }))
 
   await OnChange_AreaList();
-
 };
 
 const OnChange_AreaList = async (newArea) => {
@@ -519,7 +542,7 @@ const headers = [
 
 
 onMounted(async () => {
-  console.log("onMounted()");
+  // console.log("onMounted()");
 
   // if (window.kakao && window.kakao.maps) {
   //   // console.log('window.kakao == true')

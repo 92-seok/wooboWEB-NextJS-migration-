@@ -44,7 +44,7 @@
           variant="outlined" flat hide-details>
         </v-text-field>
       </v-card-title>
-
+      
       <!-- 프로그레스 타이머 -->
       <v-progress-linear color="primary" v-model="process_time" :height="5" :max="refresh_time" />
 
@@ -55,7 +55,8 @@
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
         :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
         :cell-props="{ align: 'center' }" item-value="IDX" show-expand v-model:page="page"
-        v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" :items-per-page-options="[
+        v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" 
+        :items-per-page-options="[
           { value: 10, title: '10' },
           { value: 25, title: '25' },
           { value: 50, title: '50' },
@@ -381,9 +382,6 @@ const headers = [
   { key: 'DATA', title: '데이터' },
 ]
 
-function toggle(item) {
-  console.log(item);
-}
 </script>
 
 <style lang="scss" scoped>

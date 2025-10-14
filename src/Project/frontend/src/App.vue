@@ -64,10 +64,11 @@ const theme = ref();
 -->
 
 <style>
-html {
+html, body {
   -ms-overflow-style: none;
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
 }
+
 </style>
