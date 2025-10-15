@@ -14,6 +14,7 @@ import LoginView from "@/Views/LoginView.vue";
 import DownloadView from "@/Views/DownloadView.vue";
 import TestView from "@/Views/TestView.vue";
 import MapView from "@/Views/MapView.vue";
+import KakaoCallback from "@/Views/KakaoCallback.vue";
 
 const routes = [
   //{ path: "/", component: HomeView },
@@ -25,6 +26,7 @@ const routes = [
   { path: "/setting", component: SettingView },
   { path: "/about", component: AboutView },
   { path: "/login", component: LoginView },
+  { path: "/kakao-callback", component: KakaoCallback },
   { path: "/download", component: DownloadView },
   { path: "/test", component: TestView },
   { path: "/map", component: MapView },

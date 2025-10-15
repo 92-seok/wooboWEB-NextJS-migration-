@@ -1,7 +1,7 @@
 <template>
   <v-app :theme="theme">
     <Header @click:btn-click="btnEvent" />
-     <!-- <HeaderTest></HeaderTest> -->
+    <!-- <HeaderTest></HeaderTest> -->
     <Main />
     <Footer />
     <!-- <FooterTest /> -->
@@ -64,11 +64,11 @@ const theme = ref();
 -->
 
 <style>
-html, body {
+html,
+body {
   -ms-overflow-style: none;
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
 }
-
 </style>

@@ -15,6 +15,7 @@ import { NmsBrdSend } from './entities/nms_brdsend.entity';
 import { NmsGateControl } from './entities/nms_gatecontrol.entity';
 import { NmsUser } from 'domain/nms_user.entity';
 import { NmsUserAuthority } from 'domain/nms_user_authority';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -35,6 +36,7 @@ import { NmsUserAuthority } from 'domain/nms_user_authority';
       logging: false,
     }),
     TypeOrmModule.forFeature([NmsDevice, TcmCouDngrAdm, NmsBrdSend, NmsGateControl, NmsUser, NmsUserAuthority]),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
