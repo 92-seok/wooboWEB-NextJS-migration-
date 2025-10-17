@@ -1,31 +1,20 @@
 <template>
-  <v-row class="ma-0">
-    <div class="map_wrap">
-      <div id="map"></div>
-      <v-row>
-        <v-col cols="11">
-          <div class="hAddr">
-            <v-chip color="indigo" label size="large">
-              <v-icon icon="mdi-label" start></v-icon>
-              <span id="centerAddr"></span>&nbsp;
-              <span>({{ g_lat.toFixed(4) }}, {{ g_lon.toFixed(4) }})</span>
-            </v-chip>
-          </div>
-        </v-col>
-        <v-col cols="1">
-          <v-btn @click="initPosition()">
-            <v-icon icon="mdi-crosshairs-gps" color="green"></v-icon>
-            <span> 내 위치 </span>
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
+  <div class="d-flex flex-column">
+
+    <div id="map" class="w-100 h-screen position-relative" style="z-index:1">
+      <div class="position-absolute top-0 left-0" style="z-index:2">
+        <v-chip color="indigo">
+          <v-icon icon="mdi-label" start></v-icon>
+          <span id="centerAddr"></span>&nbsp;
+          <span>({{ g_lat.toFixed(4) }}, {{ g_lon.toFixed(4) }})</span>
+        </v-chip>
+
         <v-col>
-          <div id="menu_wrap" class="bg_white">
+          <div id="menu_wrap" class="position-absolute bg_white ">
             <div class="option">
               <div>
                 <form onsubmit="searchPlaces(); return false;">
-                  키워드 : <input type="text" value="이태원 맛집" id="keyword" size="15">
+                  키워드 : <input type="text" value="우보재난시스템" id="keyword" size="15">
                   <button type="submit">검색하기</button>
                 </form>
               </div>
@@ -35,49 +24,98 @@
             <div id="pagination"></div>
           </div>
         </v-col>
-      </v-row>
+      </div>
+
+      <div class="position-absolute bottom-0 right-0" style="z-index:3">
+        <v-btn @click="initPosition()">
+          <v-icon icon="mdi-crosshairs-gps" color="primary"></v-icon>
+          <span> 내 위치 </span>
+        </v-btn>
+      </div>
     </div>
-  </v-row>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, toRaw } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 
-let map = null;
+// 초기값
 var init_lat = 36.0;
 var init_lon = 128.0;
-var init_level = 5;
+var init_level = 11;
+var init_max_level = 11;
 const g_lat = ref(init_lat);
 const g_lon = ref(init_lon);
 
-var geocoder = null;
+// 지도
+let map = null;
 
-const markers = null;
-var infowindow = null;
+// 마커
+let marker = null;
 
+// 정보창
+let infowindow = null;
+let mapCustomOverlay = null;
+
+// 장소 서비스
+let place = null;
+
+// 주소 좌표 변환 객체
+let geocoder = null;
+
+var rvContainer = null;
+var rv = null;
+var rvClient = null;
+var rvCustomOverlay = null;
 
 onMounted(async () => {
   console.log("onMounted()");
 
   /* global kakao */
   const script = document.createElement("script");
-  script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services,clusterer";
+  script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
   script.onload = async () => {
     console.log('script.onload()');
     kakao.maps.load(() => {
 
-      var lat = '36.3';
-      var lon = '128.0';
-      var zoom_level = 12;
-      var zoom_level_max = 13;
+      var lat = init_lat;
+      var lon = init_lon;
+      var zoom_level = init_level;
+      var zoom_level_max = init_max_level;
+
+      // 내 위치 기반 init 값 초기화
+      if (navigator.geolocation) {
+        // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+        navigator.geolocation.getCurrentPosition(function (position) {
+
+          init_lat = position.coords.latitude; // 위도
+          init_lon = position.coords.longitude; // 경도
+
+          var locPosition = new kakao.maps.LatLng(init_lat, init_lon); // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+
+          // 지도를 클릭한 위치에 표출할 마커입니다
+          var marker = new kakao.maps.Marker({
+            // 지도 중심좌표에 마커를 생성합니다
+            position: locPosition,
+            image: new kakao.maps.MarkerImage("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_drag.png", new kakao.maps.Size(50, 50)),
+          });
+
+          // 지도에 마커를 표시합니다
+          marker.setMap(map);
+        });
+      }
+      else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+        console.log('GeoLocation(): 사용자 위치 파악 실패');
+      }
 
       const mapContainer = document.getElementById("map");
       const mapOption = {
         center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
         level: zoom_level, // 지도의 확대 레벨
         maxLevel: zoom_level_max, // 최대의 최대 레벨
-        mapTypeId: kakao.maps.MapTypeId.ROADMAP
+        mapTypeId: kakao.maps.MapTypeId.ROADMAP,
+        disableDoubleClick: true,
       };
 
       // 지도를 생성합니다
@@ -97,10 +135,13 @@ onMounted(async () => {
       map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
       // 장소 검색 객체를 생성합니다.
-      var ps = new kakao.maps.services.Places();
+      place = new kakao.maps.services.Places();
 
       // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
-      var infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+      infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+
+      // 커스텀 오버레이를 생성합니다
+      mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1, zIndex: 1 });
 
       // 주소-좌표 변환 객체를 생성합니다
       geocoder = new kakao.maps.services.Geocoder();
@@ -108,70 +149,97 @@ onMounted(async () => {
       // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
       searchAddrFromCoords(map.getCenter(), displayCenterInfo);
 
-      if (navigator.geolocation) {
-        // GeoLocation을 이용해서 접속 위치를 얻어옵니다
-        navigator.geolocation.getCurrentPosition(function (position) {
 
-          init_lat = position.coords.latitude; // 위도
-          init_lon = position.coords.longitude; // 경도
-
-          var locPosition = new kakao.maps.LatLng(init_lat, init_lon); // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
-
-          // 지도를 클릭한 위치에 표출할 마커입니다
-          var marker = new kakao.maps.Marker({
-            // 지도 중심좌표에 마커를 생성합니다
-            position: locPosition,
-            image: new kakao.maps.MarkerImage("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_drag.png", new kakao.maps.Size(50, 50)),
-          });
-          // 지도에 마커를 표시합니다
-          marker.setMap(map);
-        });
-      }
-      else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
-
-        var locPosition = new kakao.maps.LatLng(33.450701, 126.570667),
-          message = 'geolocation을 사용할수 없어요..'
-
-        console.log('실패');
-      }
 
       // 지도를 클릭한 위치에 표출할 마커입니다
-      var marker = new kakao.maps.Marker({
-        // 지도 중심좌표에 마커를 생성합니다
-        position: map.getCenter(),
-      });
+      marker = new kakao.maps.Marker();
+      // 지도 중심좌표에 마커를 생성합니다
+      //marker.setPosition(map.getCenter());
       // 지도에 마커를 표시합니다
-      marker.setMap(map);
+      //marker.setMap(map);
       // 마커가 드래그 가능하도록 설정합니다
-      marker.setDraggable(true);
+      //marker.setDraggable(true);
 
       // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
       kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
-        searchDetailAddrFromCoords(mouseEvent.latLng, function (result, status) {
+
+        var latLon = mouseEvent.latLng;
+        var lat = latLon.getLat().toFixed(4);
+        var lon = latLon.getLng().toFixed(4);
+        var detailRoadAddr = '';
+        var detailAddr = '';
+
+        // 마커를 클릭한 위치에 표시합니다
+        marker.setPosition(latLon);
+        marker.setMap(map);
+        map.panTo(latLon);
+
+        searchDetailAddrFromCoords(latLon, function (result, status) {
           if (status === kakao.maps.services.Status.OK) {
-            var detailAddr = !!result[0].road_address ? '<div>도로명주소 : ' + result[0].road_address.address_name + '</div>' : '';
-            detailAddr += '<div>지번 주소 : ' + result[0].address.address_name + '</div>';
-
-            var content = '<div class="bAddr">' +
-              '<span class="title">법정동 주소정보</span>' +
-              detailAddr +
-              '</div>' +
-              '<div>' +
-              `위도: ${mouseEvent.latLng.getLat()}` +
-
-              '</div>' +
-              '<div>' +
-              `경도: ${mouseEvent.latLng.getLng()}` +
-              '</div>';
-
-            // 마커를 클릭한 위치에 표시합니다 
-            marker.setPosition(mouseEvent.latLng);
-            marker.setMap(map);
-
-            // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
-            infowindow.setContent(content);
-            infowindow.open(map, marker);
+            detailRoadAddr = !!result[0].road_address ? result[0].road_address.address_name : '';
+            detailAddr = result[0].address.address_name;
           }
+          else {
+            detailRoadAddr = detailAddr = '주소정보 없음';
+          }
+
+          console.log(detailAddr);
+
+          var content = '<div style="backgournd: red;" class="overlay_info">';
+          content += `    <strong>${detailAddr}</strong>`;
+          content += `<div class="desc">`;
+          content += `위도: ${lat} <button @click="reserve">복사</button>`;
+          content += `<span style="display:inline-block; width:30px"></span>`;
+          content += `경도: ${lon} <button @click="reserve">복사</button>`;
+          content += `</div>`;
+          content += `<div id="roadview" style="height:200px"></div>`;
+          content += '</div>';
+          /*
+        `<div><string>${detailAddr}</string></div>` +
+        `<div>${detailRoadAddr ? `(${detailRoadAddr})` : ''}</div>` +
+        `<div class="desc">` +
+        `위도: ${lat} <button @click="reserve">복사</button>` +
+        `<span style="display:inline-block; width:30px"></span>` +
+        `경도: ${lon} <button @click="reserve">복사</button>` +
+        `</div>` +
+        */
+          '</div>'
+            ;
+
+          mapCustomOverlay.setPosition(latLon);
+          mapCustomOverlay.setContent(content);
+          mapCustomOverlay.setMap(map);
+
+          var rvContainer = document.getElementById('roadview'); //로드뷰를 표시할 div
+          var rv = new kakao.maps.Roadview(rvContainer); //로드뷰 객체
+          var rvClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+          // 커스텀 오버레이를 생성합니다
+          rvCustomOverlay = new kakao.maps.CustomOverlay({
+            xAnchor: 0.5, // 커스텀 오버레이의 x축 위치입니다. 1에 가까울수록 왼쪽에 위치합니다. 기본값은 0.5 입니다
+            yAnchor: 0.5 // 커스텀 오버레이의 y축 위치입니다. 1에 가까울수록 위쪽에 위치합니다. 기본값은 0.5 입니다
+          });
+
+          //지도의 중심좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
+          rvClient.getNearestPanoId(latLon, 100, function (panoId) {
+            rv.setPanoId(panoId, latLon); //panoId와 중심좌표를 통해 로드뷰 실행
+
+            //rvCustomOverlay.setAltitude(2); //커스텀 오버레이의 고도값을 설정합니다.(로드뷰 화면 중앙이 0입니다)
+            rvCustomOverlay.setMap(rv);
+
+            var projection = rv.getProjection(); // viewpoint(화면좌표)값을 추출할 수 있는 projection 객체를 가져옵니다.
+
+            // 커스텀오버레이의 position과 altitude값을 통해 viewpoint값(화면좌표)를 추출합니다.
+            var viewpoint = projection.viewpointFromCoords(rvCustomOverlay.getPosition(), rvCustomOverlay.getAltitude());
+
+            rv.setViewpoint(viewpoint); //커스텀 오버레이를 로드뷰의 가운데에 오도록 로드뷰의 시점을 변화 시킵니다.
+          });
+
+
+          // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
+          //infowindow.setContent(content);
+
+          // 인포윈도우를 클릭한 위치표시합니다
+          //infowindow.open(map, marker);
         });
       });
 
@@ -183,7 +251,9 @@ onMounted(async () => {
       });
     });
   }
+
   document.head.appendChild(script);
+
 });
 
 const loadMapData = async () => {
@@ -253,7 +323,7 @@ function setBounds(bounds) {
 }
 
 function initPosition() {
-  map.setLevel(init_level);
+  map.setLevel(5);
   panTo(init_lat, init_lon);
 }
 
@@ -275,7 +345,7 @@ function displayCenterInfo(result, status) {
     for (var i = 0; i < result.length; i++) {
       // 행정동의 region_type 값은 'H' 이므로
       if (result[i].region_type === 'H') {
-        infoDiv.innerHTML = result[i].address_name;
+        infoDiv.innerHTML = result[i].address_name ? `${result[i].address_name}` : '';
         break;
       }
     }
@@ -284,6 +354,9 @@ function displayCenterInfo(result, status) {
 
 window.onresize = function () {
   //alert("onresize" + g_lat.value + g_lon.value);
+  if (g_lat.value == null || g_lon.value == null) {
+    return;
+  }
 
   // 빠르게 이동
   map.setCenter(new kakao.maps.LatLng(g_lat.value, g_lon.value));
@@ -293,13 +366,72 @@ window.onresize = function () {
 };
 </script>
 
-
-<style scoped>
-#map {
-  width: 100vw;
-  height: 100vh;
+<style>
+.overlay_info {
+  border-radius: 6px;
+  margin-bottom: 12px;
+  float: left;
+  position: relative;
+  border: 1px solid #ccc;
+  border-bottom: 2px solid #ddd;
+  background-color: #fff;
 }
 
+.overlay_info:nth-of-type(n) {
+  border: 0;
+  box-shadow: 0px 1px 2px #888;
+}
+
+.overlay_info a {
+  display: block;
+  background: #d95050;
+  background: #d95050 url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/arrow_white.png) no-repeat right 14px center;
+  text-decoration: none;
+  color: #fff;
+  padding: 12px 36px 12px 14px;
+  font-size: 14px;
+  border-radius: 6px 6px 0 0
+}
+
+.overlay_info a strong {
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/place_icon.png) no-repeat;
+  padding-left: 27px;
+}
+
+.overlay_info .desc {
+  padding: 14px;
+  position: relative;
+  min-width: 190px;
+  height: 56px
+}
+
+.overlay_info img {
+  vertical-align: top;
+}
+
+.overlay_info .address {
+  font-size: 12px;
+  color: #333;
+  position: absolute;
+  left: 80px;
+  right: 14px;
+  top: 24px;
+  white-space: normal
+}
+
+.overlay_info:after {
+  content: '';
+  position: absolute;
+  margin-left: -11px;
+  left: 50%;
+  bottom: -12px;
+  width: 22px;
+  height: 12px;
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png) no-repeat 0 bottom;
+}
+</style>
+
+<style scoped>
 .map_wrap {
   position: relative;
   width: 100%;
@@ -312,14 +444,14 @@ window.onresize = function () {
 }
 
 .hAddr {
-  position: absolute;
   left: 10px;
+  right: 10px;
   top: 10px;
   border-radius: 2px;
   background: #fff;
   background: rgba(255, 255, 255, 0.8);
   z-index: 1;
-  padding: 5px;
+
 }
 
 #centerAddr {
@@ -336,8 +468,7 @@ window.onresize = function () {
 }
 
 #menu_wrap {
-  position: absolute;
-  top: 50px;
+  top: 80px;
   left: 0;
   bottom: 0;
   width: 250px;
@@ -383,25 +514,6 @@ const { Title } = 'HOME';
 onMounted(() => {
     document.title = inject('$title');
 });
-
-//스크립트 태그 생성
-const script = document.createElement("script");
-//스크립트 태그에 src 속성 추가
-script.src = '//dapi.kakao.com/v2/maps/sdk.js?autoload=true&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services"';
-//헤더에 해당 스크립트를 추가
-document.head.appendChild(script);
-
-script.onload = () => {
-    kakao.maps.load(() => {
-        var container = document.getElementById('kakaoMap'); //지도를 담을 영역의 DOM 레퍼런스
-        var options = { //지도를 생성할 때 필요한 기본 옵션
-            center: new kakao.maps.LatLng(33.450701, 126.570667), //지도의 중심좌표.
-            level: 3 //지도의 레벨(확대, 축소 정도)
-        };
-        //eslint-disable-next-line no-unused-vars
-        var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
-    });
-}
 
 </script>
 
