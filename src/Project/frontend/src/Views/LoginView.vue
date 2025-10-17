@@ -21,9 +21,6 @@
           로그인 후 이용하실 수 있습니다.
         </v-card-text>
       </v-card>
-      <v-btn class="mb-5" color="gray" size="large" variant="tonal" block>
-        로그인
-      </v-btn>
       <v-card-actions class="justify-center">
         <v-btn class="mb-8 pa-0" size="large" variant="tonal" @click="loginWithKakao">
           <v-img width="auto" :src="require('@/assets/kakao_login.png')" alt="카카오 로그인" cover></v-img>

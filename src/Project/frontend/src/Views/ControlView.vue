@@ -136,7 +136,7 @@
           </div>
         </template>
       </v-data-table>
-      <div id="map"></div>
+      <!-- <div id="map"></div> -->
     </v-card>
 
     <!-- Snackbar -->
@@ -542,7 +542,7 @@ const headers = [
 
 
 onMounted(async () => {
-  // console.log("onMounted()");
+  console.log("onMounted()");
 
   // if (window.kakao && window.kakao.maps) {
   //   // console.log('window.kakao == true')
@@ -579,10 +579,10 @@ onMounted(async () => {
 //   }
 // }
 
-// window.onresize = () => {
-//   console.log(changeSize())
-//   changeSize();
-// };
+window.onresize = () => {
+  console.log(changeSize())
+  // changeSize();
+};
 
 </script>
 
