@@ -1,6 +1,3 @@
-/install/VSCodeUserSetup-x64-1.103.2.exe
-/install/node-v22.19.0-x64.msi
+/install/*
 */node_modules
-src/frontend/
-doc/3.소하천/샘플이미지/
-src/vue3-memo/
+doc/3.소하천/샘플이미지/*
