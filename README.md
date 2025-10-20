@@ -10,21 +10,16 @@ http://woobo.online:4000/admin/web.git
 Set-ExecutionPolicy RemoteSigned
 ```
 
-**도메인 주소**
-```bash
-woobo.online
-```
-
 **IDC**
 ```bash
-211.34.105.29:4097
-WBEarly / #woobosys@early!
+211.34.105.29:4097 ( WBEarly / #woobosys@early! )
 ```
 
-**DEV**
+**도메인 주소**
 ```bash
-woobo.online:3306
-WBEarly / #woobosys@early!
+WEB: woobo.online
+Gitea: woobo.online:4000
+DataBase : woobo.online:3306 ( WBEarly / #woobosys@early! )
 ```
 
 **개발계정**
@@ -33,8 +28,8 @@ WBEarly / #woobosys@early!
   woobolab@woobosys.com / Woobosys4781!
   
   [운영지원시스템]
-  REST API 키 7c07fc2ca189d5e0f3b51a2a4c6ef4fb
   JavaScript 키 a21fca6df45467b72c4cff24ec14cb6b
+  // REST API 키 7c07fc2ca189d5e0f3b51a2a4c6ef4fb
 ```
 
 ```bash
