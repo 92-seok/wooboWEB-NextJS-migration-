@@ -33,12 +33,12 @@ DataBase : woobo.online:3306 ( WBEarly / #woobosys@early! )
 ```
 
 ```bash
-기상청 API 허브 계정 ( https://apihub.kma.go.kr/ )
+기상청 API 허브 계정 ( https://apihub.kma.go.kr )
   woobolab@woobosys.com / Woobosys4781!
 ```
 
 ```bash
-공공 데이터 계정 ( https://www.data.go.kr/ )
+공공 데이터 계정 ( https://www.data.go.kr )
   woobolab / Woobosys4781!
   서비스키 VE5IF8GtcZNcnSpkq1sygdHeIEIhixMY4dvRdZ0XNH1bj3BFF0KaVcDGwb63jc5CFpy31R71H6R3YzYRVcNrGA%3D%3D
 ```
