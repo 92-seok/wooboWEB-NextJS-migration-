@@ -1,5 +1,10 @@
 # web
 
+**git remote 주소**
+```bash
+http://woobo.online:4000/admin/web.git
+```
+
 **파워쉘 권한설정**
 ```bash
 Set-ExecutionPolicy RemoteSigned
