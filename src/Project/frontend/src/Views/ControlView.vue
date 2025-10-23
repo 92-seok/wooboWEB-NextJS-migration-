@@ -120,16 +120,16 @@
           </span>
         </template>
 
-        <template v-slot:[`item.LastStatus`]="{ item }">
+        <template v-slot:[`item.ErrorChk`]="{ item }">
           <div class="text-center">
-            <v-chip class="text-uppercase" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
-              :text="item.LastStatus == 'OK' ? '정상' : '점검필요'" size="small" label></v-chip>
+            <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
+              :text="item.ErrorChk > '0' ? '정상' : '점검필요'" size="small" label></v-chip>
           </div>
         </template>
 
         <template v-slot:[`item.sensorTest`]="{ item }">
           <div class="text-center">
-            <v-btn variant="outlined" :color="item.LastStatus == 'OK' ? 'green' : 'red'"
+            <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
               :text="item.sensorTest == 'OK' ? '' : ''" size="small" label @click="openGuideDialog(item)">
               테스트하기
             </v-btn>
@@ -451,7 +451,7 @@ const headers = [
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
   // { key: 'LastDate', title: '통신시간', },
-  { key: 'LastStatus', title: '통신상태', },
+  { key: 'ErrorChk', title: '통신상태', },
   { key: 'sensorTest', title: '장비테스트', },
 ]
 

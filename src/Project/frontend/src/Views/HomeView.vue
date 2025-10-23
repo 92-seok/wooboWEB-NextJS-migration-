@@ -354,9 +354,12 @@ function displayCenterInfo(result, status) {
 
 window.onresize = function () {
   //alert("onresize" + g_lat.value + g_lon.value);
-  if (g_lat.value == null || g_lon.value == null) {
+
+  if (kakao == null)
     return;
-  }
+
+  if (g_lat.value == null || g_lon.value == null)
+    return;
 
   // 빠르게 이동
   map.setCenter(new kakao.maps.LatLng(g_lat.value, g_lon.value));
