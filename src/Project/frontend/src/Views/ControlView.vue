@@ -63,7 +63,7 @@
               <strong>정상</strong>
             </v-card-title>
             <v-card-text class="text-h4">
-              {{control.filter(item => item.LastStatus === 'OK').length}}
+              {{control.filter(item => item.ErrorChk !== '0').length}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -74,7 +74,7 @@
               <strong>점검필요</strong>
             </v-card-title>
             <v-card-text class="text-h4">
-              {{control.filter(item => item.LastStatus !== 'OK').length}}
+              {{control.filter(item => item.ErrorChk !== '0').length}}
             </v-card-text>
           </v-card>
         </v-col>

@@ -129,6 +129,7 @@ export class AppController {
             .replace('_방송', '')
             .replace('_전광판', '')
             .replace('_차단기', ''),
+          ErrorChk: item.ErrorChk,
           LastDate: item.LastDate,
           LastStatus: item.LastStatus,
           DTL_ADRES: item.DTL_ADRES,
