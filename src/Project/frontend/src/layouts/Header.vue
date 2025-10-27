@@ -1,46 +1,50 @@
 <template v-slot:append>
-    <v-system-bar color="indigo-darken-2">
-        <span>{{ time }}</span>
-    </v-system-bar>
+  <!-- 시스템 바 -->
+  <v-system-bar color="indigo-darken-2">
+    <!-- 시간 -->  
+    <span>{{ time }}</span>
+  </v-system-bar>
 
-    <v-app-bar color="primary" :elevation="5" density="compact">
-        <!-- 네비게이션 바 아이콘
-        <template v-slot:prepend>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </template>
--->
-        <v-app-bar-title>
-            <v-btn @click="onDownload">우보 온라인 - 운영지원시스템</v-btn>
-        </v-app-bar-title>
-        <template v-slot:append>
-            <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" text=""
-                @click="onClick" />
-        </template>
-    </v-app-bar>
+  <!-- 앱 바 -->
+  <v-app-bar color="primary" density="compact">
 
-    <!-- 사이드 메뉴
-    <v-navigation-drawer>
-        <v-list>
-            <v-list-item title="1" />
-            <v-list-item title="1" />
-            <v-list-item title="1" />
-            <v-list-item title="1" />
-        </v-list>
-    </v-navigation-drawer>
+    <!-- 앱 바 네비게이션 아이콘 -->
+    <!--
+    <v-app-bar-nav-icon></v-app-bar-nav-icon>
     -->
+    
+    <!-- 앱 바 타이틀 -->
+    <v-app-bar-title>
+      <v-btn @click="router.replace('/')"><span>우보 온라인 - 운영지원시스템</span></v-btn>
+    </v-app-bar-title>
+
+    <!-- 테마 버튼 -->
+    <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click="onClick_Theme" />
+  </v-app-bar>
+
+  <!-- 사이드 메뉴 -->
+  <!--
+  <v-navigation-drawer>
+      <v-list>
+          <v-list-item title="1" />
+          <v-list-item title="2" />
+          <v-list-item title="3" />
+          <v-list-item title="4" />
+      </v-list>
+  </v-navigation-drawer>
+  -->
 </template>
 
 <script setup>
+////////////////////////////////////////
+// Import
+////////////////////////////////////////
 import { ref, onMounted, defineEmits } from 'vue';
 import axios from "axios";
 import dayjs from 'dayjs'
-
-////////////////////////////////////////
-// 이벤트
-////////////////////////////////////////
-onMounted(() => {
-    console.log('Header.vue::onMounted()');
-});
+import { useTheme } from 'vuetify';
+import { useRouter } from 'vue-router'
+const router = useRouter();
 
 ////////////////////////////////////////
 // 현재 시간
@@ -53,13 +57,21 @@ setInterval(() => {
 ////////////////////////////////////////
 // 테마
 ////////////////////////////////////////
-const theme = ref('light')
+const theme = ref(useTheme().global.name.value);
 const emit = defineEmits(['click:btnClick'])
 
-function onClick() {
+function onClick_Theme() {
     theme.value = theme.value === 'light' ? 'dark' : 'light'
     emit('click:btnClick', theme.value);
 }
+
+////////////////////////////////////////
+// 이벤트
+////////////////////////////////////////
+onMounted(() => {
+    console.log(`Header.vue::onMounted() / Theme=${theme.value}`);
+});
+
 
 ////////////////////////////////////////
 // 다운로드
@@ -85,4 +97,6 @@ const onDownload = async () => {
 }
 </script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+
+</style>

@@ -457,4 +457,8 @@ const headers = [
     padding: 2px 4px;
   }
 }
+
+.v-field__field input {
+    cursor: pointer;
+  }
 </style>

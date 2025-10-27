@@ -18,4 +18,14 @@ module.exports = defineConfig({
   pwa: {
     workboxPluginMode: "disabled", // 또는 'GenerateSW' 대신 'InjectManifest' 사용 시
   },
+  css: {
+    loaderOptions: {
+      sass: {
+        additionalData: `
+          @import "@/styles/footer.scss";
+        `
+      }
+    }
+  },
+
 });

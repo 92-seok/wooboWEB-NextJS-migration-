@@ -1,7 +1,7 @@
 <template>
   <v-footer>
     <v-bottom-navigation v-model="menu_idx" :bg-color="color" density="compact">
-      <v-btn @click="GoMenu('/home')">
+      <v-btn @click="GoMenu('/map')">
         <v-icon>mdi-map</v-icon>
         <span>지도</span>
       </v-btn>
@@ -18,7 +18,7 @@
 
       <v-btn @click="GoMenu('/setting')">
         <v-icon>mdi-book</v-icon>
-        <span font-color="yellow">관리</span>
+        <span>관리</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/login')">
@@ -37,7 +37,7 @@ import { useRouter } from 'vue-router'
 
 // reactive status
 const menu_idx = defineModel()
-const color = ref('blue-grey');
+const color = ref('primary');
 
 // router
 const router = useRouter();
@@ -69,4 +69,13 @@ function GoMenu(path) {
 
 </script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+
+/* v-bottom-navigation 버튼 간격 */
+.v-bottom-navigation .v-bottom-navigation__content .v-btn{
+    margin: 0px;
+    padding: 0px;
+    min-width: 70px;
+}
+
+</style>
