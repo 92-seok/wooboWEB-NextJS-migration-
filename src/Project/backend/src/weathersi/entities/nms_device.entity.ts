@@ -1,6 +1,11 @@
 import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
 
-@Entity({ name: 'nms_device' }) // 테이블명 지정
+@Entity({
+  database: 'weathersi',
+  schema: 'weathersi',
+  name: 'nms_device',
+  comment: '',
+}) // 테이블명 지정
 @Index(['GB_OBSV']) // 인덱스 지정
 export class NmsDevice {
   @PrimaryColumn({

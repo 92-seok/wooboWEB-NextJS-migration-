@@ -1,8 +1,0 @@
-NODE_ENV=local
-
-PORT=8080
-DB_HOST=211.34.105.29
-DB_PORT=4097
-DB_USERNAME=WBEarly
-DB_PASSWORD='#woobosys@early!'
-DB_DATABASE=weathersi

@@ -11,9 +11,9 @@
         <span>모니터링</span>
       </v-btn>
 
-      <v-btn @click="GoMenu('/control')">
-        <v-icon>mdi-tools</v-icon>
-        <span>제어</span>
+      <v-btn @click="GoMenu('/sriver')">
+        <v-icon>mdi-waves-arrow-up</v-icon>
+        <span>소하천</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/setting')">
@@ -70,12 +70,10 @@ function GoMenu(path) {
 </script>
 
 <style lang="scss" scoped>
-
 /* v-bottom-navigation 버튼 간격 */
-.v-bottom-navigation .v-bottom-navigation__content .v-btn{
-    margin: 0px;
-    padding: 0px;
-    min-width: 70px;
+.v-bottom-navigation .v-bottom-navigation__content .v-btn {
+  margin: 0px;
+  padding: 0px;
+  min-width: 70px;
 }
-
 </style>

@@ -27,7 +27,6 @@
     </v-sheet>
 
     <v-card flat>
-
       <!-- 검색창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;

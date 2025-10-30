@@ -8,6 +8,7 @@ import {
 import HomeView from "@/Views/HomeView.vue";
 import MonitorView from "@/Views/MonitorView.vue";
 import ControlView from "@/Views/ControlView.vue";
+import SRiverView from "@/Views/SRiverView.vue";
 import SettingView from "@/Views/SettingView.vue";
 import AboutView from "@/Views/AboutView.vue";
 import LoginView from "@/Views/LoginView.vue";
@@ -20,6 +21,7 @@ const routes = [
   { path: "/home", component: HomeView },
   { path: "/map", component: MapView },
   { path: "/monitor", component: MonitorView },
+  { path: "/sriver", component: SRiverView },
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
   { path: "/about", component: AboutView },

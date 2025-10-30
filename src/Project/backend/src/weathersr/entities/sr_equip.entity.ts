@@ -1,6 +1,11 @@
 import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
 
-@Entity({ name: 'sr_equip2', schema: 'weathersr' }) // 테이블명 지정
+@Entity({
+  database: 'weathersr',
+  schema: 'weathersr',
+  name: 'sr_equip2',
+  comment: '',
+}) // 테이블명 지정
 @Index(['LOGGER_TIME']) // 인덱스 지정
 export class SrEquip {
   @PrimaryColumn({

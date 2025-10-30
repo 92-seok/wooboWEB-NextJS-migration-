@@ -238,87 +238,11 @@
       {{ snackbar.message }}
     </v-snackbar>
 
-    <!-- 지도 다이얼로그 -->
-    <v-dialog v-model="dialog" width="70vw" max-width="500px">
-      <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
-        <v-card-text class="text-center" v-if="selectedItem">
-          <div>
-            <v-img class="mx-auto" :width="100" :src="require('@/assets/nmap.png')"></v-img>
-            <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
-          </div>
-        </v-card-text>
-        <template v-slot:actions>
-          <v-spacer></v-spacer>
-          <v-btn @click="dialog = false">아니오</v-btn>
-          <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
-        </template>
-      </v-card>
-    </v-dialog>
-
-    <!-- 장비 테스트 다이얼로그 -->
-    <v-dialog v-model="dialog_test" width="70vw" max-width="500px">
-      <div v-if="selectedItem.GB_OBSV === '17'">
-
-        <div class="d-none">
-          {{ broadTestMessage = selectedItem.NM_DIST_OBSV + ' 방송 시험중 입니다.' }}
-        </div>
-
-        <v-card title="방송제어 하시겠습니까?">
-          <v-card-text class="text-center" v-if="selectedItem">
-            <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"></v-textarea>
-          </v-card-text>
-          <template v-slot:actions>
-            <v-spacer></v-spacer>
-            <v-btn @click="dialog_test = false">취소</v-btn>
-            <v-btn color="primary" :loading="loading" @click="sendBrd(selectedItem)">제어</v-btn>
-          </template>
-        </v-card>
-      </div>
-      <div v-else-if="selectedItem.GB_OBSV === '20'" class="ga-3">
-        <v-card title="제어 하시겠습니까?">
-          <v-row justify="center" align="center">
-            <v-col cols="12" align="center">
-              <v-btn elevation="10" class="gate-btn ma-3" min-height="70px"
-                :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }"
-                @click="sendGate(selectedItem, 'open')">
-                <v-img :src="require('@/assets/gate_open.png')" width="50px" heigh="40px" />
-                <strong>열기</strong>
-              </v-btn>
-
-              <v-btn elevation="10" class="gate-btn ma-3" min-height="70px"
-                :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
-                @click="sendGate(selectedItem, 'close')">
-                <v-img :src="require('@/assets/gate_close.png')" width="50px" height="40px" />
-                <strong>닫기</strong>
-              </v-btn>
-            </v-col>
-          </v-row>
-          <template v-slot:actions>
-            <v-spacer></v-spacer>
-            <v-btn @click="dialog_test = false">취소</v-btn>
-          </template>
-        </v-card>
-      </div>
-      <div v-else-if="selectedItem.GB_OBSV === '18'" class="ga-3">
-        <v-card title="테스트 문구">
-          <v-card-text class="text-center" v-if="selectedItem">
-            <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"
-              placeholder="테스트 개발 준비 중입니다."></v-textarea>
-          </v-card-text>
-          <template v-slot:actions>
-            <v-spacer></v-spacer>
-            <v-btn @click="dialog_test = false">취소</v-btn>
-            <v-btn color="primary" loading="loading" disabled="loading" @click="sendBrd(selectedItem)">제어</v-btn>
-          </template>
-        </v-card>
-      </div>
-    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
 import { onMounted, onUnmounted, ref, reactive } from 'vue'
-import axios from 'axios'
 
 ////////////////////////////////////////
 // 프로세스 타이머
@@ -327,22 +251,6 @@ let refresh_timer = null; // setInterval 핸들러
 const refresh_time = ref(20);
 const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
-const model = ref(null)
-
-const areaList = ref([])
-const areaList_selected = ref('%')
-const search = ref('')
-const devices = ref([])
-const selectedItem = ref(null)
-const page = ref(1)
-const itemsPerPage = ref('50')
-const os = ref(navigator.userAgent);
-
-const dialog = ref(false)
-const dialog_test = ref(false)
-
-const broadTestMessage = ref("");
-const loading = ref(false);
 
 ////////////////////////////////////////
 // EVENT 생명주기
@@ -385,96 +293,12 @@ const headers = [
   { key: 'data-table-expand', width: 30, align: 'center', sortable: false },
   { key: 'index', width: '25px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px', },
-  { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', align: 'start' },
   { key: 'ErrorChk', title: '상태' },
   { key: 'DATA', title: '데이터' },
 ]
 ////////////////////////////////////////
 
-const filterAndSortArea = (filterTerms) => {
-  return areaList.value
-    .filter(area => {
-      // 필터가 배열인 경우 OR 조건으로 처리
-      if (Array.isArray(filterTerms)) {
-        return filterTerms.some(term => area.title.includes(term));
-      }
-      // 단일 필터인 경우
-      return area.title.includes(filterTerms);
-    })
-    .toSorted((a, b) => a.title.localeCompare(b.title));
-};
-
-const snackbar = reactive({
-  show: false,
-  message: ''
-})
-
-const snackbar_test = reactive({
-  show: false,
-  message: '',
-  color: 'success',
-})
-
-
-function openGuideDialog(item) {
-  console.log(item);
-  selectedItem.value = item
-  dialog.value = true
-}
-
-function openTestDialog(item) {
-  console.log(item);
-  selectedItem.value = item
-  dialog_test.value = true
-}
-
-function showSnackbar(item) {
-  snackbar.message = `${item.NM_DIST_OBSV}`
-  snackbar.show = true;
-  dialog.value = false;
-
-  let url = "";
-
-  if (os.value.indexOf("Android") > 0) {
-    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-    window.location.href = url;
-  }
-  else if (os.value.indexOf("iPhone") > 0) {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    window.open(url, '_blank')
-  }
-  else {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
-    window.open(url, '_blank')
-  }
-}
-
-function showSnackbar_test(message, color = 'success') {
-  snackbar_test.message = message;
-  snackbar_test.show = true;
-  snackbar_test.color = color;
-  dialog_test.value = false;
-}
-
-function onExpended(items) {
-  console.log("onExpended()", items);
-}
-
-function showTooltip(item) {
-  item.tooltip = true
-  setTimeout(() => {
-    item.tooltip = false
-  }, 2000) // 2초 후 자동 닫힘
-}
-
-const OnTimer_Refresh = async () => {
-  process_time.value--;
-  if (process_time.value == 0) {
-    await Process();
-  }
-}
 
 const Process = async () => {
   console.log("Process()");
@@ -512,170 +336,29 @@ const OnChange_AreaList = async (newArea) => {
 }
 
 
-// 테스트 전송
-// 방송장비 테스트 제어 함수
-const sendBrd = async (item) => {
-  // console.log('제어 요청' + item)
+function showSnackbar(item) {
+  snackbar.message = `${item.NM_DIST_OBSV}`
+  snackbar.show = true;
+  dialog.value = false;
 
-  if (loading.value) {
-    showSnackbar_test('테스트중 입니다.', 'error');
-    return; // 이미 로딩 중이면 무시
+  let url = "";
+
+  if (os.value.indexOf("Android") > 0) {
+    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+    window.location.href = url;
   }
-
-  if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
-    return;
+  else if (os.value.indexOf("iPhone") > 0) {
+    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+    window.open(url, '_blank')
   }
-  try {
-    loading.value = true; // 로딩 시작
-
-    // DB에 전송
-    const response = await axios.post('/api/sendBrd', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      RCMD: 'B010',
-      Parm1: '00000000',
-      Parm2: '1',
-      Parm3: broadTestMessage.value,
-      BStatus: 'start',
-      RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      Auth: 'online'
-    });
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar_test("메세지가 성공적으로 전송되었습니다.", 'success');
-      broadTestMessage.value = "";
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
+  else {
+    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
+    window.open(url, '_blank')
   }
 }
 
-// 차단기 테스트 제어 함수
-const sendGate = async (item, gate) => {
-  if (loading.value) return; // 이미 로딩 중이면 무시
-  if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
-    return;
-  }
-  try {
-    loading.value = true; // 로딩시작
 
-    // DB에 전송
-    const response = await axios.post('/api/sendGate', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      Gate: gate,
-      GStatus: 'start',
-      Auth: 'online'
-    });
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar_test("장비 제어가 정상적으로 등록 되었습니다.", 'success');
-      broadTestMessage.value = "";
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
-  }
-  dialog_test.value = false;
-}
 </script>
 
-<style lang="scss" scoped>
-// scss를 이용하여 커스터마이징
-// scss 문법으로 :deep을 주어 해당 태그에 직접 접근하여 css 덮어쓰기
-.table-fit {
-  font-size: 0.8rem;
-
-  :deep(table) {
-    width: 100%;
-    table-layout: fixed;
-  }
-
-  :deep(.v-table__wrapper) {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-
-  :deep(.v-data-table__th),
-  :deep(.v-data-table__td) {
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 !important;
-  }
-
-
-  :deep(.v-data-table-footer__items-per-page > .v-select) {
-    color: red;
-  }
-}
-
-:deep(.v-card-text) {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-.search-box {
-  max-width: 250px;
-  /* 폭 줄이기 */
-  font-size: 0.8rem;
-  /* 글자 크기 줄이기 */
-}
-
-:deep(.search-box .v-field) {
-  min-height: 32px;
-  /* 입력창 높이 줄이기 */
-}
-
-/* 열 개수에 따라 자동 균등 분배 */
-
-
-/* 반응형 크기 조절 */
-@media (max-width: 768px) {
-  .table-fit {
-    font-size: 1rem;
-  }
-
-  .table-fit th,
-  .table-fit td {
-    padding: 4px 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .table-fit {
-    font-size: 0.6rem;
-  }
-
-  .table-fit th,
-  .table-fit td {
-    padding: 2px 4px;
-  }
-}
-
-.v-field__field input {
-  cursor: pointer;
-}
-</style>
+<style lang="scss" scoped></style>

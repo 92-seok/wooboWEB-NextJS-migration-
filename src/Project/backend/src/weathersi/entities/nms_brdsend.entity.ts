@@ -1,6 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity({
+  database: 'weathersi',
+  schema: 'weathersi',
   name: 'nms_brdsend',
   comment: '',
 })
