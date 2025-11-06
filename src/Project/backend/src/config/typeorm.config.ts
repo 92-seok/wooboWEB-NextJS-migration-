@@ -1,75 +1,54 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-function ormConfig(): TypeOrmModuleOptions {
-  const commonConf = {
-    SYNCRONIZE: false,
-    ENTITIES: [__dirname + '/domain/*.entity{.ts,.js}'],
-    MIGRATIONS: [__dirname + '/migrations/**/*{.ts,.js}'],
-    MIGRATIONS_RUN: false,
-  };
+const commonConf = {
+  SYNCRONIZE: true,
+  autoLoadEntities: true,
+  //ENTITIES: ['/weathersr/entities/*.entity{.ts,.js}'],
+  //MIGRATIONS: [__dirname + '/weathersi/migrations/**/*{.ts,.js}'],
+  //MIGRATIONS_RUN: false,
+};
 
+function ormConfig_default(): TypeOrmModuleOptions {
   return {
-    name: 'default',
     type: 'mysql',
-    database: process.env.DB_NAME,
+    database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
-    username: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    logging: false,
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    logging: true,
     synchronize: commonConf.SYNCRONIZE,
-    entities: commonConf.ENTITIES,
-    migrations: commonConf.MIGRATIONS,
-    migrationsRun: commonConf.MIGRATIONS_RUN,
+    autoLoadEntities: commonConf.autoLoadEntities,
   };
 }
 
 function ormConfig_weathersi(): TypeOrmModuleOptions {
-  const commonConf = {
-    SYNCRONIZE: false,
-    ENTITIES: [__dirname + '/weathersi/entities/*.entity{.ts,.js}'],
-    MIGRATIONS: [__dirname + '/weathersi/migrations/**/*{.ts,.js}'],
-    MIGRATIONS_RUN: false,
-  };
-
   return {
-    name: 'weathersi',
     type: 'mysql',
-    database: process.env.DB_NAME_WEATHERSI,
+    database: process.env.DB_DATABASE_WEATHERSI,
     host: process.env.DB_HOST_WEATHERSI,
     port: Number(process.env.DB_PORT_WEATHERSI),
-    username: process.env.DB_USER_WEATHERSI,
-    password: process.env.DB_PASS_WEATHERSI,
+    username: process.env.DB_USERNAME_WEATHERSI,
+    password: process.env.DB_PASSWORD_WEATHERSI,
     logging: true,
     synchronize: commonConf.SYNCRONIZE,
-    entities: commonConf.ENTITIES,
-    migrations: commonConf.MIGRATIONS,
-    migrationsRun: commonConf.MIGRATIONS_RUN,
+    autoLoadEntities: commonConf.autoLoadEntities,
   };
 }
 
 function ormConfig_weathersr(): TypeOrmModuleOptions {
-  const commonConf = {
-    SYNCRONIZE: false,
-    ENTITIES: [__dirname + '/weathersr/entities/*.entity{.ts,.js}'],
-    MIGRATIONS: [__dirname + '/migrations/**/*{.ts,.js}'],
-    MIGRATIONS_RUN: false,
-  };
-
   return {
-    name: 'weathersr',
     type: 'mysql',
-    database: process.env.DB_NAME_WEATHERSR,
+    database: process.env.DB_DATABASE_WEATHERSR,
     host: process.env.DB_HOST_WEATHERSR,
     port: Number(process.env.DB_PORT_WEATHERSR),
-    username: process.env.DB_USER_WEATHERSR,
-    password: process.env.DB_PASS_WEATHERRI,
+    username: process.env.DB_USERNAME_WEATHERSR,
+    password: process.env.DB_PASSWORD_WEATHERSR,
     logging: true,
+    autoLoadEntities: true,
     synchronize: commonConf.SYNCRONIZE,
-    entities: commonConf.ENTITIES,
-    migrations: commonConf.MIGRATIONS,
-    migrationsRun: commonConf.MIGRATIONS_RUN,
   };
 }
 
-export { ormConfig, ormConfig_weathersi, ormConfig_weathersr };
+export { ormConfig_default, ormConfig_weathersi, ormConfig_weathersr };

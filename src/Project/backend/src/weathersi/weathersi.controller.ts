@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 // Service
 import { WeatherSiService } from './weathersi.service';
 
-@Controller('weathersi')
+@Controller('api/weathersi')
 export class WeatherSiController {
   constructor(private readonly service: WeatherSiService) {}
 

@@ -43,7 +43,7 @@ async function bootstrap() {
 
   await app.listen(process.env.SERVICE_PORT ?? 8080);
   console.log(
-    `🚀 애플리케이션이 http://localhost:${process.env.SERVICE_PORT} 에서 실행 중입니다`,
+    `🚀 애플리케이션이 http://localhost:${process.env.SERVICE_PORT}(${await app.getUrl()}) 에서 실행 중입니다`,
   );
 }
 

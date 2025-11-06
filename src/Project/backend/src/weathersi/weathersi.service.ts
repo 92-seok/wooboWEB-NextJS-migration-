@@ -14,15 +14,15 @@ import { NmsGateControl } from './entities/nms_gatecontrol.entity';
 @Injectable()
 export class WeatherSiService {
   constructor(
-    @InjectDataSource('weathersi')
-    private dataSource: DataSource,
-    @InjectRepository(NmsDevice)
+    //@InjectDataSource('weathersi')
+    //private dataSource: DataSource,
+    @InjectRepository(NmsDevice, 'weathersi')
     private nmsDeviceRepository: Repository<NmsDevice>,
-    @InjectRepository(TcmCouDngrAdm)
+    @InjectRepository(TcmCouDngrAdm, 'weathersi')
     private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
-    @InjectRepository(NmsBrdSend)
+    @InjectRepository(NmsBrdSend, 'weathersi')
     private NmsBrdSendRepository: Repository<NmsBrdSend>,
-    @InjectRepository(NmsGateControl)
+    @InjectRepository(NmsGateControl, 'weathersi')
     private NmsGateControlRepository: Repository<NmsGateControl>,
   ) {}
 

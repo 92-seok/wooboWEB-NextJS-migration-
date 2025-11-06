@@ -23,7 +23,8 @@ import { NmsGateControl } from './entities/nms_gatecontrol.entity';
       'weathersi',
     ),
   ],
-  controllers: [WeatherSiController],
+  //exports: [TypeOrmModule],
   providers: [WeatherSiService],
+  controllers: [WeatherSiController],
 })
 export class WeatherSiModule {}

@@ -6,6 +6,12 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Entities
+import {
+  ormConfig_default,
+  ormConfig_weathersi,
+  ormConfig_weathersr,
+} from '@config/typeorm.config';
+
 import { WeatherSiModule } from './weathersi/weathersi.module';
 import { WeatherSrModule } from 'weathersr/weathersr.module';
 
@@ -19,13 +25,22 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([NmsUser, NmsUserAuthority]),
-    AuthModule,
-
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env'],
+    }),
+    TypeOrmModule.forRootAsync({
+      name: 'weathersi',
+      useFactory: ormConfig_weathersi,
+    }),
+    TypeOrmModule.forRootAsync({
+      name: 'weathersr',
+      useFactory: ormConfig_weathersr,
+    }),
     WeatherSiModule,
     WeatherSrModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [],
+  controllers: [],
 })
 export class AppModule {}

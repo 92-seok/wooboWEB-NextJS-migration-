@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 // Service
 import { WeatherSrService } from './weathersr.service';
 
-@Controller('weathersr')
+@Controller('api/weathersr')
 export class WeatherSrController {
   constructor(private readonly service: WeatherSrService) {}
 
@@ -24,7 +24,7 @@ export class WeatherSrController {
   ): Promise<any> {
     // TODO : 구현 예정
     res.status(HttpStatus.ACCEPTED);
-    return { success: true, message: request.ip + '아직 미구현입니다.' };
+    return { success: true, message: request.url + ' 아직 미구현입니다.' };
   }
 
   @Post()
@@ -34,11 +34,11 @@ export class WeatherSrController {
   ): Promise<any> {
     // TODO : 구현 예정
     res.status(HttpStatus.ACCEPTED);
-    return { success: true, message: request.ip + '아직 미구현입니다.' };
+    return { success: true, message: request.url + ' 아직 미구현입니다.' };
   }
 
   @Get('areaList')
-  async getAreaList_sr() {
+  async getAreaList() {
     try {
       const result = await this.service.getAreaList();
       return {
@@ -51,6 +51,36 @@ export class WeatherSrController {
       return {
         success: false,
         message: '지역 목록을 조회 중 오류 발생.',
+        count: 0,
+        data: null,
+      };
+    }
+  }
+
+  @Get('devices')
+  async getDevices(@Query('BDONG_CD') bdong_cd: string): Promise<any> {
+    let where: string;
+
+    if (bdong_cd === undefined) where = '1=1';
+    else where = `observatoryCode like '${bdong_cd.substring(0, 4)}%'`;
+
+    try {
+      const devices = await this.service.getMonitorDevices(where);
+      return {
+        success: true,
+        message: 'NMS 디바이스 목록을 성공적으로 조회했습니다.',
+        count: devices.length,
+        data: devices.map((item) => ({
+          IDX: `${item.observatoryCode}`,
+          SIDO_CD: item.observatoryCode.slice(0, 4),
+          BDONG_CD: item.observatoryCode,
+          NM_DIST_OBSV: item.observatoryName,
+        })),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
         count: 0,
         data: null,
       };

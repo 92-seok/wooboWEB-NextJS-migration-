@@ -178,7 +178,7 @@
         <template v-slot:[`item.ErrorChk`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="small" label></v-chip>
+              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
           </div>
         </template>
 
@@ -218,7 +218,7 @@
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
                 </v-row>
-                <v-row>
+                <v-row v-if="item.GB_OBSV === '17' || item.GB_OBSV === '18' || item.GB_OBSV === '20'">
                   <v-col cols="12">
                     <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
                       :text="item.sensorTest == 'OK' ? '' : ''" @click="openTestDialog(item)">
@@ -264,8 +264,16 @@
         </div>
 
         <v-card title="방송제어 하시겠습니까?">
-          <v-card-text class="text-center" v-if="selectedItem">
-            <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"></v-textarea>
+          <v-card-text class="text-center pa-0" v-if="selectedItem">
+            <v-row class="ma-0 pa-0">
+
+              <v-col class="ma-1 pa-0" cols="3" align="right">
+                <v-img :src="require('@/assets/broad.png')" />
+              </v-col>
+              <v-col class="ma-1 pa-0" cols="8" align="center">
+                <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"></v-textarea>
+              </v-col>
+            </v-row>
           </v-card-text>
           <template v-slot:actions>
             <v-spacer></v-spacer>
@@ -327,19 +335,19 @@ let refresh_timer = null; // setInterval 핸들러
 const refresh_time = ref(20);
 const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
-const model = ref(null)
+const model = ref(null);
 
-const areaList = ref([])
-const areaList_selected = ref('%')
-const search = ref('')
-const devices = ref([])
-const selectedItem = ref(null)
-const page = ref(1)
-const itemsPerPage = ref('50')
+const areaList = ref([]);
+const areaList_selected = ref('%');
+const search = ref('');
+const devices = ref([]);
+const selectedItem = ref(null);
+const page = ref(1);
+const itemsPerPage = ref('50');
 const os = ref(navigator.userAgent);
 
-const dialog = ref(false)
-const dialog_test = ref(false)
+const dialog = ref(false);
+const dialog_test = ref(false);
 
 const broadTestMessage = ref("");
 const loading = ref(false);
@@ -480,7 +488,7 @@ const Process = async () => {
   console.log("Process()");
 
   try {
-    const response_areaList = await axios.get('/api/areaList');
+    const response_areaList = await axios.get('/api/weathersi/areaList');
 
     areaList.value = response_areaList.data.data.map(item => ({
       title: item.RM, value: item.ADMCODE
@@ -499,7 +507,7 @@ const OnChange_AreaList = async (newArea) => {
   }
 
   try {
-    const response = await axios.get(`/api/devices?BDONG_CD=${areaList_selected.value}`)
+    const response = await axios.get(`/api/weathersi/devices?BDONG_CD=${areaList_selected.value}`)
 
     devices.value = response.data.data.map(item => ({
       ...item,
@@ -530,7 +538,7 @@ const sendBrd = async (item) => {
     loading.value = true; // 로딩 시작
 
     // DB에 전송
-    const response = await axios.post('/api/sendBrd', {
+    const response = await axios.post('/api/weathersi/sendBrd', {
       BDONG_CD: item.BDONG_CD,
       CD_DIST_OBSV: item.CD_DIST_OBSV,
       RCMD: 'B010',
@@ -572,7 +580,7 @@ const sendGate = async (item, gate) => {
     loading.value = true; // 로딩시작
 
     // DB에 전송
-    const response = await axios.post('/api/sendGate', {
+    const response = await axios.post('/api/weathersi/sendGate', {
       BDONG_CD: item.BDONG_CD,
       CD_DIST_OBSV: item.CD_DIST_OBSV,
       Gate: gate,

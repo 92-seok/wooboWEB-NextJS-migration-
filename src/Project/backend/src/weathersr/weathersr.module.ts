@@ -1,8 +1,5 @@
 // Module
 import { Module } from '@nestjs/common';
-// Config(.ENV)
-import { ConfigModule } from '@nestjs/config';
-// TypeOrm
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Base
@@ -11,10 +8,15 @@ import { WeatherSrService } from './weathersr.service';
 
 // Entities
 import { SrEquip } from './entities/sr_equip.entity';
+import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SrEquip], 'weathersr')],
-  controllers: [WeatherSrController],
+  imports: [
+    TypeOrmModule.forFeature([SrEquip], 'weathersr'),
+    TypeOrmModule.forFeature([TcmCouDngrAdm], 'weathersr'),
+  ],
   providers: [WeatherSrService],
+  controllers: [WeatherSrController],
+  exports: [WeatherSrService],
 })
 export class WeatherSrModule {}
