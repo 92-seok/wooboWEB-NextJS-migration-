@@ -187,6 +187,12 @@
           <td :colspan="columns.length">
             <v-card density="compact" outlined>
               <v-container class="text-center">
+                <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded">
+                  <v-col cols="12">
+                    <strong class="text-h6">{{
+                      item.NM_DIST_OBSV }}</strong>
+                  </v-col>
+                </v-row>
                 <v-row class="bg-surface-light ">
                   <v-col cols="4"><strong>주소</strong></v-col>
                   <v-col cols="3"><strong>위도</strong></v-col>
