@@ -6,8 +6,8 @@ import { DataSource, Repository, In } from 'typeorm';
 import dayjs from 'dayjs';
 
 // Entities
-import { SrEquip } from './entities/sr_equip.entity';
 import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
+import { SrEquip } from './entities/sr_equip.entity';
 
 @Injectable()
 export class WeatherSrService {
@@ -21,10 +21,6 @@ export class WeatherSrService {
     //@InjectModel(SrEquip)
   ) {}
 
-  getHello(): string {
-    return 'Hello World!';
-  }
-
   // 지역 조회
   async getAreaList(): Promise<TcmCouDngrAdm[]> {
     try {
@@ -34,11 +30,20 @@ export class WeatherSrService {
     }
   }
 
+  // 모든 NMS 디바이스 조회
+  async getDevices(): Promise<SrEquip[]> {
+    try {
+      return await this.SrEquipRepository.findBy({});
+    } catch (error) {
+      throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);
+    }
+  }
+
   // 장비 모니터링 상태 조회
   async getMonitorDevices(where: string): Promise<SrEquip[]> {
     try {
       return await this.SrEquipRepository.createQueryBuilder()
-        .andWhere(where)
+        .where(where)
         .orderBy('observatoryCode', 'ASC')
         .getMany();
     } catch (error) {

@@ -32,7 +32,7 @@ async function bootstrap() {
   console.log('DB_DATABASE_WEATHERSR: ', process.env.DB_DATABASE_WEATHERSR);
 
   const app = await NestFactory.create(AppModule);
-
+  app.setGlobalPrefix('api');
   // CORS
   const config = app.get(ConfigService);
   app.enableCors({

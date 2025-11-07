@@ -6,9 +6,9 @@ import {
 } from "vue-router";
 
 import HomeView from "@/Views/HomeView.vue";
-import MonitorView from "@/Views/MonitorView.vue";
+import WeatherSiView from "@/Views/WeatherSIView.vue";
+import WeatherSrView from "@/Views/WeatherSRView.vue";
 import ControlView from "@/Views/ControlView.vue";
-import SRiverView from "@/Views/SRiverView.vue";
 import SettingView from "@/Views/SettingView.vue";
 import AboutView from "@/Views/AboutView.vue";
 import LoginView from "@/Views/LoginView.vue";
@@ -20,8 +20,8 @@ const routes = [
   { path: "/", component: HomeView },
   { path: "/home", component: HomeView },
   { path: "/map", component: MapView },
-  { path: "/monitor", component: MonitorView },
-  { path: "/sriver", component: SRiverView },
+  { path: "/weathersi", component: WeatherSiView },
+  { path: "/weathersr", component: WeatherSrView },
   { path: "/control", component: ControlView },
   { path: "/setting", component: SettingView },
   { path: "/about", component: AboutView },

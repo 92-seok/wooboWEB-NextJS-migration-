@@ -189,11 +189,11 @@
               <v-container class="text-center">
                 <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded">
                   <v-col cols="12">
-                    <strong class="text-h6">{{
+                    <strong class="text-h5">{{
                       item.NM_DIST_OBSV }}</strong>
                   </v-col>
                 </v-row>
-                <v-row class="bg-surface-light ">
+                <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>주소</strong></v-col>
                   <v-col cols="3"><strong>위도</strong></v-col>
                   <v-col cols="3"><strong>경도</strong></v-col>
@@ -333,6 +333,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, reactive } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router';
 
 ////////////////////////////////////////
 // 프로세스 타이머
@@ -358,12 +359,13 @@ const dialog_test = ref(false);
 const broadTestMessage = ref("");
 const loading = ref(false);
 
+
 ////////////////////////////////////////
 // EVENT 생명주기
 ////////////////////////////////////////
 onMounted(async () => {
 
-  console.log("MonitorView::onMounted()");
+  console.log("WeatherSIView::onMounted()" + useRoute().params.BDONG_CD);
   console.log(os.value);
 
   if (refresh_timer) {
@@ -376,7 +378,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  console.log("MonitorView::onUnmount()");
+  console.log("WeatherSIView::onUnmount()");
 
   if (refresh_timer) {
     clearInterval(refresh_timer);
@@ -511,6 +513,8 @@ const OnChange_AreaList = async (newArea) => {
   if (newArea != null) {
     areaList_selected.value = newArea;
   }
+
+  search.value = '';
 
   try {
     const response = await axios.get(`/api/weathersi/devices?BDONG_CD=${areaList_selected.value}`)

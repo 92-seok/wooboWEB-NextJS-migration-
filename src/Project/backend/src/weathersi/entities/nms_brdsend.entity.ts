@@ -1,10 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity({
-  database: 'weathersi',
-  schema: 'weathersi',
+  //database: 'weathersi',
+  //schema: 'weathersi',
   name: 'nms_brdsend',
-  comment: '',
+  comment: '원격제어_방송',
 })
 @Index(['BStatus'])
 export class NmsBrdSend {
@@ -29,7 +29,7 @@ export class NmsBrdSend {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '장비번호(wb_brdlistdetail.CD_DIST_OBSV)',
+    comment: '장비번호(wb_equip.CD_DIST_OBSV)',
   })
   CD_DIST_OBSV: string;
 
@@ -83,7 +83,7 @@ export class NmsBrdSend {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '방송상태',
+    comment: '제어상태',
   })
   BStatus: string;
 
@@ -118,7 +118,7 @@ export class NmsBrdSend {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '',
+    comment: '사용자 인증',
   })
   Auth: string;
 
@@ -135,7 +135,7 @@ export class NmsBrdSend {
     name: 'dtmUpdate',
     type: 'datetime',
     nullable: true,
-    comment: 'AUTO_CREATE',
+    comment: 'AUTO_UPDATE',
     onUpdate: 'current_timestamp',
   })
   dtmUpdate: string;

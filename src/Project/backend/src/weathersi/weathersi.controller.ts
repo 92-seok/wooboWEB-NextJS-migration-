@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 // Service
 import { WeatherSiService } from './weathersi.service';
 
-@Controller('api/weathersi')
+@Controller('weathersi')
 export class WeatherSiController {
   constructor(private readonly service: WeatherSiService) {}
 
@@ -37,9 +37,39 @@ export class WeatherSiController {
     return { success: true, message: request.ip + '아직 미구현입니다.' };
   }
 
+  @Get('admMng/getAdm')
+  async getAdm(@Query('admCode') admCode: string) {
+    let data;
+
+    try {
+      data = await this.service.getAreaList();
+    } catch {}
+
+    return {
+      header: {
+        resultMsg: 'NORMAL_SERVICE',
+        resultCode: '00',
+        errorMsg: null,
+      },
+      body: data,
+    };
+  }
+
+  @Get('admMng/setAdm')
+  async setAdm(@Query('admCode') admCode: string) {
+    return {
+      header: {
+        resultMsg: 'NORMAL_SERVICE',
+        resultCode: '00',
+        errorMsg: null,
+      },
+      body: null,
+    };
+  }
+
   // 모든 NMS 디바이스 조회
   @Get('areaList')
-  async getAreaList() {
+  async getAreaList(@Query('ADMCODE') admcode: string) {
     try {
       const result = await this.service.getAreaList();
       return {
@@ -157,6 +187,7 @@ export class WeatherSiController {
       };
     }
   }
+
   @Post('sendBrd')
   async postBrd(
     @Body() BODY: any,
@@ -178,7 +209,35 @@ export class WeatherSiController {
     } catch {
       return {
         success: false,
-        bdong_cd: BDONG_CD,
+        BDONG_CD: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
+      };
+    }
+  }
+
+  @Post('sendDis')
+  async postDis(
+    @Body() BODY: any,
+    @Body('BDONG_CD') BDONG_CD: string,
+    @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
+    @Body('Message') Message: string,
+    @Body('Auth') Auth: string,
+  ): Promise<any> {
+    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+
+    try {
+      const controlDevices = await this.service.insertDisSend(BODY);
+
+      return {
+        success: true,
+        BDONG_CD: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
+      };
+    } catch {
+      return {
+        success: false,
+        BDONG_CD: BDONG_CD,
+        CD_DIST_OBSV: CD_DIST_OBSV,
       };
     }
   }
@@ -204,7 +263,7 @@ export class WeatherSiController {
     } catch {
       return {
         success: false,
-        bdong_cd: BDONG_CD,
+        BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
       };
     }

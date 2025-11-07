@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 // Service
 import { WeatherSrService } from './weathersr.service';
 
-@Controller('api/weathersr')
+@Controller('weathersr')
 export class WeatherSrController {
   constructor(private readonly service: WeatherSrService) {}
 
@@ -75,6 +75,14 @@ export class WeatherSrController {
           SIDO_CD: item.observatoryCode.slice(0, 4),
           BDONG_CD: item.observatoryCode,
           NM_DIST_OBSV: item.observatoryName,
+          LOGGER_TIME: item.LOGGER_TIME,
+          LOGGER_GL: item.LOGGER_GL,
+          ResultCode: item.ResultCode,
+          waterLevelStatusCode: item.waterLevelStatusCode,
+          velocityStatusCode: item.velocityStatusCode,
+          dischargeStatusCode: item.dischargeStatusCode,
+          upsStatusCode: item.upsStatusCode,
+          RTSP_URL: item.RTSP_URL,
         })),
       };
     } catch (error) {

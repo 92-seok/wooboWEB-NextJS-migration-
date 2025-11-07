@@ -6,12 +6,12 @@
         <span>지도</span>
       </v-btn>
 
-      <v-btn @click="GoMenu('/monitor')">
+      <v-btn @click="GoMenu('/weathersi')">
         <v-icon>mdi-television-play</v-icon>
-        <span>모니터링</span>
+        <span>통합관측</span>
       </v-btn>
 
-      <v-btn @click="GoMenu('/sriver')">
+      <v-btn @click="GoMenu('/weathersr')">
         <v-icon>mdi-waves-arrow-up</v-icon>
         <span>소하천</span>
       </v-btn>
@@ -52,7 +52,7 @@ function GoMenu(path) {
   switch (menu_idx.value) {
     case 0: color.value = 'blue-grey'
       break;
-    case 1: color.value = 'teal'
+    case 1: color.value = 'deep-purple'
       break;
     case 2: color.value = 'indigo'
       break;
@@ -74,6 +74,6 @@ function GoMenu(path) {
 .v-bottom-navigation .v-bottom-navigation__content .v-btn {
   margin: 0px;
   padding: 0px;
-  min-width: 70px;
+  min-width: 65px;
 }
 </style>

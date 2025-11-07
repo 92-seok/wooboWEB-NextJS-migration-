@@ -6,11 +6,11 @@ import { DataSource, Repository, In } from 'typeorm';
 import dayjs from 'dayjs';
 
 // Entities
-import { NmsDevice } from './entities/nms_device.entity';
 import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
+import { NmsDevice } from './entities/nms_device.entity';
 import { NmsBrdSend } from './entities/nms_brdsend.entity';
+import { NmsDisSend } from './entities/nms_dissend.entity';
 import { NmsGateControl } from './entities/nms_gatecontrol.entity';
-
 @Injectable()
 export class WeatherSiService {
   constructor(
@@ -22,6 +22,8 @@ export class WeatherSiService {
     private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
     @InjectRepository(NmsBrdSend, 'weathersi')
     private NmsBrdSendRepository: Repository<NmsBrdSend>,
+    @InjectRepository(NmsDisSend, 'weathersi')
+    private NmsDisSendRepository: Repository<NmsDisSend>,
     @InjectRepository(NmsGateControl, 'weathersi')
     private NmsGateControlRepository: Repository<NmsGateControl>,
   ) {}
@@ -102,6 +104,26 @@ export class WeatherSiService {
   async insertBrdSend(body): Promise<any> {
     try {
       const obj = new NmsBrdSend();
+
+      obj.BDONG_CD = body.BDONG_CD;
+      obj.CD_DIST_OBSV = body.CD_DIST_OBSV;
+      obj.RCMD = body.RCMD;
+      obj.Parm1 = body.Parm1;
+      obj.Parm2 = body.Parm2;
+      obj.Parm3 = body.Parm3;
+      obj.BStatus = body.BStatus;
+      obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      obj.Auth = body.Auth;
+
+      return await this.NmsBrdSendRepository.insert(obj);
+    } catch (error) {
+      throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
+    }
+  }
+
+  async insertDisSend(body): Promise<any> {
+    try {
+      const obj = new NmsDisSend();
 
       obj.BDONG_CD = body.BDONG_CD;
       obj.CD_DIST_OBSV = body.CD_DIST_OBSV;

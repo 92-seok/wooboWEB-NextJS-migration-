@@ -3,11 +3,11 @@ import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 @Entity({
   //database: 'weathersi',
   //schema: 'weathersi',
-  name: 'nms_gatecontrol',
-  comment: '원격제어_차단기',
+  name: 'nms_dissend',
+  comment: '원격제어_전광판',
 })
-@Index(['GStatus'])
-export class NmsGateControl {
+@Index(['BStatus'])
+export class NmsDisSend {
   @PrimaryGeneratedColumn({
     name: 'IDX',
     type: 'int',
@@ -29,45 +29,45 @@ export class NmsGateControl {
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '',
+    comment: '장비번호(wb_equip.CD_DIST_OBSV)',
   })
   CD_DIST_OBSV: string;
 
   @Column({
-    name: 'Gate',
+    name: 'RCMD',
     type: 'varchar',
-    length: 10,
+    length: 5,
     nullable: true,
-    comment: '제어요청(open, close)',
+    comment: '명령코드("S170", "D060", "D090",...)',
   })
-  Gate: string;
+  RCMD: string;
 
   @Column({
-    name: 'Light',
+    name: 'Parm1',
     type: 'varchar',
-    length: 10,
+    length: 50,
     nullable: true,
-    comment: '경광등(on, off)',
+    comment: '파라메타1()',
   })
-  Light: string;
+  Parm1: string;
 
   @Column({
-    name: 'Sound',
+    name: 'Parm2',
     type: 'varchar',
     length: 10,
     nullable: true,
-    comment: '경고음(on, off)',
+    comment: '파라메타2()',
   })
   Parm2: string;
 
   @Column({
-    name: 'GStatus',
+    name: 'Parm3',
     type: 'varchar',
-    length: 10,
+    length: 500,
     nullable: true,
-    comment: '제어상태(start, ing, end)',
+    comment: '파라메타3()',
   })
-  GStatus: string;
+  Parm3: string;
 
   @Column({
     name: 'RegDate',
@@ -77,6 +77,15 @@ export class NmsGateControl {
     comment: '등록시간',
   })
   RegDate: string;
+
+  @Column({
+    name: 'BStatus',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    comment: '제어상태',
+  })
+  BStatus: string;
 
   @Column({
     name: 'Auth',
