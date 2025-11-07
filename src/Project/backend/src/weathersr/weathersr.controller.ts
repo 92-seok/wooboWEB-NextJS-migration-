@@ -60,7 +60,6 @@ export class WeatherSrController {
   @Get('devices')
   async getDevices(@Query('BDONG_CD') bdong_cd: string): Promise<any> {
     let where: string;
-
     if (bdong_cd === undefined) where = '1=1';
     else where = `observatoryCode like '${bdong_cd.substring(0, 4)}%'`;
 

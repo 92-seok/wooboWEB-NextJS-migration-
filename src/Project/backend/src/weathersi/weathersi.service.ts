@@ -16,10 +16,10 @@ export class WeatherSiService {
   constructor(
     //@InjectDataSource('weathersi')
     //private dataSource: DataSource,
-    @InjectRepository(NmsDevice, 'weathersi')
-    private nmsDeviceRepository: Repository<NmsDevice>,
     @InjectRepository(TcmCouDngrAdm, 'weathersi')
     private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
+    @InjectRepository(NmsDevice, 'weathersi')
+    private nmsDeviceRepository: Repository<NmsDevice>,
     @InjectRepository(NmsBrdSend, 'weathersi')
     private NmsBrdSendRepository: Repository<NmsBrdSend>,
     @InjectRepository(NmsDisSend, 'weathersi')

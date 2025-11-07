@@ -71,7 +71,7 @@
               <strong>정상</strong>
             </v-card-title>
             <v-card-text class="text-h5">
-              {{devices.filter(item => item.ErrorChk > '0').length}}
+              {{devices.filter(item => item.ResultCode === 'OK').length}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -82,7 +82,7 @@
               <strong>점검필요</strong>
             </v-card-title>
             <v-card-text class="text-h5">
-              {{devices.filter(item => item.ErrorChk == '0').length}}
+              {{devices.filter(item => item.ResultCode !== 'OK').length}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -118,6 +118,15 @@
           </span>
         </template>
 
+        <template v-slot:[`item.GB_OBSV`]="{ item }">
+          <th style="width:10px" />
+          <v-card class="my-2" elevation="0">
+            <div>
+              <v-img :src="require('@/assets/water.png')" height="25" />
+            </div>
+          </v-card>
+        </template>
+
         <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
           <!-- activator 슬롯 -->
           <span>
@@ -139,10 +148,10 @@
           </v-tooltip>
         </template>
 
-        <template v-slot:[`item.ErrorChk`]="{ item }">
+        <template v-slot:[`item.ResultCode`]="{ item }">
           <div class="text-center">
-            <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
+            <v-chip class="text-uppercase" :color="item.ResultCode === 'OK' ? 'green' : 'red'"
+              :text="item.ResultCode === 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
           </div>
         </template>
 
@@ -175,15 +184,17 @@
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>통신시간</strong></v-col>
-                  <v-col cols="3"><strong>CID</strong></v-col>
-                  <v-col cols="3"><strong>IP</strong></v-col>
-                  <v-col cols="2"><strong>PORT</strong></v-col>
+                  <v-col cols="2"><strong>수위</strong></v-col>
+                  <v-col cols="2"><strong>유량</strong></v-col>
+                  <v-col cols="2"><strong>유속</strong></v-col>
+                  <v-col cols="2"><strong>UPS</strong></v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="4">{{ item.LastDate }}</v-col>
-                  <v-col cols="3">{{ item.PHONE ?? '-' }}</v-col>
-                  <v-col cols="3">{{ item.IP }}</v-col>
-                  <v-col cols="2">{{ item.PORT }}</v-col>
+                  <v-col cols="4">{{ item.observationDateTime }}</v-col>
+                  <v-col cols="2">{{ item.waterLevelStatusCode }}</v-col>
+                  <v-col cols="2">{{ item.velocityStatusCode }}</v-col>
+                  <v-col cols="2">{{ item.dischargeStatusCode }}</v-col>
+                  <v-col cols="2">{{ item.upsStatusCode }}</v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
@@ -299,6 +310,7 @@ const headers = [
   { key: 'data-table-expand', width: 30, align: 'center', sortable: false },
   { key: 'index', width: '25px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px', },
+  //{ key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', align: 'start' },
   { key: 'ResultCode', title: '상태' },
   { key: 'LOGGER_GL', title: '데이터' },
@@ -420,6 +432,7 @@ const OnChange_AreaList = async (newArea) => {
       ...item,
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
+    console.log(areaList.value);
     console.log(devices.value);
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)

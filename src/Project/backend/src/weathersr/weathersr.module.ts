@@ -12,8 +12,8 @@ import { TcmCouDngrAdm } from './entities/tcm_cou_dngr_adm.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SrEquip], 'weathersr'),
     TypeOrmModule.forFeature([TcmCouDngrAdm], 'weathersr'),
+    TypeOrmModule.forFeature([SrEquip], 'weathersr'),
   ],
   providers: [WeatherSrService],
   controllers: [WeatherSrController],

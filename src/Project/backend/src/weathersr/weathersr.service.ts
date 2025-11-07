@@ -12,10 +12,10 @@ import { SrEquip } from './entities/sr_equip.entity';
 @Injectable()
 export class WeatherSrService {
   constructor(
-    @InjectRepository(SrEquip, 'weathersr')
-    private SrEquipRepository: Repository<SrEquip>,
     @InjectRepository(TcmCouDngrAdm, 'weathersr')
     private tcmCouDngrAdmRepository: Repository<TcmCouDngrAdm>,
+    @InjectRepository(SrEquip, 'weathersr')
+    private SrEquipRepository: Repository<SrEquip>,
     //@InjectDataSource('weathersr')
     //private dataSource: DataSource,
     //@InjectModel(SrEquip)

@@ -15,6 +15,14 @@ export class SrEquip {
   observatoryCode: string;
 
   @Column({
+    name: 'BDONG_CD',
+    type: 'varchar',
+    length: 10,
+    comment: '법정동코드 10자리',
+  })
+  BDONG_CD: string;
+
+  @Column({
     name: 'observatoryName',
     type: 'varchar',
     length: 50,
@@ -191,4 +199,29 @@ export class SrEquip {
     comment: 'CCTV카메라 RTSP URL',
   })
   RTSP_URL: string;
+
+  @Column({
+    name: 'LAT',
+    type: 'double',
+    nullable: true,
+    comment: '위도',
+  })
+  LAT: number;
+
+  @Column({
+    name: 'LON',
+    type: 'double',
+    nullable: true,
+    comment: '경도',
+  })
+  LON: number;
+
+  @Column({
+    name: 'DTL_ADRES',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment: '주소',
+  })
+  DTL_ADRES: string;
 }
