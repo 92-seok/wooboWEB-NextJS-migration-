@@ -76,6 +76,7 @@ export class WeatherSrController {
           NM_DIST_OBSV: item.observatoryName,
           LOGGER_TIME: item.LOGGER_TIME,
           LOGGER_GL: item.LOGGER_GL,
+          observationDateTime: item.observationDateTime,
           ResultCode: item.ResultCode,
           waterLevelStatusCode: item.waterLevelStatusCode,
           velocityStatusCode: item.velocityStatusCode,

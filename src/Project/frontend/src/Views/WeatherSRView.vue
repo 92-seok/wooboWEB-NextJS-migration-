@@ -6,7 +6,7 @@
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-scale-transition>
-              <v-btn class="pa-0" style="min-width: 50px;" color="primary" v-bind="props">{{ menu.name }}</v-btn>
+              <v-btn class="pa-0" style="min-width: 50px;" color="indigo" v-bind="props">{{ menu.name }}</v-btn>
             </v-scale-transition>
           </template>
 
@@ -47,7 +47,7 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="primary" v-model="process_time" :height="5" :max="refresh_time" />
+      <v-progress-linear color="indigo" v-model="process_time" :height="5" :max="refresh_time" />
 
       <v-divider />
 
