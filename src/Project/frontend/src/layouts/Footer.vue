@@ -65,9 +65,9 @@ function GoMenu(path) {
       break;
     case '/weathersr': color = 'indigo'
       break;
-    case 'setting': color = 'brown'
+    case '/setting': color = 'brown'
       break;
-    case 'login': color = 'yellow'
+    case '/login': color = 'yellow'
       break;
     default: color = 'primary'
       break;
