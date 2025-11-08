@@ -6,13 +6,13 @@
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-scale-transition>
-              <v-btn class="pa-0" style="min-width: 50px;" color="deep-purple" v-bind="props">{{ menu.name }}</v-btn>
+              <v-btn class="pa-0" size="large" style="min-width: 50px;" color="deep-purple" v-bind="props">{{ menu.name }}</v-btn>
             </v-scale-transition>
           </template>
 
           <v-list>
             <v-list-item v-for="(item, i) in filterAndSortArea(menu.filter)" :key="i" :value="i">
-              <v-list-item-title @click="OnChange_AreaList(item.value);">
+              <v-list-item-title @click="OnChange_AreaList(item.value)">
                 {{ item.title }}
               </v-list-item-title>
             </v-list-item>
@@ -23,10 +23,10 @@
       <!-- 지역 검색 창-->
       <v-autocomplete :items="areaList" label="지역 검색" variant="solo-filled" v-model="areaList_selected"
         @update:model-value="OnChange_AreaList">
+        <template #no-data> </template>
         <template v-slot:subheader="{ props }">
           <v-list-subheader class="font-weight-bold bg-primary">{{ props.title }}</v-list-subheader>
         </template>
-        <template #no-data> </template>
       </v-autocomplete>
     </v-sheet>
 
@@ -47,41 +47,41 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="deep-purple" v-model="process_time" :height="5" :max="refresh_time" />
+      <v-progress-linear color="deep-purple" v-model="process_time" height="5" :max="refresh_time" />
 
       <v-divider />
 
       <!-- 장비 현황 카드 -->
-      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1" style="justify-content: center;">
-        <v-col cols="4" class="text-center pa-1">
+      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center " style="justify-content: center;">
+        <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
             <v-card-title class="text-subtitle-1">
               <strong>전체</strong>
             </v-card-title>
-            <v-card-text class="text-h5">
+            <v-card-text class="text-h4">
               {{ devices.length }}
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="4" class="text-center pa-1">
+        <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }">
             <v-card-title class="text-subtitle-1">
               <strong>정상</strong>
             </v-card-title>
-            <v-card-text class="text-h5">
+            <v-card-text class="text-h4">
               {{devices.filter(item => item.ErrorChk > '0').length}}
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="4" class="text-center pa-1">
+        <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }">
             <v-card-title class="text-subtitle-1">
               <strong>점검필요</strong>
             </v-card-title>
-            <v-card-text class="text-h5">
+            <v-card-text class="text-h4">
               {{devices.filter(item => item.ErrorChk == '0').length}}
             </v-card-text>
           </v-card>
@@ -91,7 +91,7 @@
       <v-divider />
 
       <!-- 데이터 테이블 -->
-      <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="compact" :search="search"
+      <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="comfortable" :search="search"
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
         :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
         :cell-props="{ align: 'start' }" item-value="IDX" show-expand v-model:page="page"
@@ -187,48 +187,43 @@
           <td :colspan="columns.length">
             <v-card density="compact" outlined>
               <v-container class="text-center">
-                <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded">
+                <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded text-h5">
                   <v-col cols="12">
-                    <strong class="text-h5">{{
-                      item.NM_DIST_OBSV }}</strong>
+                    <strong>{{item.NM_DIST_OBSV }}</strong>
                   </v-col>
                 </v-row>
-                <v-row class="bg-surface-light">
+                <v-row class="bg-surface-light text-subtitle-1">
                   <v-col cols="4"><strong>주소</strong></v-col>
-                  <v-col cols="3"><strong>위도</strong></v-col>
-                  <v-col cols="3"><strong>경도</strong></v-col>
-                  <v-col cols="2"><strong>지도</strong></v-col>
+                  <v-col cols="4"><strong>위/경도</strong></v-col>
+                  <v-col cols="4"><strong>지도</strong></v-col>
                 </v-row>
-                <v-row>
+                <v-row class="text-subtitle-2">
                   <v-col cols="4">{{ item.DTL_ADRES }}</v-col>
-                  <v-col cols="3">{{ item.LAT && item.LAT.toFixed(4) }}</v-col>
-                  <v-col cols="3">{{ item.LON && item.LON.toFixed(4) }}</v-col>
-                  <v-col cols="2">
-                    <v-btn @click="openGuideDialog(item)" min-width="30px" min-height="20px" width=30px height="20px">
-                      <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="20px" cover></v-img>
+                  <v-col cols="4">{{ item.LAT && item.LAT.toFixed(4) }} / {{ item.LON && item.LON.toFixed(4) }}</v-col>
+                  <v-col cols="4">
+                    <v-btn @click="openGuideDialog(item)" width=50px height="40px">
+                      <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="40px" cover></v-img>
                     </v-btn>
                   </v-col>
                 </v-row>
-                <v-row class="bg-surface-light">
+                <v-row class="bg-surface-light text-subtitle-1">
                   <v-col cols="4"><strong>통신시간</strong></v-col>
-                  <v-col cols="3"><strong>CID</strong></v-col>
-                  <v-col cols="3"><strong>IP</strong></v-col>
-                  <v-col cols="2"><strong>PORT</strong></v-col>
+                  <v-col cols="4"><strong>CID</strong></v-col>
+                  <v-col cols="4"><strong>IP / PORT</strong></v-col>
                 </v-row>
-                <v-row>
+                <v-row class="text-subtitle-2">
                   <v-col cols="4">{{ item.LastDate }}</v-col>
-                  <v-col cols="3">{{ item.PHONE ?? '-' }}</v-col>
-                  <v-col cols="3">{{ item.IP }}</v-col>
-                  <v-col cols="2">{{ item.PORT }}</v-col>
+                  <v-col cols="4">{{ item.PHONE ?? '-' }}</v-col>
+                  <v-col cols="4">{{ item.IP }} / {{ item.PORT }}</v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
                 </v-row>
                 <v-row v-if="item.GB_OBSV === '17' || item.GB_OBSV === '18' || item.GB_OBSV === '20'">
                   <v-col cols="12">
-                    <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-                      :text="item.sensorTest == 'OK' ? '' : ''" @click="openTestDialog(item)">
-                      장비 테스트
+                    <v-btn size="large" variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
+                      @click="openTestDialog(item)">
+                      <span>장비 테스트</span>
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -238,11 +233,7 @@
         </template>
       </v-data-table>
 
-      <div class="d-flex flex-column">
-        <div id="map" class="deep-purple" style="width:100%;height:400px;">
-
-        </div>
-      </div>
+      <div id="map" class="ps-5" style="width:100%;height:400px;"></div>
 
     </v-card>
 
@@ -339,8 +330,9 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, reactive } from 'vue'
-import axios from 'axios'
 import { useRoute } from 'vue-router';
+import axios from 'axios'
+import dayjs from 'dayjs'
 
 ////////////////////////////////////////
 // 프로세스 타이머
@@ -406,7 +398,7 @@ onMounted(async () => {
     document.head.appendChild(script);
   }
   else {
-    console.log("MapView.vue::loadMap()");
+    console.log("WeatherSIView::loadMap()");
     loadMap();
   }
 
@@ -434,12 +426,12 @@ const menuList = [
 ];
 
 const headers = [
-  { key: 'data-table-expand', width: 30, align: 'center', sortable: false },
+  { key: 'data-table-expand', width: 35, align: 'center', sortable: false },
   { key: 'index', width: '25px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px', },
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', align: 'start' },
-  { key: 'ErrorChk', title: '상태' },
+  { key: 'ErrorChk', title: '상태',  width: '50px',},
   { key: 'DATA', title: '데이터' },
 ]
 ////////////////////////////////////////
@@ -696,7 +688,8 @@ async function getMarker() {
     // 지도에 마커를 표시합니다
     markers.push(marker);
   });
-  map.setBounds(bounds, 100, 100, 100, 100);
+
+  map.setBounds(bounds, 0, 0, 0, 0);
 }
 
 // 차단기 테스트 제어 함수
@@ -764,7 +757,6 @@ const sendGate = async (item, gate) => {
     padding: 0 !important;
   }
 
-
   :deep(.v-data-table-footer__items-per-page > .v-select) {
     color: red;
   }
@@ -773,18 +765,6 @@ const sendGate = async (item, gate) => {
 :deep(.v-card-text) {
   padding-left: 0 !important;
   padding-right: 0 !important;
-}
-
-.search-box {
-  max-width: 250px;
-  /* 폭 줄이기 */
-  font-size: 0.8rem;
-  /* 글자 크기 줄이기 */
-}
-
-:deep(.search-box .v-field) {
-  min-height: 32px;
-  /* 입력창 높이 줄이기 */
 }
 
 /* 열 개수에 따라 자동 균등 분배 */
@@ -804,12 +784,12 @@ const sendGate = async (item, gate) => {
 
 @media (max-width: 480px) {
   .table-fit {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
   }
 
   .table-fit th,
   .table-fit td {
-    padding: 2px 4px;
+    padding: 0px 0px;
   }
 }
 

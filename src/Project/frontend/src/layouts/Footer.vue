@@ -1,29 +1,29 @@
 <template>
   <v-footer>
-    <v-bottom-navigation v-model="menu_idx" :bg-color="color" density="compact">
+    <v-bottom-navigation v-model="menu_idx" :bg-color=theme_color density="comfortable">
       <v-btn @click="GoMenu('/map')">
         <v-icon>mdi-map</v-icon>
-        <span>지도</span>
+        <span class="text-subtitle-2">지도</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/weathersi')">
         <v-icon>mdi-television-play</v-icon>
-        <span>통합관측</span>
+        <span class="text-subtitle-2">통합관측</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/weathersr')">
         <v-icon>mdi-waves-arrow-up</v-icon>
-        <span>소하천</span>
+        <span class="text-subtitle-2">소하천</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/setting')">
         <v-icon>mdi-book</v-icon>
-        <span>관리</span>
+        <span class="text-subtitle-2">관리</span>
       </v-btn>
 
       <v-btn @click="GoMenu('/login')">
         <v-icon>mdi-account</v-icon>
-        <span>로그인</span>
+        <span class="text-subtitle-2">로그인</span>
       </v-btn>
     </v-bottom-navigation>
   </v-footer>
@@ -32,48 +32,59 @@
 <script setup>
 
 // import
-import { ref, defineModel } from 'vue'
+import { defineModel, defineEmits, inject , onMounted} from 'vue'
 import { useRouter } from 'vue-router'
+
+const emit = defineEmits(['click:btnClick'])
+const {theme_color, OnClick_theme_color} = inject('theme_color')
 
 // reactive status
 const menu_idx = defineModel()
-const color = ref('primary');
 
 // router
 const router = useRouter();
+////////////////////////////////////////
+// EVENT 생명주기
+////////////////////////////////////////
+onMounted(async () => {
+  GoMenu(router.currentRoute.value.fullPath);
+});
 
 // function
 function GoMenu(path) {
+  let color;
 
   if (router.currentRoute.value.fullPath == path) {
-    return;
+    //return;
   }
 
-  switch (menu_idx.value) {
-    case 0: color.value = 'blue-grey'
+  switch (path) {
+    case '/map': color = 'blue-grey'
       break;
-    case 1: color.value = 'deep-purple'
+    case '/weathersi': color = 'deep-purple'
       break;
-    case 2: color.value = 'indigo'
+    case '/weathersr': color = 'indigo'
       break;
-    case 3: color.value = 'brown'
+    case 'setting': color = 'brown'
       break;
-    case 4: color.value = 'yellow'
+    case 'login': color = 'yellow'
       break;
-    default: color.value = 'primary'
+    default: color = 'primary'
       break;
   }
-
+  
+  OnClick_theme_color(color);
   router.push(path);
 }
 
 </script>
 
 <style lang="scss" scoped>
-/* v-bottom-navigation 버튼 간격 */
-.v-bottom-navigation .v-bottom-navigation__content .v-btn {
-  margin: 0px;
-  padding: 0px;
-  min-width: 65px;
-}
+  /* v-bottom-navigation 버튼 간격 */
+  .v-bottom-navigation .v-bottom-navigation__content .v-btn {
+    margin: 0px;
+    padding: 0px;
+    min-width: 60px;
+  }
+  
 </style>

@@ -1,6 +1,6 @@
 <template>
   <v-app :theme="theme">
-    <Header @click:btn-click="btnEvent" />
+    <Header />
     <Main />
     <Footer />
   </v-app>
@@ -15,19 +15,32 @@
 import Header from './layouts/Header.vue'
 import Main from './layouts/Main.vue'
 import Footer from './layouts/Footer.vue'
+
 // 전역변수 사용
-import { onMounted, inject, ref } from 'vue'
+import { onMounted, inject, ref, provide } from 'vue'
+import { useTheme } from 'vuetify';
+
+// Theme 전역변수
+const theme = ref(useTheme().global.name.value);
+const OnClick_theme = (e) => {
+  theme.value = theme.value === 'light' ? 'dark' : 'light'
+};
+provide('theme', {theme, OnClick_theme});
+
+// Theme Color 전역변수
+const theme_color = ref('primary');
+const OnClick_theme_color = (e) => {
+  console.log(e);
+  theme_color.value = e;
+};
+provide('theme_color', {theme_color, OnClick_theme_color});
 
 // Form 이벤트
 onMounted(() => {
-  console.log(`프로그램 시작(${inject('$title')})`); // 전역변수 Vue3 Style
+  console.log(`프로그램 시작(${inject('$title')}) ${theme.value}`); // 전역변수 Vue3 Style
 });
 
-// Child 이벤트
-const theme = ref('');
-const btnEvent = (e) => {
-  theme.value = e;
-};
+
 </script>
 
 <!--
