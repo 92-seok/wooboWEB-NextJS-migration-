@@ -552,9 +552,8 @@ const OnChange_AreaList = async (newArea) => {
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
 
-    //console.log(devices.value);
-
     await getMarker();
+
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
@@ -662,18 +661,45 @@ async function getMarker() {
   console.log("getMarker()");
   const positions = devices.value
     .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
-    .map(row => [row.NM_DIST_OBSV, Number(row.LAT), Number(row.LON)]);
+    ;
 
   markers.forEach(marker => marker.setMap(null));
 
   var bounds = new kakao.maps.LatLngBounds();
 
+  
   positions.forEach(pos => {
+    var image;
+    switch(pos.GB_OBSV)
+    {
+      case "01": image = new kakao.maps.MarkerImage(require(`@/assets/rain_marker.png`), new kakao.maps.Size(20, 30));
+        break;
+      case "02": image = new kakao.maps.MarkerImage(require(`@/assets/water_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "03": image = new kakao.maps.MarkerImage(require(`@/assets/dplace_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "06": image = new kakao.maps.MarkerImage(require(`@/assets/snow_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "08": image = new kakao.maps.MarkerImage(require(`@/assets/tilt_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "17": image = new kakao.maps.MarkerImage(require(`@/assets/broad_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "18": image = new kakao.maps.MarkerImage(require(`@/assets/display_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "20": image = new kakao.maps.MarkerImage(require(`@/assets/gate_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      case "21": image = new kakao.maps.MarkerImage(require(`@/assets/flood_marker.png`), new kakao.maps.Size(20, 30));
+      break;
+      default: image = null;
+      return;
+    }
     // 지도를 클릭한 위치에 표출할 마커입니다
+    console.log(pos);
     let marker = new kakao.maps.Marker({
       map: map,
-      position: new kakao.maps.LatLng(pos[1], pos[2]),
-      title: pos[0]
+      position: new kakao.maps.LatLng(Number(pos.LAT), Number(pos.LON)),
+      title: pos.NM_DIST_OBSV,
+      image: image
     });
 
     bounds.extend(marker.getPosition());
@@ -681,7 +707,7 @@ async function getMarker() {
     // 마커에 클릭이벤트를 등록합니다
     kakao.maps.event.addListener(marker, 'click', function () {
       // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
-      infowindow.setContent(`<div><span style="font-size:12px;">${pos[0]}</span><div>`);
+      infowindow.setContent(`<div><span style="font-size:12px;">${pos.NM_DIST_OBSV}</span><div>`);
       infowindow.open(map, marker);
     });
 
@@ -689,7 +715,7 @@ async function getMarker() {
     markers.push(marker);
   });
 
-  map.setBounds(bounds, 0, 0, 0, 0);
+  map.setBounds(bounds, 10, 10, 10, 10);
 }
 
 // 차단기 테스트 제어 함수
