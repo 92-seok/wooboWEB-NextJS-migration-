@@ -237,6 +237,13 @@
           </td>
         </template>
       </v-data-table>
+
+      <div class="d-flex flex-column">
+        <div id="map" class="deep-purple" style="width:100%;height:400px;">
+
+        </div>
+      </div>
+
     </v-card>
 
     <!-- Snackbar -->
@@ -359,6 +366,21 @@ const dialog_test = ref(false);
 const broadTestMessage = ref("");
 const loading = ref(false);
 
+//////////////////////////////////
+// 지도
+//////////////////////////////////
+let map = null;
+
+// 마커
+let markers = [];
+var infowindow = null;
+
+// 초기값
+var init_key = 'f4592e97c349ab41d02ff73bd314a201';
+var init_lat = 37.4341;
+var init_lon = 127.174;
+var init_level = 11;
+var init_max_level = 14;
 
 ////////////////////////////////////////
 // EVENT 생명주기
@@ -373,6 +395,20 @@ onMounted(async () => {
   }
 
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
+
+  /// 지도 초기화
+  if (window.kakao === undefined) {
+    console.log(`WeatherSIView.vue::scrip() / kakao = ${window.kakao}`);
+    const script = document.createElement("script");
+    /* global kakao */
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${init_key}&autoload=false&libraries=services`;
+    script.onload = () => window.kakao.maps.load(loadMap);
+    document.head.appendChild(script);
+  }
+  else {
+    console.log("MapView.vue::loadMap()");
+    loadMap();
+  }
 
   await Process();
 })
@@ -523,7 +559,10 @@ const OnChange_AreaList = async (newArea) => {
       ...item,
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
+
     console.log(devices.value);
+
+    await getMarker();
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
@@ -577,6 +616,90 @@ const sendBrd = async (item) => {
   } finally {
     loading.value = false; // 로딩 종료
   }
+}
+
+function loadMap() {
+
+  var lat = init_lat;
+  var lon = init_lon;
+  var zoom_level = init_level;
+  var zoom_level_max = init_max_level;
+  var mapCenter = new kakao.maps.LatLng(lat, lon);
+
+  const mapContainer = document.getElementById("map");
+  const mapOption = {
+    center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
+    level: zoom_level, // 지도의 확대 레벨
+    maxLevel: zoom_level_max, // 최대의 최대 레벨
+    mapTypeId: kakao.maps.MapTypeId.HYBRID, // 지도종류
+    disableDoubleClick: true,
+  };
+
+  // 지도를 생성합니다
+  map = new kakao.maps.Map(mapContainer, mapOption);
+
+
+  // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
+  var mapTypeControl = new kakao.maps.MapTypeControl();
+
+  // 지도에 컨트롤을 추가해야 지도위에 표시됩니다
+  map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+
+  // 지도에 지형정보를 표시하도록 지도타입을 추가합니다
+  //map.addOverlayMapTypeId(kakao.maps.MapTypeId.TERRAIN);
+
+  // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다.
+  var zoomControl = new kakao.maps.ZoomControl();
+  map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+  // 지도를 클릭한 위치에 표출할 마커입니다
+  var marker = new kakao.maps.Marker({
+    // 지도 중심좌표에 마커를 생성합니다
+    position: mapCenter,
+    image: new kakao.maps.MarkerImage("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_drag.png", new kakao.maps.Size(50, 50)),
+  });
+  // 지도 중심좌표에 마커를 생성합니다
+  marker.setPosition(map.getCenter());
+  // 지도에 마커를 표시합니다
+  marker.setMap(map);
+
+  infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+}
+
+async function getMarker() {
+  console.log("getMarker()");
+  const positions = devices.value
+    .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
+    .map(row => [row.NM_DIST_OBSV, Number(row.LAT), Number(row.LON)]);
+
+  markers.forEach(marker => marker.setMap(null));
+
+  var bounds = new kakao.maps.LatLngBounds();
+
+  positions.forEach(pos => {
+
+    console.log(pos);
+
+    // 지도를 클릭한 위치에 표출할 마커입니다
+    let marker = new kakao.maps.Marker({
+      map: map,
+      position: new kakao.maps.LatLng(pos[1], pos[2]),
+      title: pos[0]
+    });
+
+    bounds.extend(marker.getPosition());
+
+    // 마커에 클릭이벤트를 등록합니다
+    kakao.maps.event.addListener(marker, 'click', function () {
+      // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
+      infowindow.setContent(`<div><span style="font-size:12px;">${pos[0]}</span><div>`);
+      infowindow.open(map, marker);
+    });
+
+    // 지도에 마커를 표시합니다
+    markers.push(marker);
+  });
+  map.setBounds(bounds, 100, 100, 100, 100);
 }
 
 // 차단기 테스트 제어 함수
