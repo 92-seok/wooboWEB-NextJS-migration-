@@ -560,7 +560,7 @@ const OnChange_AreaList = async (newArea) => {
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
 
-    console.log(devices.value);
+    //console.log(devices.value);
 
     await getMarker();
   } catch (err) {
@@ -677,9 +677,6 @@ async function getMarker() {
   var bounds = new kakao.maps.LatLngBounds();
 
   positions.forEach(pos => {
-
-    console.log(pos);
-
     // 지도를 클릭한 위치에 표출할 마커입니다
     let marker = new kakao.maps.Marker({
       map: map,

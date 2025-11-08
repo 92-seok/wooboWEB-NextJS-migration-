@@ -160,7 +160,7 @@
           <td :colspan="columns.length">
             <v-card density="compact" outlined>
               <v-container class="text-center">
-                <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded">
+                <v-row :class="item.ResultCode === 'OK' ? 'bg-green' : 'bg-red'" class="rounded">
                   <v-col cols="12">
                     <strong class="text-h5">{{
                       item.NM_DIST_OBSV }}</strong>
@@ -198,14 +198,6 @@
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
-                </v-row>
-                <v-row v-if="item.GB_OBSV === '17' || item.GB_OBSV === '18' || item.GB_OBSV === '20'">
-                  <v-col cols="12">
-                    <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-                      :text="item.sensorTest == 'OK' ? '' : ''" @click="openTestDialog(item)">
-                      장비 테스트
-                    </v-btn>
-                  </v-col>
                 </v-row>
               </v-container>
             </v-card>
