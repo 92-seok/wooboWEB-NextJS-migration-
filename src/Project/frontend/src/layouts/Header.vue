@@ -1,4 +1,4 @@
-<template v-slot:append>
+<template>
   <!-- 시스템 바 -->
   <v-system-bar color="indigo-darken-2">
     <!-- 시간 -->
@@ -6,7 +6,7 @@
   </v-system-bar>
 
   <!-- 앱 바 -->
-  <v-app-bar :color=theme_color density="compact">
+  <v-app-bar :color=theme_color density="compact" class="px-3">
 
     <!-- 앱 바 네비게이션 아이콘 -->
     <!--
@@ -15,7 +15,7 @@
 
     <!-- 앱 바 타이틀 -->
     <v-app-bar-title>
-      <v-btn class="text-subtitle-1" @click="router.replace('/')"><span>우보 온라인 - 운영지원시스템</span></v-btn>
+      <v-btn class="text-subtitle-1" @click="router.replace('/')" text="우보 온라인 - 운영지원시스템"></v-btn>
     </v-app-bar-title>
 
     <!-- 테마 버튼 -->
@@ -39,58 +39,37 @@
 ////////////////////////////////////////
 // Import
 ////////////////////////////////////////
-import { ref, onMounted, inject } from 'vue';
-import axios from "axios";
-import dayjs from 'dayjs'
+import { onMounted, onUnmounted, inject, ref } from 'vue';
 import { useRouter } from 'vue-router'
+import dayjs from 'dayjs'
+
 const router = useRouter();
 
 ////////////////////////////////////////
-// 현재 시간
+// 테마
+////////////////////////////////////////
+const { theme, OnClick_theme } = inject('theme')
+const { theme_color } = inject('theme_color')
+
+////////////////////////////////////////
+// Form 이벤트
+////////////////////////////////////////
+onMounted(() => {
+  console.log(`Header.vue::onMounted()`);
+});
+
+onUnmounted(() => {
+  console.log(`Header.vue::onUnmounted()`);
+});
+
+////////////////////////////////////////
+// 타이머 이벤트 > 현재 시간 갱신
 ////////////////////////////////////////
 let time = ref('');
 setInterval(() => {
   time.value = dayjs().format('YYYY-MM-DD HH:mm:ss');
 }, 1000);
 
-////////////////////////////////////////
-// 테마
-////////////////////////////////////////
-const {theme, OnClick_theme} = inject('theme')
-const {theme_color, OnClick_theme_color} = inject('theme_color')
-
-////////////////////////////////////////
-// 이벤트
-////////////////////////////////////////
-onMounted(() => {
-  console.log(`Header.vue::onMounted()`);
-});
-
-
-////////////////////////////////////////
-// 다운로드
-////////////////////////////////////////
-/*
-const onDownload = async () => {
-  console.log("다운로드시작");
-
-  try {
-    const response = await axios.get("/api/download", {
-      responseType: "blob"
-    });
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "우보 온라인.apk");
-    document.body.appendChild(link);
-    link.click();
-  }
-  catch (err) {
-    console.error(err);
-  }
-}
-  */
 </script>
 
 <style lang="scss" scoped></style>

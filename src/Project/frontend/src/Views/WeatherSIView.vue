@@ -6,7 +6,8 @@
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-scale-transition>
-              <v-btn class="pa-0" size="large" style="min-width: 50px;" color="deep-purple" v-bind="props">{{ menu.name }}</v-btn>
+              <v-btn class="pa-0" size="large" style="min-width: 50px;" color="deep-purple" v-bind="props">{{ menu.name
+              }}</v-btn>
             </v-scale-transition>
           </template>
 
@@ -47,12 +48,13 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="deep-purple" v-model="process_time" height="5" :max="refresh_time" />
+      <v-progress-linear :color="theme_color" v-model="process_time" height="5" :max="refresh_time" />
 
       <v-divider />
 
       <!-- 장비 현황 카드 -->
-      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center " style="justify-content: center;">
+      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center "
+        style="justify-content: center;">
         <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
@@ -189,7 +191,7 @@
               <v-container class="text-center">
                 <v-row :class="item.ErrorChk > '0' ? 'bg-green' : 'bg-red'" class="rounded text-h5">
                   <v-col cols="12">
-                    <strong>{{item.NM_DIST_OBSV }}</strong>
+                    <strong>{{ item.NM_DIST_OBSV }}</strong>
                   </v-col>
                 </v-row>
                 <v-row class="bg-surface-light text-subtitle-1">
@@ -329,10 +331,19 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive } from 'vue'
+////////////////////////////////////////
+// Import
+////////////////////////////////////////
+import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs'
+
+////////////////////////////////////////
+// 테마
+////////////////////////////////////////
+const { theme, OnClick_theme } = inject('theme');
+const { theme_color } = inject('theme_color');
 
 ////////////////////////////////////////
 // 프로세스 타이머
@@ -431,7 +442,7 @@ const headers = [
   { key: 'SIDO_CD', title: '지역', width: '50px', },
   { key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', align: 'start' },
-  { key: 'ErrorChk', title: '상태',  width: '50px',},
+  { key: 'ErrorChk', title: '상태', width: '50px', },
   { key: 'DATA', title: '데이터' },
 ]
 ////////////////////////////////////////
@@ -667,31 +678,29 @@ async function getMarker() {
 
   var bounds = new kakao.maps.LatLngBounds();
 
-  
   positions.forEach(pos => {
     var image;
-    switch(pos.GB_OBSV)
-    {
+    switch (pos.GB_OBSV) {
       case "01": image = new kakao.maps.MarkerImage(require(`@/assets/rain_marker.png`), new kakao.maps.Size(20, 30));
         break;
       case "02": image = new kakao.maps.MarkerImage(require(`@/assets/water_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "03": image = new kakao.maps.MarkerImage(require(`@/assets/dplace_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "06": image = new kakao.maps.MarkerImage(require(`@/assets/snow_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "08": image = new kakao.maps.MarkerImage(require(`@/assets/tilt_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "17": image = new kakao.maps.MarkerImage(require(`@/assets/broad_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "18": image = new kakao.maps.MarkerImage(require(`@/assets/display_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "20": image = new kakao.maps.MarkerImage(require(`@/assets/gate_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       case "21": image = new kakao.maps.MarkerImage(require(`@/assets/flood_marker.png`), new kakao.maps.Size(20, 30));
-      break;
+        break;
       default: image = null;
-      return;
+        return;
     }
     // 지도를 클릭한 위치에 표출할 마커입니다
     console.log(pos);

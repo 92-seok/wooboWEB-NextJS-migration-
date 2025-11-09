@@ -23,10 +23,10 @@
       <!-- 지역 검색 창-->
       <v-autocomplete :items="areaList" label="지역 검색" variant="solo-filled" v-model="areaList_selected"
         @update:model-value="OnChange_AreaList">
+        <template #no-data> </template>
         <template v-slot:subheader="{ props }">
           <v-list-subheader class="font-weight-bold bg-primary">{{ props.title }}</v-list-subheader>
         </template>
-        <template #no-data> </template>
       </v-autocomplete>
     </v-sheet>
 
@@ -47,7 +47,7 @@
       </v-card-title>
 
       <!-- 프로그레스 타이머 -->
-      <v-progress-linear color="indigo" v-model="process_time" :height="5" :max="refresh_time" />
+      <v-progress-linear :color="theme_color" v-model="process_time" :height="5" :max="refresh_time" />
 
       <v-divider />
 
@@ -168,15 +168,13 @@
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>주소</strong></v-col>
-                  <v-col cols="3"><strong>위도</strong></v-col>
-                  <v-col cols="3"><strong>경도</strong></v-col>
-                  <v-col cols="2"><strong>지도</strong></v-col>
+                  <v-col cols="4"><strong>위/경도</strong></v-col>
+                  <v-col cols="4"><strong>지도</strong></v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="4">{{ item.DTL_ADRES }}</v-col>
-                  <v-col cols="3">{{ item.LAT && item.LAT.toFixed(4) }}</v-col>
-                  <v-col cols="3">{{ item.LON && item.LON.toFixed(4) }}</v-col>
-                  <v-col cols="2">
+                  <v-col cols="4">{{ item.LAT && item.LAT.toFixed(4) }} / {{ item.LON && item.LON.toFixed(4) }}</v-col>
+                  <v-col cols="4">
                     <v-btn @click="openGuideDialog(item)" min-width="30px" min-height="20px" width=30px height="20px">
                       <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="20px" cover></v-img>
                     </v-btn>
@@ -232,9 +230,18 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive } from 'vue'
-import axios from 'axios'
+////////////////////////////////////////
+// Import
+////////////////////////////////////////
+import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
+import axios from 'axios'
+
+////////////////////////////////////////
+// 테마
+////////////////////////////////////////
+const { theme, OnClick_theme } = inject('theme');
+const { theme_color } = inject('theme_color');
 
 ////////////////////////////////////////
 // 프로세스 타이머
