@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container max-width="960px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
@@ -235,7 +235,10 @@
         </template>
       </v-data-table>
 
-      <div id="map" class="ps-5" style="width:100%;height:400px;"></div>
+      <!-- 지도 -->
+      <div class="d-flex flex-column align-center">
+        <div id="map" style="width:90vw;height:300px;max-height:60vh;"></div>
+      </div>
 
     </v-card>
 
@@ -338,6 +341,7 @@ import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs'
+import * as libmap from '@/component/KakaoMap.js';
 
 ////////////////////////////////////////
 // 테마
@@ -377,6 +381,8 @@ let map = null;
 // 마커
 let markers = [];
 var infowindow = null;
+var mapCustomOverlay = null
+var bounds = null;
 
 // 초기값
 var init_key = 'f4592e97c349ab41d02ff73bd314a201';
@@ -549,11 +555,17 @@ const Process = async () => {
 };
 
 const OnChange_AreaList = async (newArea) => {
+  var isBound = false;
   if (newArea != null) {
     areaList_selected.value = newArea;
+    bounds = null;
   }
 
   search.value = '';
+  console.log("111" + bounds);
+  if (bounds == null) {
+    isBound = true;
+  }
 
   try {
     const response = await axios.get(`/api/weathersi/devices?BDONG_CD=${areaList_selected.value}`)
@@ -567,6 +579,12 @@ const OnChange_AreaList = async (newArea) => {
 
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
+  }
+
+  console.log(isBound);
+  if (isBound == true) {
+    map.setBounds(bounds, 10, 10, 10, 10);
+    isBound = false;
   }
 }
 
@@ -666,6 +684,12 @@ function loadMap() {
   marker.setMap(map);
 
   infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+
+  // 커스텀 오버레이를 생성합니다
+  mapCustomOverlay = new kakao.maps.CustomOverlay({
+    xAnchor: -0.2, // 커스텀 오버레이의 x축 위치입니다. 1에 가까울수록 왼쪽에 위치합니다. 기본값은 0.5 입니다
+    yAnchor: 0.5, // 커스텀 오버레이의 y축 위치입니다. 1에 가까울수록 위쪽에 위치합니다. 기본값은 0.5 입니다
+  });
 }
 
 async function getMarker() {
@@ -676,7 +700,7 @@ async function getMarker() {
 
   markers.forEach(marker => marker.setMap(null));
 
-  var bounds = new kakao.maps.LatLngBounds();
+  bounds = new kakao.maps.LatLngBounds();
 
   positions.forEach(pos => {
     var image;
@@ -703,7 +727,6 @@ async function getMarker() {
         return;
     }
     // 지도를 클릭한 위치에 표출할 마커입니다
-    console.log(pos);
     let marker = new kakao.maps.Marker({
       map: map,
       position: new kakao.maps.LatLng(Number(pos.LAT), Number(pos.LON)),
@@ -711,20 +734,29 @@ async function getMarker() {
       image: image
     });
 
-    bounds.extend(marker.getPosition());
 
     // 마커에 클릭이벤트를 등록합니다
     kakao.maps.event.addListener(marker, 'click', function () {
       // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
-      infowindow.setContent(`<div><span style="font-size:12px;">${pos.NM_DIST_OBSV}</span><div>`);
-      infowindow.open(map, marker);
+      //infowindow.setContent(libmap.newInfoWindow(pos));// `<div><span style="font-size:12px;">${pos.NM_DIST_OBSV}</span><div>`
+      //infowindow.open(map, marker);
+      console.log(marker);
+      mapCustomOverlay.setPosition(marker.getPosition());
+      mapCustomOverlay.setContent(libmap.newInfoWindow(pos));
+      mapCustomOverlay.setMap(map);
     });
+
+    // 바운드를 추가합니다.
+    bounds.extend(marker.getPosition());
 
     // 지도에 마커를 표시합니다
     markers.push(marker);
   });
+}
 
-  map.setBounds(bounds, 10, 10, 10, 10);
+// 커스텀 오버레이를 닫기 위해 호출되는 함수입니다 
+function closeOverlay() {
+  mapCustomOverlay.setMap(null);
 }
 
 // 차단기 테스트 제어 함수
@@ -830,5 +862,112 @@ const sendGate = async (item, gate) => {
 
 .v-field__field input {
   cursor: pointer;
+}
+
+
+.wrap {
+  position: absolute;
+  left: 0;
+  bottom: 40px;
+  width: 100px;
+  height: 132px;
+  margin-left: -144px;
+  text-align: left;
+  overflow: hidden;
+  font-size: 12px;
+  font-family: 'Malgun Gothic', dotum, '돋움', sans-serif;
+  line-height: 1.5;
+}
+
+.wrap * {
+  padding: 0;
+  margin: 0;
+}
+
+.wrap .info {
+  width: 286px;
+  height: 120px;
+  border-radius: 5px;
+  border-bottom: 2px solid #ccc;
+  border-right: 1px solid #ccc;
+  overflow: hidden;
+  background: #fff;
+}
+
+.wrap .info:nth-child(1) {
+  border: 0;
+  box-shadow: 0px 1px 2px #888;
+}
+
+.info .title {
+  padding: 5px 0 0 10px;
+  height: 30px;
+  background: #eee;
+  border-bottom: 1px solid #ddd;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.info .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #888;
+  width: 17px;
+  height: 17px;
+  background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/overlay_close.png');
+}
+
+.info .close:hover {
+  cursor: pointer;
+}
+
+.info .body {
+  position: relative;
+  overflow: hidden;
+}
+
+.info .desc {
+  position: relative;
+  margin: 13px 0 0 90px;
+  height: 75px;
+}
+
+.desc .ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desc .jibun {
+  font-size: 11px;
+  color: #888;
+  margin-top: -2px;
+}
+
+.info .img {
+  position: absolute;
+  top: 6px;
+  left: 5px;
+  width: 73px;
+  height: 71px;
+  border: 1px solid #ddd;
+  color: #888;
+  overflow: hidden;
+}
+
+.info:after {
+  content: '';
+  position: absolute;
+  margin-left: -12px;
+  left: 50%;
+  bottom: 0;
+  width: 22px;
+  height: 12px;
+  background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png')
+}
+
+.info .link {
+  color: #5085BB;
 }
 </style>

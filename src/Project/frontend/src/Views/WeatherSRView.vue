@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container max-width="960px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
@@ -134,25 +134,16 @@
           </span>
         </template>
 
-        <template v-slot:[`item.LastDate`]="{ item }">
-          <v-tooltip v-model="item.tooltip" location="top">
-            <!-- activator 슬롯 -->
-            <template v-slot:activator="{ props }">
-              <div v-bind="props" style="font-size: x-small; cursor: pointer;" @click="showTooltip(item)">
-                {{ item.LastDate }}
-              </div>
-            </template>
-
-            <!-- tooltip 내용 -->
-            <span>{{ item.LastDate }}</span>
-          </v-tooltip>
-        </template>
 
         <template v-slot:[`item.ResultCode`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.ResultCode === 'OK' ? 'green' : 'red'"
               :text="item.ResultCode === 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
           </div>
+        </template>
+
+        <template v-slot:[`item.LOGGER_GL`]="{ item }">
+          <span>{{ item.LOGGER_GL !== null ? `${item.LOGGER_GL} M` : '-' }}</span>
         </template>
 
         <template v-slot:expanded-row="{ columns, item }">
@@ -180,19 +171,72 @@
                     </v-btn>
                   </v-col>
                 </v-row>
+
                 <v-row class="bg-surface-light">
-                  <v-col cols="4"><strong>통신시간</strong></v-col>
-                  <v-col cols="2"><strong>수위</strong></v-col>
-                  <v-col cols="2"><strong>유량</strong></v-col>
-                  <v-col cols="2"><strong>유속</strong></v-col>
-                  <v-col cols="2"><strong>UPS</strong></v-col>
+                  <v-col cols="4"><strong>로거시간</strong></v-col>
+                  <v-col cols="4"><strong>부팅시간</strong></v-col>
+                  <v-col cols="2"><strong>수위<br />(GL-M)</strong></v-col>
+                  <v-col cols="2"><strong>수위<br />(FL-M)</strong></v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="4">{{ item.observationDateTime }}</v-col>
-                  <v-col cols="2">{{ item.waterLevelStatusCode }}</v-col>
-                  <v-col cols="2">{{ item.velocityStatusCode }}</v-col>
-                  <v-col cols="2">{{ item.dischargeStatusCode }}</v-col>
-                  <v-col cols="2">{{ item.upsStatusCode }}</v-col>
+                  <v-col cols="4">
+                    {{ item.LOGGER_TIME === null ? '-' : `${new dayjs(item.LOGGER_TIME)
+                      .format('YYYY-MM-DD HH:mm:ss')}` }}
+                  </v-col>
+                  <v-col cols="4">
+                    {{ item.LOGGER_UPTIME === null ? '-' : `${new dayjs(item.LOGGER_UPTIME)
+                      .format('YYYY-MM-DD HH:mm:ss')}` }}
+                  </v-col>
+                  <v-col cols="2">{{ item.LOGGER_GL }}</v-col>
+                  <v-col cols="2">{{ item.LOGGER_FL }}</v-col>
+                </v-row>
+                <v-row class="bg-surface-light">
+                  <v-col cols="8"><strong>서비스키</strong></v-col>
+                  <v-col cols="4"><strong>API연계상태</strong></v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="8">{{ item.serviceKey }}</v-col>
+                  <v-col cols="4">
+                    <v-chip class="pa-1" :color="item.ResultCode === 'OK' ? 'green' : 'red'" size="x-small" label>{{
+                      item.ResultCode }}
+                    </v-chip>
+                  </v-col>
+                </v-row>
+                <v-row class="bg-surface-light">
+                  <v-col cols="4"><strong>전송시간</strong></v-col>
+                  <v-col cols="2"><strong>수위<br />상태</strong></v-col>
+                  <v-col cols="2"><strong>유량<br />상태</strong></v-col>
+                  <v-col cols="2"><strong>유속<br />상태</strong></v-col>
+                  <v-col cols="2"><strong>UPS<br />상태</strong></v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="4">
+                    {{ item.observationDateTime === null ? '-' : `${dayjs(item.observationDateTime,
+                      'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss')}` }}
+                  </v-col>
+                  <v-col cols="2">
+                    <v-chip class="pa-1" :color="item.waterLevelStatusCode === '00' ? 'green' : 'red'" size="x-small"
+                      label>
+                      {{ item.waterLevelStatusCode === '00' ? '정상' : `점검\n(${item.waterLevelStatusCode ?? '-'})` }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="2">
+                    <v-chip class="pa-1" :color="item.velocityStatusCode === '10' ? 'green' : 'red'" size="x-small"
+                      label>
+                      {{ item.velocityStatusCode === '10' ? '정상' : `점검\n(${item.velocityStatusCode ?? '-'})` }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="2">
+                    <v-chip class="pa-1" :color="item.dischargeStatusCode === '20' ? 'green' : 'red'" size="x-small"
+                      label>
+                      {{ item.dischargeStatusCode === '20' ? '정상' : `점검\n(${item.dischargeStatusCode ?? '-'})` }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="2" class="ma-0">
+                    <v-chip class="pa-1" :color="item.upsStatusCode === '00' ? 'green' : 'red'" size="x-small" label>
+                      {{ item.upsStatusCode === '00' ? '정상' : `점검\n(${item.upsStatusCode ?? '-'})` }}
+                    </v-chip>
+                  </v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
@@ -236,6 +280,9 @@
 import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
 import axios from 'axios'
+import dayjs from 'dayjs';
+import customParseformat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseformat);
 
 ////////////////////////////////////////
 // 테마

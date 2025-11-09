@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, IntegerType } from 'typeorm';
 
 @Entity({
   name: 'sr_equip',
@@ -55,7 +55,7 @@ export class SrEquip {
     nullable: true,
     comment: '로거 부팅시간',
   })
-  LOGGER_UPTIME: string;
+  LOGGER_UPTIME: Date;
 
   @Column({
     name: 'LOGGER_TIME',
@@ -63,7 +63,7 @@ export class SrEquip {
     nullable: true,
     comment: '로거 현재시간',
   })
-  LOGGER_TIME: string;
+  LOGGER_TIME: Date;
 
   @Column({
     name: 'LOGGER_GL',
@@ -117,7 +117,7 @@ export class SrEquip {
     nullable: true,
     comment: '수위',
   })
-  waterLevel: string;
+  waterLevel: number;
 
   @Column({
     name: 'averageVelocity',
@@ -126,7 +126,7 @@ export class SrEquip {
     nullable: true,
     comment: '평균 유속',
   })
-  averageVelocity: string;
+  averageVelocity: number;
 
   @Column({
     name: 'totalDischarge',
@@ -135,7 +135,7 @@ export class SrEquip {
     nullable: true,
     comment: '총 유량',
   })
-  totalDischarge: string;
+  totalDischarge: number;
 
   @Column({
     name: 'ResultCode',
