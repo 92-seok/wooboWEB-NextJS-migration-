@@ -171,7 +171,9 @@
                     </v-btn>
                   </v-col>
                 </v-row>
-
+                <v-row class="bg-blue">
+                  <v-col cols="12" class="text-subtitle-1"><strong>로거</strong></v-col>
+                </v-row>
                 <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>로거시간</strong></v-col>
                   <v-col cols="4"><strong>부팅시간</strong></v-col>
@@ -203,7 +205,7 @@
                   </v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
-                  <v-col cols="4"><strong>전송시간</strong></v-col>
+                  <v-col cols="4"><strong>상태전송시간</strong></v-col>
                   <v-col cols="2"><strong>수위<br />상태</strong></v-col>
                   <v-col cols="2"><strong>유량<br />상태</strong></v-col>
                   <v-col cols="2"><strong>유속<br />상태</strong></v-col>
@@ -211,7 +213,7 @@
                 </v-row>
                 <v-row>
                   <v-col cols="4">
-                    {{ item.observationDateTime === null ? '-' : `${dayjs(item.observationDateTime,
+                    {{ item.StatusDateTime === null ? '-' : `${dayjs(item.StatusDateTime,
                       'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss')}` }}
                   </v-col>
                   <v-col cols="2">

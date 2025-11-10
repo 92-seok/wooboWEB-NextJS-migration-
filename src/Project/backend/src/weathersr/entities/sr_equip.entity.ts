@@ -156,6 +156,32 @@ export class SrEquip {
   ResultMsg: string;
 
   @Column({
+    name: 'statusDateTime',
+    type: 'datetime',
+    nullable: true,
+    comment: '상태전송 시간',
+  })
+  StatusDateTime: Date;
+
+  @Column({
+    name: 'statusResultCode',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    comment: '상태전송 결과',
+  })
+  StatusResultCode: string;
+
+  @Column({
+    name: 'statusResultMsg',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: '상태전송결과 메시지',
+  })
+  StatusResultMsg: string;
+
+  @Column({
     name: 'waterLevelStatusCode',
     type: 'varchar',
     length: 2,
