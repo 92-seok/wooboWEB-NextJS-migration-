@@ -6,8 +6,8 @@
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
           <template v-slot:activator="{ props }">
             <v-scale-transition>
-              <v-btn class="pa-0" size="large" style="min-width: 50px;" color="deep-purple" v-bind="props">{{ menu.name
-              }}</v-btn>
+              <v-btn class="pa-0" size="large" style="min-width: 50px;" :color="theme_color" v-bind="props">
+                {{ menu.name }}</v-btn>
             </v-scale-transition>
           </template>
 
@@ -53,8 +53,7 @@
       <v-divider />
 
       <!-- 장비 현황 카드 -->
-      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center "
-        style="justify-content: center;">
+      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center" style="justify-content: center;">
         <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
@@ -95,14 +94,14 @@
       <!-- 데이터 테이블 -->
       <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="comfortable" :search="search"
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
-        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
+        :header-props="{ align: 'start', style: 'font-weight: bold;' }" :items="devices"
         :cell-props="{ align: 'start' }" item-value="IDX" show-expand v-model:page="page"
         v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" :items-per-page-options="[
           { value: 10, title: '10' },
           { value: 25, title: '25' },
           { value: 50, title: '50' },
           { value: 100, title: '100' },
-        ]" multi-sort hover>
+        ]" multi-sort hover fixed-header height="calc(100vh - 50px)" striped="even">
 
         <template #no-data>
           장비를 찾을 수 없습니다.
@@ -443,12 +442,12 @@ const menuList = [
 ];
 
 const headers = [
-  { key: 'data-table-expand', width: 35, align: 'center', sortable: false },
+  { key: 'data-table-expand', width: '35px', sortable: false },
   { key: 'index', width: '25px', sortable: false },
-  { key: 'SIDO_CD', title: '지역', width: '50px', },
-  { key: 'GB_OBSV', title: '종류', width: '50px', },
-  { key: 'NM_DIST_OBSV', title: '장비명', align: 'start' },
-  { key: 'ErrorChk', title: '상태', width: '50px', },
+  { key: 'SIDO_CD', title: '지역', width: '50px' },
+  { key: 'GB_OBSV', title: '종류', width: '50px' },
+  { key: 'NM_DIST_OBSV', title: '장비명' },
+  { key: 'ErrorChk', title: '상태', width: '50px' },
   { key: 'DATA', title: '데이터' },
 ]
 ////////////////////////////////////////

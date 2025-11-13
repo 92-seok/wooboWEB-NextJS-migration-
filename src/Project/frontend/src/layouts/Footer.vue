@@ -1,26 +1,26 @@
 <template>
   <v-bottom-navigation v-model="menu_idx" :bg-color=theme_color density="comfortable" grow>
-    <v-btn @click="GoMenu('/map')">
+    <v-btn @click="router.push('/map')">
       <v-icon>mdi-map</v-icon>
       <span class="text-subtitle-2">지도</span>
     </v-btn>
 
-    <v-btn @click="GoMenu('/weathersi')">
+    <v-btn @click="router.push('/weathersi')">
       <v-icon>mdi-television-play</v-icon>
       <span class="text-subtitle-2">통합관측</span>
     </v-btn>
 
-    <v-btn @click="GoMenu('/weathersr')">
+    <v-btn @click="router.push('/weathersr')">
       <v-icon>mdi-waves-arrow-up</v-icon>
       <span class="text-subtitle-2">소하천</span>
     </v-btn>
 
-    <v-btn @click="GoMenu('/setting')">
+    <v-btn @click="router.push('/setting')">
       <v-icon>mdi-book</v-icon>
       <span class="text-subtitle-2">관리</span>
     </v-btn>
 
-    <v-btn @click="GoMenu('/login')">
+    <v-btn @click="router.push('/login')">
       <v-icon>mdi-account</v-icon>
       <span class="text-subtitle-2">로그인</span>
     </v-btn>
@@ -40,44 +40,20 @@ const router = useRouter();
 ////////////////////////////////////////
 // 테마
 ////////////////////////////////////////
-const { theme_color, OnClick_theme_color } = inject('theme_color')
+const { theme_color } = inject('theme_color');
 
 // reactive status
-const menu_idx = ref(-1)
+const menu_idx = ref(-1);
 
 ////////////////////////////////////////
 // EVENT 생명주기
 ////////////////////////////////////////
 onMounted(async () => {
-  GoMenu(router.currentRoute.value.fullPath);
+
 });
 
 onUnmounted(() => {
 });
-
-// function
-function GoMenu(path) {
-  var color;
-
-  switch (path) {
-    case '/map': color = 'blue-grey'
-      break;
-    case '/weathersi': color = 'deep-purple'
-      break;
-    case '/weathersr': color = 'indigo'
-      break;
-    case '/setting': color = 'brown'
-      break;
-    case '/login': color = 'yellow'
-      break;
-    default: color = 'primary'
-      break;
-  }
-
-  OnClick_theme_color(color);
-
-  router.push(path);
-}
 
 </script>
 

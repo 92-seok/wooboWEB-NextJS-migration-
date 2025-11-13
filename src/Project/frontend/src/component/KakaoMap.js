@@ -59,7 +59,7 @@ export function newInfoWindow(obj) {
   var content =
     '<div class="wrap bg-white">' +
     '    <div class="info">' +
-    '        <div class="title">' +
+    '        <div class="title bg-primary">' +
     `            ${obj.NM_DIST_OBSV}` +
     '            <div class="close" onclick="closeOverlay()" title="닫기"></div>' +
     "        </div>" +
@@ -67,8 +67,8 @@ export function newInfoWindow(obj) {
     '            <div class="desc">' +
     `                <div class="jibun ellipsis">${obj.DTL_ADRES}</div>` +
     "            </div>" +
-    "            <div >" +
-    `                <div>${obj.DATA}</div>` +
+    "            <div>" +
+    `                <div class='bg-black'>${obj.DATA}</div>` +
     "            </div>" +
     "        </div>" +
     "    </div>" +

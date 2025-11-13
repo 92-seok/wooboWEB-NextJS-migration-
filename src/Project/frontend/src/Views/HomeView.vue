@@ -7,7 +7,7 @@
 
     <v-row>
       <v-col cols="12" md="6">
-        <v-card href="http://woobo.online/weathersi" prepend-icon="mdi-web" text="http://woobo.online"
+        <v-card @click="router.push('/weathersi')" prepend-icon="mdi-web" text="http://woobo.online"
           title="웹페이지"></v-card>
       </v-col>
 
@@ -31,6 +31,9 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter();
 
 </script>
 

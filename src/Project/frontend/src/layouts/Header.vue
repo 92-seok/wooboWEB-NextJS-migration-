@@ -55,11 +55,9 @@ const { theme_color } = inject('theme_color')
 // Form 이벤트
 ////////////////////////////////////////
 onMounted(() => {
-  console.log(`Header.vue::onMounted()`);
 });
 
 onUnmounted(() => {
-  console.log(`Header.vue::onUnmounted()`);
 });
 
 ////////////////////////////////////////
