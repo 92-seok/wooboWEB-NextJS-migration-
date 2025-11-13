@@ -31,7 +31,7 @@
       </v-autocomplete>
     </v-sheet>
 
-    <v-card flat class="table-container">
+    <v-card flat>
       <!--장비 검색 창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
@@ -94,7 +94,7 @@
       <!-- 데이터 테이블 -->
       <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="comfortable" :search="search"
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
-        :header-props="{ align: 'start', style: 'font-weight: bold;' }" :items="devices"
+        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
         :cell-props="{ align: 'start' }" item-value="IDX" show-expand v-model:page="page"
         v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" :items-per-page-options="[
           { value: 10, title: '10' },
@@ -448,7 +448,7 @@ const headers = [
   { key: 'GB_OBSV', title: '종류', width: '50px' },
   { key: 'NM_DIST_OBSV', title: '장비명' },
   { key: 'ErrorChk', title: '상태', width: '50px' },
-  { key: 'DATA', title: '데이터' },
+  { key: 'DATA', title: '데이터', align: 'center' },
 ]
 ////////////////////////////////////////
 

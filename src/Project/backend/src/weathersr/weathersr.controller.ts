@@ -71,8 +71,8 @@ export class WeatherSrController {
         count: devices.length,
         data: devices.map((item) => ({
           IDX: `${item.observatoryCode}`,
-          SIDO_CD: item.observatoryCode.slice(0, 4),
-          BDONG_CD: item.observatoryCode,
+          SIDO_CD: item.BDONG_CD.slice(0, 4),
+          BDONG_CD: item.BDONG_CD,
           DTL_ADRES: item.DTL_ADRES,
           LAT: item.LAT,
           LON: item.LON,
@@ -96,6 +96,14 @@ export class WeatherSrController {
           dischargeStatusCode: item.dischargeStatusCode,
           upsStatusCode: item.upsStatusCode,
           RTSP_URL: item.RTSP_URL,
+          STATUS:
+            item.ResultCode === 'OK' && item.observationDateTime !== null
+              ? (Date.now() - item.observationDateTime.getTime()) /
+                  (1000 * 60 * 60) <
+                1
+                ? `OK`
+                : `FAIL`
+              : '-',
         })),
       };
     } catch (error) {

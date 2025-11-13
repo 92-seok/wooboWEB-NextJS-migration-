@@ -103,12 +103,11 @@ export class SrEquip {
 
   @Column({
     name: 'observationDateTime',
-    type: 'varchar',
-    length: 14,
+    type: 'datetime',
     nullable: true,
-    comment: '관측일시(yyyyMMddHHmmss)',
+    comment: '관측일시',
   })
-  observationDateTime: string;
+  observationDateTime: Date;
 
   @Column({
     name: 'waterLevel',

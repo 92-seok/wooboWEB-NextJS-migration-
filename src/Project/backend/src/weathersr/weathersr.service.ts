@@ -44,7 +44,7 @@ export class WeatherSrService {
     try {
       return await this.SrEquipRepository.createQueryBuilder()
         .where(where)
-        .orderBy('observatoryCode', 'ASC')
+        .orderBy('BDONG_CD', 'ASC')
         .getMany();
     } catch (error) {
       throw new Error(`디바이스 조회 중 오류 발생: ${error.message}`);

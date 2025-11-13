@@ -72,7 +72,7 @@
               <strong>정상</strong>
             </v-card-title>
             <v-card-text class="text-h4">
-              {{devices.filter(item => item.ResultCode === 'OK').length}}
+              {{devices.filter(item => item.STATUS === 'OK').length}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -83,7 +83,7 @@
               <strong>점검필요</strong>
             </v-card-title>
             <v-card-text class="text-h4">
-              {{devices.filter(item => item.ResultCode !== 'OK').length}}
+              {{devices.filter(item => item.STATUS !== 'OK').length}}
             </v-card-text>
           </v-card>
         </v-col>
@@ -94,7 +94,7 @@
       <!-- 데이터 테이블 -->
       <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="comfortable" :search="search"
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
-        :header-props="{ align: 'start', style: 'font-weight: bold;' }" :items="devices"
+        :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devices"
         :cell-props="{ align: 'start' }" item-value="IDX" show-expand v-model:page="page"
         v-model:items-per-page="itemsPerPage" items-per-page-text="페이지당 표시 수" :items-per-page-options="[
           { value: 10, title: '10' },
@@ -136,10 +136,10 @@
         </template>
 
 
-        <template v-slot:[`item.ResultCode`]="{ item }">
+        <template v-slot:[`item.STATUS`]="{ item }">
           <div class="text-center">
-            <v-chip class="text-uppercase" :color="item.ResultCode === 'OK' ? 'green' : 'red'"
-              :text="item.ResultCode === 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
+            <v-chip class="text-uppercase" :color="item.STATUS === 'OK' ? 'green' : 'red'"
+              :text="item.STATUS === 'OK' ? '정상' : '점검필요'" size="x-small" label></v-chip>
           </div>
         </template>
 
@@ -172,14 +172,14 @@
                     </v-btn>
                   </v-col>
                 </v-row>
-                <v-row class="bg-blue">
-                  <v-col cols="12" class="text-subtitle-1"><strong>로거</strong></v-col>
+
+                <v-row class="bg-blue opacity-70">
+                  <v-col cols="12" class="text-subtitle-1 pa-1"><strong>로거</strong></v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>로거시간</strong></v-col>
                   <v-col cols="4"><strong>부팅시간</strong></v-col>
-                  <v-col cols="2"><strong>수위<br />(GL-M)</strong></v-col>
-                  <v-col cols="2"><strong>수위<br />(FL-M)</strong></v-col>
+                  <v-col cols="3" class="text-end"><strong>수위(GL-M)<br />(FL-M)</strong></v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="4">
@@ -190,21 +190,48 @@
                     {{ item.LOGGER_UPTIME === null ? '-' : `${new dayjs(item.LOGGER_UPTIME)
                       .format('YYYY-MM-DD HH:mm:ss')}` }}
                   </v-col>
-                  <v-col cols="2">{{ item.LOGGER_GL }}</v-col>
-                  <v-col cols="2">{{ item.LOGGER_FL }}</v-col>
+                  <v-col cols="3" class="text-end">{{ item.LOGGER_GL }} M<br />{{ item.LOGGER_FL }} M</v-col>
+                </v-row>
+
+                <v-row class="bg-yellow-darken-4 opacity-70">
+                  <v-col cols="12" class="text-subtitle-1 pa-1"><strong>국립재난안전연구원 API 연계</strong></v-col>
                 </v-row>
                 <v-row class="bg-surface-light">
                   <v-col cols="8"><strong>서비스키</strong></v-col>
                   <v-col cols="4"><strong>API연계상태</strong></v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="8">{{ item.serviceKey }}</v-col>
+                  <v-col cols="8"><span>{{ item.serviceKey }}</span></v-col>
                   <v-col cols="4">
-                    <v-chip class="pa-1" :color="item.ResultCode === 'OK' ? 'green' : 'red'" size="x-small" label>{{
+                    <v-chip :color="item.ResultCode === 'OK' ? 'green' : 'red'" size="small" label>{{
                       item.ResultCode }}
                     </v-chip>
                   </v-col>
                 </v-row>
+
+                <v-row class="bg-surface-light">
+                  <v-col cols="3" class="pa-1"><strong>API<br />전송시간</strong></v-col>
+                  <v-col cols="3" class="pa-1"><strong>수위(FL-M)</strong></v-col>
+                  <v-col cols="3" class="pa-1"><strong>유량(㎧)</strong></v-col>
+                  <v-col cols="3" class="pa-1"><strong>유속(㎥/s)</strong></v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="3" class="pa-1">
+                    {{ item.observationDateTime === null ? '-' : `${dayjs(item.observationDateTime)
+                      .format('YYYY-MM-DD HH:mm:ss')}` }}
+                  </v-col>
+                  <v-col cols="3" class="pa-1">
+                    <span>{{ item.waterLevel }}</span>
+                  </v-col>
+                  <v-col cols="3" class="pa-1">
+                    <span>{{ item.averageVelocity }}</span>
+                  </v-col>
+                  <v-col cols="3" class="pa-1">
+                    <span>{{ item.totalDischarge }}</span>
+                  </v-col>
+
+                </v-row>
+
                 <v-row class="bg-surface-light">
                   <v-col cols="4"><strong>상태전송시간</strong></v-col>
                   <v-col cols="2"><strong>수위<br />상태</strong></v-col>
@@ -213,34 +240,32 @@
                   <v-col cols="2"><strong>UPS<br />상태</strong></v-col>
                 </v-row>
                 <v-row>
-                  <v-col cols="4">
-                    {{ item.StatusDateTime === null ? '-' : `${dayjs(item.StatusDateTime,
-                      'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss')}` }}
+                  <v-col cols="4" class="pa-2">
+                    {{ item.statusDateTime === null ? '-' : `${dayjs(item.statusDateTime)
+                      .format('YYYY-MM-DD HH:mm:ss')}` }}
                   </v-col>
-                  <v-col cols="2">
-                    <v-chip class="pa-1" :color="item.waterLevelStatusCode === '00' ? 'green' : 'red'" size="x-small"
-                      label>
-                      {{ item.waterLevelStatusCode === '00' ? '정상' : `점검\n(${item.waterLevelStatusCode ?? '-'})` }}
+                  <v-col cols="2" class="pa-2">
+                    <v-chip :color="item.waterLevelStatusCode === '00' ? 'green' : 'red'" size="x-small" label>
+                      {{ item.waterLevelStatusCode === '00' ? '정상' : `점검` }}
                     </v-chip>
                   </v-col>
-                  <v-col cols="2">
-                    <v-chip class="pa-1" :color="item.velocityStatusCode === '10' ? 'green' : 'red'" size="x-small"
-                      label>
-                      {{ item.velocityStatusCode === '10' ? '정상' : `점검\n(${item.velocityStatusCode ?? '-'})` }}
+                  <v-col cols="2" class="pa-2">
+                    <v-chip :color="item.velocityStatusCode === '10' ? 'green' : 'red'" size="x-small" label>
+                      {{ item.velocityStatusCode === '10' ? '정상' : `점검` }}
                     </v-chip>
                   </v-col>
-                  <v-col cols="2">
-                    <v-chip class="pa-1" :color="item.dischargeStatusCode === '20' ? 'green' : 'red'" size="x-small"
-                      label>
-                      {{ item.dischargeStatusCode === '20' ? '정상' : `점검\n(${item.dischargeStatusCode ?? '-'})` }}
+                  <v-col cols="2" class="pa-2">
+                    <v-chip :color="item.dischargeStatusCode === '20' ? 'green' : 'red'" size="x-small" label>
+                      {{ item.dischargeStatusCode === '20' ? '정상' : `점검` }}
                     </v-chip>
                   </v-col>
-                  <v-col cols="2" class="ma-0">
-                    <v-chip class="pa-1" :color="item.upsStatusCode === '00' ? 'green' : 'red'" size="x-small" label>
-                      {{ item.upsStatusCode === '00' ? '정상' : `점검\n(${item.upsStatusCode ?? '-'})` }}
+                  <v-col cols="2" class="pa-2">
+                    <v-chip :color="item.upsStatusCode === '00' ? 'green' : 'red'" size="x-small" label>
+                      {{ item.upsStatusCode === '00' ? '정상' : `점검` }}
                     </v-chip>
                   </v-col>
                 </v-row>
+
                 <v-row class="bg-surface-light">
                   <v-sparkline height="3px"></v-sparkline>
                 </v-row>
@@ -359,9 +384,8 @@ const headers = [
   { key: 'data-table-expand', width: '35px', sortable: false },
   { key: 'index', width: '25px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px', },
-  //{ key: 'GB_OBSV', title: '종류', width: '50px', },
   { key: 'NM_DIST_OBSV', title: '장비명', },
-  { key: 'ResultCode', title: '상태', width: '50px', },
+  { key: 'STATUS', title: '상태', width: '50px', },
   { key: 'LOGGER_GL', title: '데이터' },
 ]
 ////////////////////////////////////////
@@ -457,6 +481,7 @@ const Process = async () => {
     const response_areaList = await axios.get('/api/weathersr/areaList');
 
     areaList.value = response_areaList.data.data.map(item => ({
+      ...item,
       title: item.RM, value: item.ADMCODE
     }));
 
