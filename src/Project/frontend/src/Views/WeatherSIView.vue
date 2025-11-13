@@ -31,7 +31,7 @@
       </v-autocomplete>
     </v-sheet>
 
-    <v-card flat>
+    <v-card flat class="table-container">
       <!--장비 검색 창 -->
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-list-box-outline"></v-icon> &nbsp;
@@ -101,7 +101,7 @@
           { value: 25, title: '25' },
           { value: 50, title: '50' },
           { value: 100, title: '100' },
-        ]" multi-sort hover fixed-header height="calc(100vh - 50px)" striped="even">
+        ]" multi-sort hover fixed-header striped="even">
 
         <template #no-data>
           장비를 찾을 수 없습니다.

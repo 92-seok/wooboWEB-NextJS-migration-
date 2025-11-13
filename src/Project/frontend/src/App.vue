@@ -1,6 +1,6 @@
 <template>
   <v-responsive class="border rounded">
-    <v-app :theme="theme">
+    <v-app class="app" :theme="theme">
       <Header />
       <Main />
       <Footer />
@@ -59,5 +59,10 @@ body {
   &::-webkit-scrollbar {
     display: none !important;
   }
+}
+
+.app {
+  height: 100vh;
+  overflow: hidden;
 }
 </style>
