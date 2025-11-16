@@ -152,7 +152,7 @@
           <td :colspan="columns.length">
             <v-card density="compact" outlined>
               <v-container class="text-center">
-                <v-row :class="item.ResultCode === 'OK' ? 'bg-green' : 'bg-red'" class="rounded">
+                <v-row :class="item.STATUS === 'OK' ? 'bg-green' : 'bg-red'" class="rounded">
                   <v-col cols="12">
                     <strong class="text-h5">{{
                       item.NM_DIST_OBSV }}</strong>
