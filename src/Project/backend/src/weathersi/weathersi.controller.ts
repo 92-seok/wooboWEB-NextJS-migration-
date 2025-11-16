@@ -215,7 +215,7 @@ export class WeatherSiController {
     }
   }
 
-  @Post('sendDis')
+  @Post('sendDisplay')
   async postDis(
     @Body() BODY: any,
     @Body('BDONG_CD') BDONG_CD: string,

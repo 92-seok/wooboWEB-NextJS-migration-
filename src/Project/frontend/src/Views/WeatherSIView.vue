@@ -318,13 +318,11 @@
       <div v-else-if="selectedItem.GB_OBSV === '18'" class="ga-3">
         <v-card title="테스트 문구">
           <v-card-text class="text-center" v-if="selectedItem">
-            <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"
-              placeholder="테스트 개발 준비 중입니다."></v-textarea>
           </v-card-text>
           <template v-slot:actions>
             <v-spacer></v-spacer>
             <v-btn @click="dialog_test = false">취소</v-btn>
-            <v-btn color="primary" loading="loading" disabled="loading" @click="sendBrd(selectedItem)">제어</v-btn>
+            <v-btn color="primary" @click="sendDisplay(selectedItem)">제어</v-btn>
           </template>
         </v-card>
       </div>
@@ -560,7 +558,7 @@ const OnChange_AreaList = async (newArea) => {
     bounds = null;
   }
 
-  search.value = '';
+  //search.value = '';
   console.log("111" + bounds);
   if (bounds == null) {
     isBound = true;
@@ -584,56 +582,6 @@ const OnChange_AreaList = async (newArea) => {
   if (isBound == true) {
     map.setBounds(bounds, 10, 10, 10, 10);
     isBound = false;
-  }
-}
-
-
-// 테스트 전송
-// 방송장비 테스트 제어 함수
-const sendBrd = async (item) => {
-  // console.log('제어 요청' + item)
-
-  if (loading.value) {
-    showSnackbar_test('테스트중 입니다.', 'error');
-    return; // 이미 로딩 중이면 무시
-  }
-
-  if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
-    return;
-  }
-  try {
-    loading.value = true; // 로딩 시작
-
-    // DB에 전송
-    const response = await axios.post('/api/weathersi/sendBrd', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      RCMD: 'B010',
-      Parm1: '00000000',
-      Parm2: '1',
-      Parm3: broadTestMessage.value,
-      BStatus: 'start',
-      RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      Auth: 'online'
-    });
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar_test("메세지가 성공적으로 전송되었습니다.", 'success');
-      broadTestMessage.value = "";
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
   }
 }
 
@@ -758,6 +706,57 @@ function closeOverlay() {
   mapCustomOverlay.setMap(null);
 }
 
+
+// 테스트 전송
+// 방송장비 테스트 제어 함수
+const sendBrd = async (item) => {
+  // console.log('제어 요청' + item)
+
+  if (loading.value) {
+    showSnackbar_test('테스트중 입니다.', 'error');
+    return; // 이미 로딩 중이면 무시
+  }
+
+  if (!item) {
+    showSnackbar_test('문구를 작성해주세요.', 'error');
+    return;
+  }
+  try {
+    loading.value = true; // 로딩 시작
+
+    // DB에 전송
+    const response = await axios.post('/api/weathersi/sendBrd', {
+      BDONG_CD: item.BDONG_CD,
+      CD_DIST_OBSV: item.CD_DIST_OBSV,
+      RCMD: 'B010',
+      Parm1: '00000000',
+      Parm2: '1',
+      Parm3: broadTestMessage.value,
+      BStatus: 'start',
+      RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      Auth: 'online'
+    });
+
+    const ok = response.status >= 200 && response.status < 300;
+    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
+    if (ok && serverOk) {
+      showSnackbar_test("메세지가 성공적으로 전송되었습니다.", 'success');
+      broadTestMessage.value = "";
+      dialog_test.value = false;
+    } else {
+      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
+
+      showSnackbar_test(`전송실패: ${msg}`, 'error');
+    }
+  } catch (err) {
+    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
+    showSnackbar_test(msg, 'error');
+  } finally {
+    loading.value = false; // 로딩 종료
+  }
+}
+
+
 // 차단기 테스트 제어 함수
 const sendGate = async (item, gate) => {
   if (loading.value) return; // 이미 로딩 중이면 무시
@@ -782,6 +781,48 @@ const sendGate = async (item, gate) => {
     if (ok && serverOk) {
       showSnackbar_test("장비 제어가 정상적으로 등록 되었습니다.", 'success');
       broadTestMessage.value = "";
+      dialog_test.value = false;
+    } else {
+      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
+
+      showSnackbar_test(`전송실패: ${msg}`, 'error');
+    }
+  } catch (err) {
+    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
+    showSnackbar_test(msg, 'error');
+  } finally {
+    loading.value = false; // 로딩 종료
+  }
+  dialog_test.value = false;
+}
+
+
+// 전광판 테스트 제어 함수
+const sendDisplay = async (item, display) => {
+  if (loading.value) return; // 이미 로딩 중이면 무시
+  if (!item) {
+    showSnackbar_test('문구를 작성해주세요.', 'error');
+    return;
+  }
+  try {
+    loading.value = true; // 로딩시작
+
+    // DB에 전송
+    const response = await axios.post('/api/weathersi/sendDisplay', {
+      BDONG_CD: item.BDONG_CD,
+      CD_DIST_OBSV: item.CD_DIST_OBSV,
+      RCMD: 'S170',
+      Parm1: '',
+      Parm2: '',
+      Parm3: '',
+      BStatus: 'start',
+      Auth: 'online'
+    });
+
+    const ok = response.status >= 200 && response.status < 300;
+    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
+    if (ok && serverOk) {
+      showSnackbar_test("장비 제어가 정상적으로 등록 되었습니다.", 'success');
       dialog_test.value = false;
     } else {
       const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";

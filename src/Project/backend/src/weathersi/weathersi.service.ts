@@ -135,7 +135,7 @@ export class WeatherSiService {
       obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
       obj.Auth = body.Auth;
 
-      return await this.NmsBrdSendRepository.insert(obj);
+      return await this.NmsDisSendRepository.insert(obj);
     } catch (error) {
       throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
     }
