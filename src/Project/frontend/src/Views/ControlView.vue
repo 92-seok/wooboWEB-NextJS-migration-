@@ -101,13 +101,13 @@
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
             <div v-if="item.GB_OBSV === '17'">
-              <v-img :src="require('@/assets/broad.png')" height="30" />
+              <v-img :src="broadImg" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '18'">
-              <v-img :src="require('@/assets/display.png')" height="30" />
+              <v-img :src="displayImg" height="30" />
             </div>
             <div v-if="item.GB_OBSV === '20'">
-              <v-img :src="require('@/assets/gate.png')" height="30" />
+              <v-img :src="gateImg" height="30" />
             </div>
           </v-card>
         </template>
@@ -165,14 +165,14 @@
               <v-btn elevation="10" class="gate-btn ma-3"
                 :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'open')">
-                <v-img :src="require('@/assets/gate_open.png')" width="50px" heigh="40px" />
+                <v-img :src="gateOpenImg" width="50px" heigh="40px" />
                 <strong>열기</strong>
               </v-btn>
 
               <v-btn elevation="10" class="gate-btn ma-3"
                 :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'close')">
-                <v-img :src="require('@/assets/gate_close.png')" width="50px" height="40px" />
+                <v-img :src="gateCloseImg" width="50px" height="40px" />
                 <strong>닫기</strong>
               </v-btn>
             </v-col>
@@ -239,6 +239,11 @@
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
+import broadImg from '@/assets/broad.png'
+import displayImg from '@/assets/display.png'
+import gateImg from '@/assets/gate.png'
+import gateOpenImg from '@/assets/gate_open.png'
+import gateCloseImg from '@/assets/gate_close.png'
 
 let refresh_timer; // setInterval 핸들러
 const process_time = ref(20);

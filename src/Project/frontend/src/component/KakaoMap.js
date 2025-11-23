@@ -1,3 +1,5 @@
+import rainMarker from '@/assets/rain_marker.png'
+
 export function newInfoWindow(obj) {
   let infoDiv = document.createElement("div");
   let titleDiv = document.createElement("div");
@@ -16,7 +18,7 @@ export function newInfoWindow(obj) {
       titleDiv.style.backgroundColor = "blue";
       titleDiv.style.border = "true";
       imgDiv.style.height = "30px";
-      imgDiv.src = require(`@/assets/rain_marker.png`);
+      imgDiv.src = rainMarker;
       imgDiv.style.backgroundSize = "cover";
       break;
     case "02":

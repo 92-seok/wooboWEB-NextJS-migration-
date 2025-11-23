@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { NmsUserAuthority } from './nms_user_authority';
+import { NmsUserAuthority } from 'auth/entities/nms_user_authority';
 
 @Entity('nms_user')
 export class NmsUser {
@@ -9,7 +9,7 @@ export class NmsUser {
   @Column('varchar', { name: 'kakao_id', length: 50 })
   kakaoId: string;
 
-  @Column('varchar', { name: 'password'})
+  @Column('varchar', { name: 'password' })
   password: string;
 
   @Column('varchar', { name: 'email', length: 100 })

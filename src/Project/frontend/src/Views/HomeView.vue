@@ -2,7 +2,7 @@
   <v-empty-state class="custom-empty-state" title="설치 파일 다운로드">
 
     <template v-slot:media>
-      <v-img :src="require('@/assets/ci_woobosys_bar.png')" height="50"></v-img>
+      <v-img :src="ciWooboBar" height="50"></v-img>
     </template>
 
     <v-row>
@@ -32,6 +32,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import ciWooboBar from '@/assets/ci_woobosys_bar.png'
 
 const router = useRouter();
 

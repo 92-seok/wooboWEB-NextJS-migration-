@@ -1,15 +1,21 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { NmsUser } from './nms_user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { NmsUser } from 'auth/entities/nms_user.entity';
 
 @Entity('nms_user_authority')
 export class NmsUserAuthority {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { name : 'user_id'})
+  @Column('int', { name: 'user_id' })
   userId: number;
 
-  @Column('varchar', { name: 'authority_name'})
+  @Column('varchar', { name: 'authority_name' })
   authorityName: string;
 
   @ManyToOne(() => NmsUser, (user) => user.authorities)

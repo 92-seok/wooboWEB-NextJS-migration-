@@ -4,13 +4,12 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import axios from 'axios';
 import * as qs from 'qs';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor() {}
 
   async kakaoLogin(options: { code: string; domain: string }): Promise<any> {
     const { code, domain } = options;

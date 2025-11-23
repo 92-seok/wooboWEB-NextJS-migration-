@@ -16,8 +16,8 @@ import { WeatherSiModule } from './weathersi/weathersi.module';
 import { WeatherSrModule } from 'weathersr/weathersr.module';
 
 import { AuthModule } from './auth/auth.module';
-import { NmsUser } from 'domain/nms_user.entity';
-import { NmsUserAuthority } from 'domain/nms_user_authority';
+import { NmsUser } from './auth/entities/nms_user.entity';
+import { NmsUserAuthority } from './auth/entities/nms_user_authority';
 
 // Base
 import { AppController } from './app.controller';
@@ -39,6 +39,7 @@ import { AppService } from './app.service';
     }),
     WeatherSiModule,
     WeatherSrModule,
+    AuthModule,
   ],
   providers: [],
   controllers: [],

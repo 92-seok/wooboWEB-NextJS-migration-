@@ -123,7 +123,7 @@
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
             <div>
-              <v-img :src="require('@/assets/water.png')" height="25" />
+              <v-img :src="waterImg" height="25" />
             </div>
           </v-card>
         </template>
@@ -168,7 +168,7 @@
                   <v-col cols="4">{{ item.LAT && item.LAT.toFixed(4) }} / {{ item.LON && item.LON.toFixed(4) }}</v-col>
                   <v-col cols="4">
                     <v-btn @click="openGuideDialog(item)" min-width="30px" min-height="20px" width=30px height="20px">
-                      <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="20px" cover></v-img>
+                      <v-img :src="nmapImg" alt="네이버 지도" width="20px" cover></v-img>
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -286,7 +286,7 @@
       <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
         <v-card-text class="text-center" v-if="selectedItem">
           <div>
-            <v-img class="mx-auto" :width="100" :src="require('@/assets/nmap.png')"></v-img>
+            <v-img class="mx-auto" :width="100" :src="nmapImg"></v-img>
             <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
           </div>
         </v-card-text>
@@ -310,6 +310,8 @@ import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs';
 import customParseformat from 'dayjs/plugin/customParseFormat';
+import waterImg from '@/assets/water.png'
+import nmapImg from '@/assets/nmap.png'
 dayjs.extend(customParseformat);
 
 ////////////////////////////////////////

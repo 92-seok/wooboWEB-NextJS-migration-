@@ -23,7 +23,7 @@
       </v-card>
       <v-card-actions class="justify-center">
         <v-btn class="mb-8 pa-0" size="large" variant="tonal" @click="loginWithKakao">
-          <v-img width="auto" :src="require('@/assets/kakao_login.png')" alt="카카오 로그인" cover></v-img>
+          <v-img width="auto" :src="kakaoLoginImg" alt="카카오 로그인" cover></v-img>
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -32,6 +32,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import kakaoLoginImg from '@/assets/kakao_login.png'
 
 const visible = ref(false)
 

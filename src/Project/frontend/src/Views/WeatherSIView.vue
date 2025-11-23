@@ -123,34 +123,34 @@
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
             <div v-if="item.GB_OBSV === '01'">
-              <v-img :src="require('@/assets/rain.png')" height="25" />
+              <v-img :src="rainImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '02'">
-              <v-img :src="require('@/assets/water.png')" height="25" />
+              <v-img :src="waterImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '03'">
-              <v-img :src="require('@/assets/dplace.png')" height="25" />
+              <v-img :src="dplaceImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '06'">
-              <v-img :src="require('@/assets/snow.png')" height="25" />
+              <v-img :src="snowImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '08'">
-              <v-img :src="require('@/assets/tilt.png')" height="25" />
+              <v-img :src="tiltImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '15'">
-              <v-img :src="require('@/assets/dplace.png')" height="25" />
+              <v-img :src="dplaceImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '17'">
-              <v-img :src="require('@/assets/broad.png')" height="25" />
+              <v-img :src="broadImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '18'">
-              <v-img :src="require('@/assets/display.png')" height="25" />
+              <v-img :src="displayImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '20'">
-              <v-img :src="require('@/assets/gate.png')" height="25" />
+              <v-img :src="gateImg" height="25" />
             </div>
             <div v-else-if="item.GB_OBSV === '21'">
-              <v-img :src="require('@/assets/flood.png')" height="25" />
+              <v-img :src="floodImg" height="25" />
             </div>
           </v-card>
         </template>
@@ -203,7 +203,7 @@
                   <v-col cols="4">{{ item.LAT && item.LAT.toFixed(4) }} / {{ item.LON && item.LON.toFixed(4) }}</v-col>
                   <v-col cols="4">
                     <v-btn @click="openGuideDialog(item)" width=50px height="40px">
-                      <v-img :src="require('@/assets/nmap.png')" alt="네이버 지도" width="40px" cover></v-img>
+                      <v-img :src="nmapImg" alt="네이버 지도" width="40px" cover></v-img>
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -251,7 +251,7 @@
       <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
         <v-card-text class="text-center" v-if="selectedItem">
           <div>
-            <v-img class="mx-auto" :width="100" :src="require('@/assets/nmap.png')"></v-img>
+            <v-img class="mx-auto" :width="100" :src="nmapImg"></v-img>
             <strong>{{ selectedItem.NM_DIST_OBSV }}({{ selectedItem.DTL_ADRES }})</strong>로 <br />길안내를 시작하시겠습니까?
           </div>
         </v-card-text>
@@ -276,7 +276,7 @@
             <v-row class="ma-0 pa-0">
 
               <v-col class="ma-1 pa-0" cols="3" align="right">
-                <v-img :src="require('@/assets/broad.png')" />
+                <v-img :src="broadImg" />
               </v-col>
               <v-col class="ma-1 pa-0" cols="8" align="center">
                 <v-textarea v-model="broadTestMessage" bg-color="grey-lighten-2" color="cyan"></v-textarea>
@@ -297,14 +297,14 @@
               <v-btn elevation="10" class="gate-btn ma-3" min-height="70px"
                 :style="{ background: 'linear-gradient(to bottom, #81C784, #66BB6A, #43A047, #388E3C)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'open')">
-                <v-img :src="require('@/assets/gate_open.png')" width="50px" heigh="40px" />
+                <v-img :src="gateOpenImg" width="50px" heigh="40px" />
                 <strong>열기</strong>
               </v-btn>
 
               <v-btn elevation="10" class="gate-btn ma-3" min-height="70px"
                 :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'close')">
-                <v-img :src="require('@/assets/gate_close.png')" width="50px" height="40px" />
+                <v-img :src="gateCloseImg" width="50px" height="40px" />
                 <strong>닫기</strong>
               </v-btn>
             </v-col>
@@ -339,6 +339,28 @@ import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs'
 import * as libmap from '@/component/KakaoMap.js';
+// 이미지 imports
+import rainImg from '@/assets/rain.png'
+import waterImg from '@/assets/water.png'
+import dplaceImg from '@/assets/dplace.png'
+import snowImg from '@/assets/snow.png'
+import tiltImg from '@/assets/tilt.png'
+import broadImg from '@/assets/broad.png'
+import displayImg from '@/assets/display.png'
+import gateImg from '@/assets/gate.png'
+import floodImg from '@/assets/flood.png'
+import nmapImg from '@/assets/nmap.png'
+import gateOpenImg from '@/assets/gate_open.png'
+import gateCloseImg from '@/assets/gate_close.png'
+import rainMarker from '@/assets/rain_marker.png'
+import waterMarker from '@/assets/water_marker.png'
+import dplaceMarker from '@/assets/dplace_marker.png'
+import snowMarker from '@/assets/snow_marker.png'
+import tiltMarker from '@/assets/tilt_marker.png'
+import broadMarker from '@/assets/broad_marker.png'
+import displayMarker from '@/assets/display_marker.png'
+import gateMarker from '@/assets/gate_marker.png'
+import floodMarker from '@/assets/flood_marker.png'
 
 ////////////////////////////////////////
 // 테마
@@ -652,23 +674,23 @@ async function getMarker() {
   positions.forEach(pos => {
     var image;
     switch (pos.GB_OBSV) {
-      case "01": image = new kakao.maps.MarkerImage(require(`@/assets/rain_marker.png`), new kakao.maps.Size(20, 30));
+      case "01": image = new kakao.maps.MarkerImage(rainMarker, new kakao.maps.Size(20, 30));
         break;
-      case "02": image = new kakao.maps.MarkerImage(require(`@/assets/water_marker.png`), new kakao.maps.Size(20, 30));
+      case "02": image = new kakao.maps.MarkerImage(waterMarker, new kakao.maps.Size(20, 30));
         break;
-      case "03": image = new kakao.maps.MarkerImage(require(`@/assets/dplace_marker.png`), new kakao.maps.Size(20, 30));
+      case "03": image = new kakao.maps.MarkerImage(dplaceMarker, new kakao.maps.Size(20, 30));
         break;
-      case "06": image = new kakao.maps.MarkerImage(require(`@/assets/snow_marker.png`), new kakao.maps.Size(20, 30));
+      case "06": image = new kakao.maps.MarkerImage(snowMarker, new kakao.maps.Size(20, 30));
         break;
-      case "08": image = new kakao.maps.MarkerImage(require(`@/assets/tilt_marker.png`), new kakao.maps.Size(20, 30));
+      case "08": image = new kakao.maps.MarkerImage(tiltMarker, new kakao.maps.Size(20, 30));
         break;
-      case "17": image = new kakao.maps.MarkerImage(require(`@/assets/broad_marker.png`), new kakao.maps.Size(20, 30));
+      case "17": image = new kakao.maps.MarkerImage(broadMarker, new kakao.maps.Size(20, 30));
         break;
-      case "18": image = new kakao.maps.MarkerImage(require(`@/assets/display_marker.png`), new kakao.maps.Size(20, 30));
+      case "18": image = new kakao.maps.MarkerImage(displayMarker, new kakao.maps.Size(20, 30));
         break;
-      case "20": image = new kakao.maps.MarkerImage(require(`@/assets/gate_marker.png`), new kakao.maps.Size(20, 30));
+      case "20": image = new kakao.maps.MarkerImage(gateMarker, new kakao.maps.Size(20, 30));
         break;
-      case "21": image = new kakao.maps.MarkerImage(require(`@/assets/flood_marker.png`), new kakao.maps.Size(20, 30));
+      case "21": image = new kakao.maps.MarkerImage(floodMarker, new kakao.maps.Size(20, 30));
         break;
       default: image = null;
         return;
