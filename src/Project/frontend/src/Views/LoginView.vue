@@ -1,6 +1,6 @@
 <template>
   <v-container class="login-stage pa-0" fluid>
-    <v-card class="mx-auto pa-12 pb-8" elevation="8" max-width="400" rounded="lg">
+    <v-card class="mx-auto pa-12 pb-8" elevation="8" min-width="550" rounded="lg">
       <div class="d-flex align-center justify-center flex-column mb-6">
         <v-icon color="primary" size="100">mdi-weather-partly-cloudy</v-icon>
         <div class="text-h5 mb-6 font-weight-bold">로그인</div>
@@ -40,6 +40,14 @@
       <!-- 로그인 버튼 -->
       <v-btn block color="primary" size="large" variant="elevated" @click="handleLogin" :loading="loading"
         :disabled="loading">로그인</v-btn>
+
+      <!-- 회원가입 페이지 이동 버튼 -->
+      <div class="text-center">
+        <span class="text-caption text-medium-emphasis">계정이 없으신가요?</span>
+        <v-btn variant="text" color="primary" size="small" @click="goToSignup" :disabled="loading">
+          회원가입
+        </v-btn>
+      </div>
     </v-card>
   </v-container>
 </template>
@@ -178,6 +186,11 @@ const handleLogin = async () => {
     loading.value = false;
   }
 }
+
+// 회원가입 페이지로 이동하기
+const goToSignup = () => {
+  router.push('/signup');
+}
 </script>
 
 <style lang="scss" scoped>
@@ -189,6 +202,6 @@ const handleLogin = async () => {
 }
 
 :deep(.placeholder-small input::placeholder) {
-  font-size: 14px;
+  font-size: 13px;
 }
 </style>
