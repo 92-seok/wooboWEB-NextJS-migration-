@@ -34,9 +34,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   // CORS
-  const config = app.get(ConfigService);
   app.enableCors({
-    origin: `http://localhost:${config.get<number>('SERVICE_PORT')}`,
+    origin: 'http://localhost:80',
     methods: 'GET,POST,PUT,PATCH,DELETE',
     credentials: true,
   });

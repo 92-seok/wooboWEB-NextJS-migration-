@@ -11,10 +11,10 @@ type JwtPayload = {
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly configService: ConfigService) {
-    console.log(
-      '[DEBUG] JWT_ACCESS_SECRET =>',
-      configService.get('JWT_ACCESS_SECRET')
-    );
+    // console.log(
+    //   '[DEBUG] JWT_ACCESS_SECRET =>',
+    //   configService.get('JWT_ACCESS_SECRET')
+    // );
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get<string>('JWT_ACCESS_SECRET'),

@@ -1,51 +1,47 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { NmsUserAuthority } from 'auth/entities/nms_user_authority';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { NmsUserAuthority } from './nms_user_authority.entity';
+import { NmsUserToken } from './nms_user_token.entity';
 
 @Entity('nms_user')
 export class NmsUser {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
-  @Column('varchar', { name: 'kakao_id', length: 50 })
-  kakaoId: string;
-
-  @Column('varchar', { name: 'password' })
+  @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column('varchar', { name: 'email', length: 100 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   email: string;
 
-  @Column('varchar', { name: 'name', nullable: true, length: 45 })
-  name: string | null;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  phone?: string;
 
-  @Column('varchar', { name: 'gender', length: 10 })
-  gender: string;
+  @Column({ type: 'tinyint', default: 1 })
+  is_active: number;
 
-  @Column('varchar', { name: 'phone', length: 20 })
-  phone: string;
+  @Column({ type: 'varchar', length: 50 })
+  name: string;
 
-  @Column('varchar', { name: 'birth', length: 10 })
-  birth: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  kakao_id?: string;
 
-  @Column('varchar', { name: 'profile_image', nullable: true, length: 200 })
-  profileImage: string | null;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @Column('timestamp', {
-    name: 'created_at',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date | null;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
-  @Column('timestamp', {
-    name: 'updated_at',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date | null;
+  @OneToMany(() => NmsUserAuthority, (ua) => ua.user)
+  authorities: NmsUserAuthority;
 
-  @OneToMany(() => NmsUserAuthority, (userAuthority) => userAuthority.user, {
-    eager: true,
-  })
-  authorities?: any[];
+  @OneToOne(() => NmsUserToken, (token) => token.user)
+  token: NmsUserToken;
 }

@@ -15,10 +15,10 @@ export class JwtRefreshStrategy extends PassportStrategy(
   'jwt-refresh',
 ) {
   constructor(private readonly configService: ConfigService) {
-    console.log(
-      '[DEBUG] JWT_REFRESH_SECRET =',
-      configService.get<string>('JWT_REFRESH_SECRET')
-    );
+    // console.log(
+    //   '[DEBUG] JWT_REFRESH_SECRET =',
+    //   configService.get<string>('JWT_REFRESH_SECRET')
+    // );
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get<string>('JWT_REFRESH_SECRET'),

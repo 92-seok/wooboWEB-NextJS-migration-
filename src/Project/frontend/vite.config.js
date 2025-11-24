@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      port: env.SERVICE_PORT || 80,
-      host: '0.0.0.0',
+      port: Number(env.SERVICE_PORT || 80),
+      host: 'localhost',
       proxy: {
         '/api': {
           target: env.SERVICE_PROXY_TARGET,

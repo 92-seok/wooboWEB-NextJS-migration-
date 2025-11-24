@@ -1,35 +1,40 @@
-import { Controller, Post, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { Response } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from "./auth.service";
-
+import { SignUpDto } from './dto/sing-up.dto';
+import { SignInDto } from './dto/sing-in.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { GetCurrentUserId } from './decorators/get-current-user-id.decorator';
+import { Req } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-  ){}
+  constructor(private readonly authService: AuthService) { }
 
-  @Post('/login')
-  async login(@Body() body: any, @Response() res): Promise<any> {
-    try {
-      // 카카오 엑세스 토큰으로 사용자 정보 조회
-      const { code, domain } = body;
-      if(!code || !domain) {
-        throw new BadRequestException('카카오 정보가 없습니다.');
-      }
+  // * 회원가입 *
+  @Post('signup')
+  signUp(@Body() dto: SignUpDto) {
+    return this.authService.signUp(dto);
+  }
 
-      const kakao = await this.authService.kakaoLogin({ code, domain });
-      if(!kakao.id) {
-        throw new BadRequestException('카카오 정보가 없습니다.');
-      }
+  // * 로그인 *
+  @Post('signin')
+  signIn(@Body() dto: SignInDto) {
+    return this.authService.signIn(dto);
+  }
 
-      res.send({
-        user: kakao,
-        message: '로그인 성공',
-      });
-    } catch (err) {
-      console.log(err);
-      throw new UnauthorizedException();
-    }
+  // * 로그아웃 *
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@GetCurrentUserId() userId: number) {
+    return this.authService.logout(userId);
+  }
+
+  // * 토큰 재발급하기 *
+  @UseGuards(JwtRefreshGuard)
+  @Get('refresh')
+  refresh(@Req() req: any) {
+    const user = req.user as { userId: number; refreshToken: string };
+    return this.authService.refreshTokens(user.userId, user.refreshToken);
   }
 }
