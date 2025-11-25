@@ -223,13 +223,13 @@
                 <v-row v-if="item.GB_OBSV === '17' || item.GB_OBSV === '18' || item.GB_OBSV === '20'">
                   <v-col cols="12">
                     <v-btn v-if="isLoggedIn && canAccessDeviceTest" variant="outlined"
-                      :color="item.ErrorChk > '0' ? 'green' : 'red'" size="large" label @click="openGuideDialog(item)">
+                      :color="item.ErrorChk > '0' ? 'green' : 'red'" size="large" label @click="openTestDialog(item)">
                       장비 테스트
                     </v-btn>
 
                     <!-- 로그인했지만 권한 없음 -->
                     <v-tooltip v-else-if="isLoggedIn && !canAccessDeviceTest" location="top">
-                      <template v-slot:activator="{ props }">
+                      <template v-slot:activator>
                         <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'" size="large" label
                           @click="showPerssionDialog">
                           장비 테스트
