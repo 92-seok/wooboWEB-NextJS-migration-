@@ -21,7 +21,7 @@
     </v-btn>
 
     <!-- 로그인 상태일 때 : 로그아웃 버튼 -->
-    <v-btn v-if="isLoggendIn" @click="handleLogout">
+    <v-btn v-if="isLoggedIn" @click="handleLogout">
       <v-icon>mdi-account</v-icon>
       <span class="text-subtitle-2">{{ userName }}님</span>
     </v-btn>
@@ -32,28 +32,6 @@
       <span class="text-subtitle-2">로그인</span>
     </v-btn>
   </v-bottom-navigation>
-
-  <!-- 로그아웃 확인 다이얼로그 -->
-  <v-dialog v-model="logoutDialog" max-width="400">
-    <v-card>
-      <v-card-title class="text-h6 d-flex align-center">
-        <v-icon color="warning" class="mr2">mdi-alert-circle-outline</v-icon>
-        로그아웃 확인
-      </v-card-title>
-      <v-card-text>
-        정말 로그아웃 하시겠습니까?
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="text" @click="logoutDialog = false" :disabled="loading">
-          취소
-        </v-btn>
-        <v-btn color="error" variant="elevated" @click="confirmLogout" :loading="loading">
-          로그아웃
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
@@ -61,8 +39,9 @@
 ////////////////////////////////////////
 // Import
 ////////////////////////////////////////
-import { onMounted, onUnmounted, inject, ref, watch } from 'vue'
+import { onMounted, onUnmounted, inject, ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios';
 
 const router = useRouter();
 
@@ -77,12 +56,17 @@ const menu_idx = ref(-1);
 ////////////////////////////////////////
 // 로그인 상태 관리
 ////////////////////////////////////////
-const isLoggendIn = ref(!!sessionStorage.getItem('accessToken'));
+const isLoggedIn = ref(!!sessionStorage.getItem('accessToken'));
 const logoutDialog = ref(false);
+const loading = ref(false);
+
+const userName = computed(() => {
+  return sessionStorage.getItem('userName') || '사용자'
+});
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
-  isLoggendIn.value = !!sessionStorage.getItem('accessToken');
+  isLoggedIn.value = !!sessionStorage.getItem('accessToken');
 }
 // 라우터 변경 시 로그인 상태 체크하는 로직
 watch(() => router.currentRoute.value, () => {
@@ -123,7 +107,7 @@ const confirmLogout = async () => {
 
     // 다이얼로그 닫기
     logoutDialog.value = false;
-    isLoggendIn.value = false;
+    isLoggedIn.value = false;
 
     // 로그인 페이지로 이동
     router.push('/login');

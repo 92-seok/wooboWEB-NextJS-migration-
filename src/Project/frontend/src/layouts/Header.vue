@@ -16,18 +16,18 @@
       <v-btn class="text-subtitle-1" @click="router.replace('/')" text="우보 온라인 - 운영지원시스템"></v-btn>
     </v-app-bar-title>
 
+    <!-- 테마 버튼 -->
+    <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click=OnClick_theme />
 
     <!-- 사용자 정보(로그인 상태일 때만 표시) -->
-    <div v-if="isLoggenIn" class="d-flex align-center mr-3">
+    <div v-if="isLoggedIn" class="d-flex align-center mr-3">
       <v-icon class="mr-2" size="small">mdi-account-circle</v-icon>
       <span class="text-body-2">{{ userName }}</span>
     </div>
 
-    <!-- 테마 버튼 -->
-    <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click=OnClick_theme />
 
     <!-- 로그아웃 버튼 (로그인 상태일 때만 표시) -->
-    <v-btn v-if="isLoggenIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" class="ml-2">
+    <v-btn v-if="isLoggedIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" class="ml-2">
       로그아웃
     </v-btn>
 
@@ -40,11 +40,11 @@
   <v-dialog v-model="logoutDialog" max-width="400">
     <v-card>
       <v-card-title class="text-h6 d-flex align-center">
-        <v-icon color="warning" class="mr2">mdi-alert-circle-outline</v-icon>
+        <v-icon color="warning" class="mr-2">mdi-alert-circle-outline</v-icon>
         로그아웃 확인
       </v-card-title>
       <v-card-text>
-        정말 로그아웃 하시겠습니까?
+        로그아웃 하시겠습니까?
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -94,7 +94,7 @@ const logoutDialog = ref(false);
 const loading = ref(false);
 
 // 로그인 상태 확인하기
-const isLoggenIn = ref(!!sessionStorage.getItem('accessToken'));
+const isLoggedIn = ref(!!sessionStorage.getItem('accessToken'));
 
 // 사용자 이름
 const userName = computed(() => {
@@ -103,7 +103,7 @@ const userName = computed(() => {
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
-  isLoggenIn.value = !!sessionStorage.getItem('accessToken');
+  isLoggedIn.value = !!sessionStorage.getItem('accessToken');
 }
 
 watch(() => router.currentRoute.value, () => {
@@ -148,7 +148,7 @@ const confirmLogout = async () => {
   }
 }
 
-// 인증 데이터 정리
+// 인증된 데이터 정리 로직
 const clearAuthData = () => {
   // 토큰 삭제하기 로직
   sessionStorage.removeItem('accessToken');

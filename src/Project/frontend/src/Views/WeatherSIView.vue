@@ -230,8 +230,8 @@
                     <!-- 로그인했지만 권한 없음 -->
                     <v-tooltip v-else-if="isLoggedIn && !canAccessDeviceTest" location="top">
                       <template v-slot:activator="{ props }">
-                        <v-btn v-bind="props" variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-                          size="large" label @click="showPerssionDialog">
+                        <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'" size="large" label
+                          @click="showPerssionDialog">
                           장비 테스트
                         </v-btn>
                       </template>
@@ -482,8 +482,8 @@ onMounted(async () => {
 
   refreshPermissions();
 
-  console.log("WeatherSIView::onMounted()" + useRoute().params.BDONG_CD);
-  console.log(os.value);
+  // console.log("WeatherSIView::onMounted()" + useRoute().params.BDONG_CD);
+  // console.log(os.value);
 
   if (refresh_timer) {
     clearInterval(refresh_timer);
@@ -493,7 +493,7 @@ onMounted(async () => {
 
   /// 지도 초기화
   if (window.kakao === undefined) {
-    console.log(`WeatherSIView.vue::scrip() / kakao = ${window.kakao}`);
+    // console.log(`WeatherSIView.vue::scrip() / kakao = ${window.kakao}`);
     const script = document.createElement("script");
     /* global kakao */
     script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${init_key}&autoload=false&libraries=services`;
@@ -501,7 +501,7 @@ onMounted(async () => {
     document.head.appendChild(script);
   }
   else {
-    console.log("WeatherSIView::loadMap()");
+    // console.log("WeatherSIView::loadMap()");
     loadMap();
   }
 
@@ -509,7 +509,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  console.log("WeatherSIView::onUnmount()");
+  // console.log("WeatherSIView::onUnmount()");
 
   if (refresh_timer) {
     clearInterval(refresh_timer);
@@ -565,13 +565,13 @@ const snackbar_test = reactive({
 
 
 function openGuideDialog(item) {
-  console.log(item);
+  // console.log(item);
   selectedItem.value = item
   dialog.value = true
 }
 
 function openTestDialog(item) {
-  console.log(item);
+  // console.log(item);
   selectedItem.value = item
   dialog_test.value = true
 }
@@ -606,7 +606,7 @@ function showSnackbar_test(message, color = 'success') {
 }
 
 function onExpended(items) {
-  console.log("onExpended()", items);
+  // console.log("onExpended()", items);
 }
 
 function showTooltip(item) {
@@ -624,7 +624,7 @@ const OnTimer_Refresh = async () => {
 }
 
 const Process = async () => {
-  console.log("Process()");
+  // console.log("Process()");
 
   try {
     const response_areaList = await axios.get('/api/weathersi/areaList');
@@ -648,7 +648,7 @@ const OnChange_AreaList = async (newArea) => {
   }
 
   //search.value = '';
-  console.log("111" + bounds);
+  // console.log("111" + bounds);
   if (bounds == null) {
     isBound = true;
   }
@@ -667,7 +667,7 @@ const OnChange_AreaList = async (newArea) => {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }
 
-  console.log(isBound);
+  // console.log(isBound);
   if (isBound == true) {
     map.setBounds(bounds, 10, 10, 10, 10);
     isBound = false;
@@ -729,7 +729,7 @@ function loadMap() {
 }
 
 async function getMarker() {
-  console.log("getMarker()");
+  // console.log("getMarker()");
   const positions = devices.value
     .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
     ;

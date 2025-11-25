@@ -38,11 +38,11 @@ provide('theme_color', { theme_color, OnClick_theme_color });
 // Form 이벤트
 ////////////////////////////////////////
 onMounted(() => {
-  console.log(`프로그램 시작(${inject('$title')}) / Theme(${theme.value})`); // 전역변수 Vue3 Style
+  // console.log(`프로그램 시작(${inject('$title')}) / Theme(${theme.value})`); // 전역변수 Vue3 Style
 });
 
 onUnmounted(() => {
-  console.log(`프로그램 종료`);
+  // console.log(`프로그램 종료`);
 });
 </script>
 

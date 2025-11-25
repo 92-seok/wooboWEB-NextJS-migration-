@@ -70,11 +70,11 @@ export const usePermission = () => {
   // 장비 테스트 권한 (관리자만 + 로그인 필수)
   const canAccessDeviceTest = computed(() => {
     const result = isLoggedIn.value && isAdmin.value
-    console.log('canAccessDeviceTest:', result, {
-      isLoggedIn: isLoggedIn.value,
-      isAdmin: isAdmin.value,
-      userRole: userRole.value
-    })
+    // console.log('canAccessDeviceTest:', result, {
+    //   isLoggedIn: isLoggedIn.value,
+    //   isAdmin: isAdmin.value,
+    //   userRole: userRole.value
+    // })
     return result
   })
 
@@ -96,7 +96,7 @@ export const usePermission = () => {
   // 수동 업데이트 함수 (필요 시 호출)
   const refreshPermissions = () => {
     forceUpdate.value++
-    console.log('권한 새로고침')
+    // console.log('권한 새로고침')
   }
 
   return {
