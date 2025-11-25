@@ -8,11 +8,15 @@ import { ConfigModule } from '@nestjs/config';
 // TypeOrm
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-// entity
+// Module
 import { AuthModule } from './auth/auth.module';
 import { WeatherSiModule } from './weathersi/weathersi.module';
 import { WeatherSrModule } from './weathersr/weathersr.module';
 
+// Entity
+import { NmsUser } from './auth/entities/nms_user.entity';
+import { NmsUserAuthority } from './auth/entities/nms_user_authority.entity';
+import { NmsUserToken } from './auth/entities/nms_user_token.entity';
 import { SrEquip } from './weathersr/entities/sr_equip.entity';
 import { TcmCouDngrAdm as TcmCouDngrAdmSI } from './weathersi/entities/tcm_cou_dngr_adm.entity';
 import { TcmCouDngrAdm as TcmCouDngrAdmSR } from './weathersr/entities/tcm_cou_dngr_adm.entity';
@@ -20,9 +24,6 @@ import { NmsDevice } from './weathersi/entities/nms_device.entity';
 import { NmsBrdSend } from './weathersi/entities/nms_brdsend.entity';
 import { NmsDisSend } from './weathersi/entities/nms_dissend.entity';
 import { NmsGateControl } from './weathersi/entities/nms_gatecontrol.entity';
-import { NmsUser } from './auth/entities/nms_user.entity';
-import { NmsUserAuthority } from './auth/entities/nms_user_authority.entity';
-import { NmsUserToken } from './auth/entities/nms_user_token.entity';
 
 @Module({
   imports: [

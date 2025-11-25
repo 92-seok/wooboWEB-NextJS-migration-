@@ -222,10 +222,31 @@
                 </v-row>
                 <v-row v-if="item.GB_OBSV === '17' || item.GB_OBSV === '18' || item.GB_OBSV === '20'">
                   <v-col cols="12">
-                    <v-btn size="large" variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-                      @click="openTestDialog(item)">
-                      <span>장비 테스트</span>
+                    <v-btn v-if="isLoggedIn && canAccessDeviceTest" variant="outlined"
+                      :color="item.ErrorChk > '0' ? 'green' : 'red'" size="large" label @click="openGuideDialog(item)">
+                      장비 테스트
                     </v-btn>
+
+                    <!-- 로그인했지만 권한 없음 -->
+                    <v-tooltip v-else-if="isLoggedIn && !canAccessDeviceTest" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn v-bind="props" variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
+                          size="large" label @click="showPerssionDialog">
+                          장비 테스트
+                        </v-btn>
+                      </template>
+                      <span>관리자 권한이 필요합니다</span>
+                    </v-tooltip>
+
+                    <!-- 로그인 안 함 -->
+                    <v-tooltip v-else location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn v-bind="props" variant="outlined" color="grey" size="large" label disabled>
+                          장비 테스트
+                        </v-btn>
+                      </template>
+                      <span>로그인이 필요합니다</span>
+                    </v-tooltip>
                   </v-col>
                 </v-row>
               </v-container>
@@ -245,6 +266,35 @@
     <v-snackbar v-model="snackbar.show" :timeout="1000" location="center" color="snackbar.color">
       {{ snackbar.message }}
     </v-snackbar>
+
+    <!-- 권한없음 다이얼로그 -->
+    <v-dialog v-model="permissionDialog" max-width="500">
+      <v-card>
+        <v-card-title class="text-h6 d-flex align-center bg-error">
+          <span class="text-white">제어권한 없음</span>
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          <div class="text-center">
+            <v-icon size="64" color="error" class="mb-3">mdi-shield-lock-outline</v-icon>
+          </div>
+          <p class="text-center text-h6 mb-2">접근 권한이 없습니다.</p>
+          <p class="text-center text-body-2 text-medium-emphasis">
+            장비테스트 기능은 <strong>관리자 계정</strong>만 이용 할 수 있습니다.
+          </p>
+          <p class="text-center text-body-2 text-medium-emphasis">
+            권한이 필요한 경우 시스템사업부에 문의하세요.
+          </p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="elevated" @click="permissionDialog = false">
+            확인
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- 지도 다이얼로그 -->
     <v-dialog v-model="dialog" width="70vw" max-width="500px">
@@ -362,6 +412,19 @@ import displayMarker from '@/assets/display_marker.png'
 import gateMarker from '@/assets/gate_marker.png'
 import floodMarker from '@/assets/flood_marker.png'
 
+// 권한체크 Composable import 하기
+import { usePermission } from '@/composables/usePermission'
+
+// 권한 체크 실행
+const { isLoggedIn, isAdmin, canAccessDeviceTest, userRole, refreshPermissions } = usePermission()
+
+// 권한없음 다이얼로그
+const permissionDialog = ref(false);
+
+const showPerssionDialog = () => {
+  permissionDialog.value = true;
+}
+
 ////////////////////////////////////////
 // 테마
 ////////////////////////////////////////
@@ -392,6 +455,8 @@ const dialog_test = ref(false);
 const broadTestMessage = ref("");
 const loading = ref(false);
 
+
+
 //////////////////////////////////
 // 지도
 //////////////////////////////////
@@ -414,6 +479,8 @@ var init_max_level = 14;
 // EVENT 생명주기
 ////////////////////////////////////////
 onMounted(async () => {
+
+  refreshPermissions();
 
   console.log("WeatherSIView::onMounted()" + useRoute().params.BDONG_CD);
   console.log(os.value);

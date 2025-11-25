@@ -126,10 +126,12 @@
           </div>
         </template>
 
+        <!-- 장비 테스트에 권한 추가 -->
         <template v-slot:[`item.sensorTest`]="{ item }">
           <div class="text-center">
-            <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.sensorTest == 'OK' ? '' : ''" size="small" label @click="openGuideDialog(item)">
+            <!-- 로그인 + 관리자 권한 있음 -->
+            <v-btn variant="outlined" :color="item.ErrorChk > '0' ? 'green' : 'red'" size="small" label
+              @click="openGuideDialog(item)">
               테스트하기
             </v-btn>
           </div>
@@ -237,6 +239,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import broadImg from '@/assets/broad.png'
@@ -244,6 +247,7 @@ import displayImg from '@/assets/display.png'
 import gateImg from '@/assets/gate.png'
 import gateOpenImg from '@/assets/gate_open.png'
 import gateCloseImg from '@/assets/gate_close.png'
+
 
 let refresh_timer; // setInterval 핸들러
 const process_time = ref(20);
@@ -284,9 +288,9 @@ const filterAndSortArea = (filterTerms) => {
 const page = ref(1)
 const itemsPerPage = ref(50)
 const os = ref(navigator.userAgent);
+
 onMounted(async () => {
-  // console.log("onMounted()");
-  console.log(os.value);
+  console.log("✅ onMounted()");
 
   refresh_timer = setInterval(OnTimer_Refresh, 1000);
 
@@ -301,6 +305,23 @@ onUnmounted(() => {
   }
 })
 
+// 장비 테스트 권한 체크 함수
+// const handleDeviceTest = (item) => {
+//   console.log('장비 테스트 클릭하기');
+//   console.log('현재 권한: ', userRole.value);
+//   console.log('관리자 여부: ', isAdmin.value);
+
+//   // 계정 권한 체크하는 로직
+//   if (!canAccessDeviceTest.value) {
+//     permissionDialog.value = true;
+//     return;
+//   }
+
+//   // 관리자인 경우 장비 테스트 다이얼로그 열기
+//   openGuideDialog(item);
+// }
+
+// 
 
 // 테스트 전송
 // 방송장비 테스트 제어 함수
@@ -545,28 +566,28 @@ const headers = [
 // };
 
 
-onMounted(async () => {
-  console.log("onMounted()");
+// onMounted(async () => {
+//   console.log("onMounted()");
 
-  // if (window.kakao && window.kakao.maps) {
-  //   // console.log('window.kakao == true')
-  //   initMap();
-  //   await loadMapData();
-  // }
-  // else {
-  //   /* global kakao */
-  //   const script = document.createElement("script");
-  //   script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
-  //   document.head.appendChild(script);
-  //   script.onload = async () => {
-  //     // console.log('script.onload()');
-  //     kakao.maps.load(initMap);
-  //     await loadMapData()
-  //   }
+// if (window.kakao && window.kakao.maps) {
+//   // console.log('window.kakao == true')
+//   initMap();
+//   await loadMapData();
+// }
+// else {
+//   /* global kakao */
+//   const script = document.createElement("script");
+//   script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
+//   document.head.appendChild(script);
+//   script.onload = async () => {
+//     // console.log('script.onload()');
+//     kakao.maps.load(initMap);
+//     await loadMapData()
+//   }
 
-  // }
+// }
 
-});
+// });
 
 // const loadMapData = async () => {
 //   try {

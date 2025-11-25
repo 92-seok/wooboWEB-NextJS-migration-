@@ -4,10 +4,8 @@
 
       <!-- 아이콘, 제목 부분 -->
       <div class="d-flex align-center justify-center flex-column mb-6">
-        <v-icon color="primary" size="80" class="mb-3">
-          mdi-account-plus-outline
-        </v-icon>
-        <div class="text-h5 font-weight-bold">회원가입</div>
+        <v-img class="mx-auto" width="70" height="70" src="/favicon.ico"></v-img>
+        <div class="text-h5 font-weight-bold mt-2">운영지원 시스템 회원가입</div>
       </div>
 
       <!-- 이름 입력 부분 -->
@@ -55,7 +53,7 @@
       </v-card>
 
       <!-- 회원가입 버튼 -->
-      <v-btn block color="primary" size="large" variant="elevated" @click="handleSignup" :loading="loading"
+      <v-btn block color="primary" size="x-large" variant="elevated" @click="handleSignup" :loading="loading"
         :disabled="loading" class="mb-3">
         회원가입
       </v-btn>
@@ -218,13 +216,13 @@ const handleSignup = async () => {
 
 // 로그인 페이지로 이동하기
 const goToLogin = () => {
-  router.push('login');
+  router.push('/login');
 }
 
 </script>
 <style lang="scss" scoped>
 .signup-stage {
-  min-height: calc(100dvh - 80px - 64px);
+  min-height: calc(100vh - 80px - 64px);
   display: grid;
   place-items: center;
 }

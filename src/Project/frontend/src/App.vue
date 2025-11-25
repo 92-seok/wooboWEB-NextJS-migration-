@@ -47,6 +47,18 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
+// .app {
+//   height: 100vh;
+//   display: flex;
+//   flex-direction: column;
+//   overflow: hidden;
+// }
+
+// :deep(.v-main) {
+//   flex: 1;
+//   overflow-y: auto;
+// }
+
 html,
 body {
   /* 스크롤 바 감추기 */
@@ -59,10 +71,5 @@ body {
   &::-webkit-scrollbar {
     display: none !important;
   }
-}
-
-.app {
-  height: 100vh;
-  overflow: hidden;
 }
 </style>

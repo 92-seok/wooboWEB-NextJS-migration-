@@ -2,8 +2,8 @@
   <v-container class="login-stage pa-0" fluid>
     <v-card class="mx-auto pa-12 pb-8" elevation="8" min-width="550" rounded="lg">
       <div class="d-flex align-center justify-center flex-column mb-6">
-        <v-icon color="primary" size="100">mdi-weather-partly-cloudy</v-icon>
-        <div class="text-h5 mb-6 font-weight-bold">로그인</div>
+        <v-img class="mx-auto" width="70" height="70" src="/favicon.ico"></v-img>
+        <div class="text-h5 mt-2 mb-6 font-weight-bold">운영지원 시스템 로그인</div>
       </div>
       <!-- email 입력부분 -->
       <div class="text-subtitle-1 text-medium-emphasis">
@@ -42,9 +42,9 @@
         :disabled="loading">로그인</v-btn>
 
       <!-- 회원가입 페이지 이동 버튼 -->
-      <div class="text-center">
+      <div class="text-center mt-4">
         <span class="text-caption text-medium-emphasis">계정이 없으신가요?</span>
-        <v-btn variant="text" color="primary" size="small" @click="goToSignup" :disabled="loading">
+        <v-btn class="text-base" variant="text" color="primary" size="small" @click="goToSignup" :disabled="loading">
           회원가입
         </v-btn>
       </div>
@@ -116,7 +116,7 @@ const handleLogin = async () => {
     });
 
     // 응답오는 데이터 안전하게 추출하기
-    const { accessToken, refreshToken } = response.data || {}
+    const { accessToken, refreshToken, user } = response.data || {}
 
     // 토큰 확인하기
     if (!accessToken || !refreshToken) {
@@ -138,15 +138,34 @@ const handleLogin = async () => {
     // localStorage.setItem('accessToken', accessToken);
     // localStorage.setItem('refreshToken', refreshToken);
 
-    console.log('로그인 성공확인');
+    // 사용자 정보 저장하기
+    if (user) {
+      sessionStorage.setItem('userName', user.name || user.email || '사용자');
+      sessionStorage.setItem('userId', user.id || user._id || '');
+      sessionStorage.setItem('userEmail', user.email || email.value);
+
+      // *권한주는 로직*
+      sessionStorage.setItem('userRole', user.role || 'user'); //기본값은 user
+    } else {
+      // user 객체가 없으면 이메일이라도 저장하기
+      sessionStorage.setItem('userName', email.value.split('@')[0]); // 이메일 @ 앞부분 확인
+      sessionStorage.setItem('userEmail', email.value);
+    }
+
+    // axios 기본 헤더에 토큰 설정 추가해주기
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+    console.log('로그인 성공')
+    console.log('사용자 이름:', sessionStorage.getItem('userName'))
+    console.log('axios 헤더:', axios.defaults.headers.common['Authorzation'])
 
     // 민감한 정보 초기화로직
     email.value = '';
     password.value = '';
-    visible.value = '';
+    visible.value = false;
 
-    // 메인 페이지로 리다이렉트하기
-    await router.push('/');
+    // 모니터링 페이지로 리다이렉트하기
+    await router.push('/weathersi');
   } catch (error) {
     console.error('로그인 실패: ', error);
 
@@ -169,7 +188,7 @@ const handleLogin = async () => {
         case 429:
           errorMessage.value = '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.';
           break;
-        case 4500:
+        case 500:
           errorMessage.value = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
           break;
         default:
@@ -196,7 +215,7 @@ const goToSignup = () => {
 <style lang="scss" scoped>
 .login-stage {
   // 헤더 80px, 푸터 64px 제외하기
-  min-height: calc(100dvh - 80px - 64px);
+  min-height: calc(100vh - 80px - 64px);
   display: grid;
   place-items: center;
 }

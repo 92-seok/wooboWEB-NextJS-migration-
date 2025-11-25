@@ -20,11 +20,40 @@
       <span class="text-subtitle-2">관리</span>
     </v-btn>
 
-    <v-btn @click="router.push('/login')">
+    <!-- 로그인 상태일 때 : 로그아웃 버튼 -->
+    <v-btn v-if="isLoggendIn" @click="handleLogout">
+      <v-icon>mdi-account</v-icon>
+      <span class="text-subtitle-2">{{ userName }}님</span>
+    </v-btn>
+
+    <!-- 로그아웃 상태일 때 : 로그인 버튼 -->
+    <v-btn v-else @click="router.push('/login')">
       <v-icon>mdi-account</v-icon>
       <span class="text-subtitle-2">로그인</span>
     </v-btn>
   </v-bottom-navigation>
+
+  <!-- 로그아웃 확인 다이얼로그 -->
+  <v-dialog v-model="logoutDialog" max-width="400">
+    <v-card>
+      <v-card-title class="text-h6 d-flex align-center">
+        <v-icon color="warning" class="mr2">mdi-alert-circle-outline</v-icon>
+        로그아웃 확인
+      </v-card-title>
+      <v-card-text>
+        정말 로그아웃 하시겠습니까?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="logoutDialog = false" :disabled="loading">
+          취소
+        </v-btn>
+        <v-btn color="error" variant="elevated" @click="confirmLogout" :loading="loading">
+          로그아웃
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -32,7 +61,7 @@
 ////////////////////////////////////////
 // Import
 ////////////////////////////////////////
-import { onMounted, onUnmounted, inject, ref } from 'vue'
+import { onMounted, onUnmounted, inject, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter();
@@ -46,10 +75,81 @@ const { theme_color } = inject('theme_color');
 const menu_idx = ref(-1);
 
 ////////////////////////////////////////
+// 로그인 상태 관리
+////////////////////////////////////////
+const isLoggendIn = ref(!!sessionStorage.getItem('accessToken'));
+const logoutDialog = ref(false);
+
+// 로그인 상태 체크 함수 로직
+const checkLoginStatus = () => {
+  isLoggendIn.value = !!sessionStorage.getItem('accessToken');
+}
+// 라우터 변경 시 로그인 상태 체크하는 로직
+watch(() => router.currentRoute.value, () => {
+  checkLoginStatus();
+}, { immediate: true });
+
+////////////////////////////////////////
+// 로그아웃 상태 관련 로직
+////////////////////////////////////////
+
+// 로그아웃 버튼 클릭
+const handleLogout = () => {
+  router.push('')
+};
+
+// 로그아웃 확인
+const confirmLogout = async () => {
+  loading.value = true;
+
+  try {
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    // 백엔드 로그아웃 요청하기(refreshToken 무효화)
+    if (refreshToken && accessToken) {
+      await axios.post('/api/auth/logout',
+        { refreshToken },
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      console.log('로그아웃 API 호출 성공')
+    }
+  } catch (error) {
+    console.error('로그아웃 API 실패: ', error);
+    // 에러가 발생해도 계속 진행하기 (로컬 데이터는 삭제)
+  } finally {
+    // 로컬 데이터 정리하기
+    clearAuthData()
+
+    // 다이얼로그 닫기
+    logoutDialog.value = false;
+    isLoggendIn.value = false;
+
+    // 로그인 페이지로 이동
+    router.push('/login');
+  }
+}
+
+// 인증 데이터 정리
+const clearAuthData = () => {
+  // 토큰 삭제하기 로직
+  sessionStorage.removeItem('accessToken');
+  sessionStorage.removeItem('refreshToken');
+  sessionStorage.removeItem('userName');
+  sessionStorage.removeItem('userId');
+
+  // axios 기본 헤더에서 토큰 제거하기
+  delete axios.defaults.headers.common['Authorizaion'];
+
+  console.log('인증 데이터 정리 완료');
+}
+
+////////////////////////////////////////
 // EVENT 생명주기
 ////////////////////////////////////////
 onMounted(async () => {
-
+  // 초기 로그인 상태 체크하기
+  checkLoginStatus();
 });
 
 onUnmounted(() => {

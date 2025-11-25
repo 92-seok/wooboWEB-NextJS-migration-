@@ -68,7 +68,7 @@ export class AuthService {
   }
 
   // * 로그인 로직 *
-  async signIn(dto: SignInDto): Promise<Tokens> {
+  async signIn(dto: SignInDto): Promise<any> {
     const user = await this.userRepo.findOne({
       where: { email: dto.email, is_active: 1 },
     });
@@ -83,11 +83,29 @@ export class AuthService {
       throw new UnauthorizedException('이메일 또는 비밀번호가 맞지 않습니다.');
     }
 
+    // 사용자 권한 조회하기
+    const authorities = await this.userAuthRepo.find({
+      where: { user: { id: user.id } }
+    })
+
+    // 역할 결정하기 = ROLE_ADMIN 이 있으면 'admin' 아니면 'user'
+    const hasAdminRole = authorities.some(auth => auth.authorityName === 'ROLE_ADMIN');
+    const role = hasAdminRole ? 'admin' : 'user';
+
+
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: role,
+      }
+    }
   }
 
   // * 로그아웃: DB에 저장된 refresh token 제거하기
