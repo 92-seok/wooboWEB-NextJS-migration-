@@ -1,7 +1,7 @@
 .DS_Store
 node_modules
 dist
-
+.md
 
 # local env files
 .env.local

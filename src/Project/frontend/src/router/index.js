@@ -18,7 +18,7 @@ import KakaoCallback from "@/Views/KakaoCallback.vue";
 import SignupView from "@/Views/SignupView.vue";
 
 const routes = [
-  { path: "/", component: SettingView },
+  { path: "/", component: HomeView },
   { path: "/home", component: HomeView },
   { path: "/map", component: MapView },
   { path: "/weathersi", component: WeatherSiView },
