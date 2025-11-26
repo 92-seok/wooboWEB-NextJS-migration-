@@ -16,6 +16,7 @@ import { SignInDto } from './dto/sing-in.dto';
 import { Tokens } from './dto/tokens.type';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../common/enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -50,6 +51,7 @@ export class AuthService {
       password: hashedPw,
       name: dto.name,
       is_active: 1,
+      role: UserRole.USER,
     })
 
     const savedUser = await this.userRepo.save(user);
@@ -61,7 +63,12 @@ export class AuthService {
     });
     await this.userAuthRepo.save(authority);
 
-    const tokens = await this.getTokens(savedUser.id, savedUser.email);
+    // role 추가하여 토큰 생성
+    const tokens = await this.getTokens(
+      savedUser.id,
+      savedUser.email,
+      savedUser.role,
+    );
     await this.saveRefreshToken(savedUser.id, tokens.refreshToken);
 
     return tokens;
@@ -90,11 +97,20 @@ export class AuthService {
 
     // 역할 결정하기 = ROLE_ADMIN 이 있으면 'admin' 아니면 'user'
     const hasAdminRole = authorities.some(auth => auth.authorityName === 'ROLE_ADMIN');
-    const role = hasAdminRole ? 'admin' : 'user';
+    const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
 
+    // 엔티티의 롤 필드도 동기화 시키기
+    if (user.role !== role) {
+      user.role = role;
+      await this.userRepo.save(user);
+    }
 
+    // 마지막 로그 시간 체크하기
+    user.lastLoginAt = new Date();
+    await this.userRepo.save(user);
 
-    const tokens = await this.getTokens(user.id, user.email);
+    // 토큰 생성
+    const tokens = await this.getTokens(user.id, user.email, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -133,14 +149,21 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const tokens = await this.getTokens(user.id, user.email);
+    // 사용자 권한 조회해서 역할 결정하기
+    const authorities = await this.userAuthRepo.find({
+      where: { user: { id: user.id } },
+    });
+    const hasAdminRole = authorities.some((auth) => auth.authorityName === 'ROLE_ADMIN',);
+    const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
+
+    const tokens = await this.getTokens(user.id, user.email, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  private async getTokens(userId: number, email: string): Promise<Tokens> {
-    const payload = { sub: userId, email };
+  private async getTokens(userId: number, email: string, role: string): Promise<Tokens> {
+    const payload = { sub: userId, email, role, };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {

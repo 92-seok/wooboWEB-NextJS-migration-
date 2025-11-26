@@ -9,6 +9,8 @@ import {
 } from 'typeorm';
 import { NmsUserAuthority } from './nms_user_authority.entity';
 import { NmsUserToken } from './nms_user_token.entity';
+import { UserRole } from '../../common/enums/user-role.enum';
+
 
 @Entity('nms_user')
 export class NmsUser {
@@ -24,14 +26,20 @@ export class NmsUser {
   @Column({ type: 'varchar', length: 100, nullable: true })
   phone?: string;
 
-  @Column({ type: 'tinyint', default: 1 })
-  is_active: number;
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @Column({ type: 'varchar', length: 50 })
   name: string;
 
+  @Column({ type: 'tinyint', default: 1 })
+  is_active: number;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   kakao_id?: string;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'last_login_at' })
+  lastLoginAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

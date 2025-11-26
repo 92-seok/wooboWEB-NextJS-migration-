@@ -6,6 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 type JwtPayload = {
   sub: number; // user id
   email: string;
+  role: string;
 };
 
 @Injectable()
@@ -23,6 +24,10 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   validate(payload: JwtPayload) {
     // request.user에 들어갈 값 로직
-    return { userId: payload.sub, email: payload.email };
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }

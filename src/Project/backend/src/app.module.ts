@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { WeatherSiModule } from './weathersi/weathersi.module';
 import { WeatherSrModule } from './weathersr/weathersr.module';
+import { AdminModule } from './admin/admin.module';
 
 // Entity
 import { NmsUser } from './auth/entities/nms_user.entity';
@@ -24,6 +25,7 @@ import { NmsDevice } from './weathersi/entities/nms_device.entity';
 import { NmsBrdSend } from './weathersi/entities/nms_brdsend.entity';
 import { NmsDisSend } from './weathersi/entities/nms_dissend.entity';
 import { NmsGateControl } from './weathersi/entities/nms_gatecontrol.entity';
+
 
 @Module({
   imports: [
@@ -88,6 +90,7 @@ import { NmsGateControl } from './weathersi/entities/nms_gatecontrol.entity';
     AuthModule,
     WeatherSiModule,
     WeatherSrModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
