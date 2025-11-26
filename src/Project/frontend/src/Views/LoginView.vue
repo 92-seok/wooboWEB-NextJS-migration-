@@ -140,12 +140,14 @@ const handleLogin = async () => {
 
     // 사용자 정보 저장하기
     if (user) {
+      // user 객체 전체를 JSON으로 저장 (라우터 가드에서 사용)
+      sessionStorage.setItem('user', JSON.stringify(user));
+
+      // 개별 필드도 저장 (다른 곳에서 사용할 수 있음)
       sessionStorage.setItem('userName', user.name || user.email || '사용자');
       sessionStorage.setItem('userId', user.id || user._id || '');
       sessionStorage.setItem('userEmail', user.email || email.value);
-
-      // *권한주는 로직*
-      sessionStorage.setItem('userRole', user.role || 'user'); //기본값은 user
+      sessionStorage.setItem('userRole', user.role || 'user');
     } else {
       // user 객체가 없으면 이메일이라도 저장하기
       sessionStorage.setItem('userName', email.value.split('@')[0]); // 이메일 @ 앞부분 확인
