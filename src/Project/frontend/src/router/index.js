@@ -23,14 +23,16 @@ const routes = [
   { path: "/map", component: MapView },
   { path: "/weathersi", component: WeatherSiView },
   { path: "/weathersr", component: WeatherSrView },
-  { path: "/control",
-    component: ControlView, 
-    computed: () => import('@/Views/ControlView.vue'), 
+  {
+    path: "/control",
+    component: ControlView,
+    computed: () => import('@/Views/ControlView.vue'),
     meta: { requiresAuth: true } // 로그인 필수로하기
-  }, 
-  { path: "/setting", 
+  },
+  {
+    path: "/setting",
     component: SettingView,
-    meta: { requiresAuth: true, requiresAdmin: true } // 로그인 필수로하기 
+    // meta: { requiresAuth: true, requiresAdmin: true } // 로그인 필수로하기 
   },
   { path: "/about", component: AboutView },
   { path: "/login", component: LoginView, meta: { requiresGuest: true } },
@@ -54,8 +56,8 @@ router.beforeEach((to, from, next) => {
   let user = null;
 
   try {
-    user = userStr ? JSON.parse(userStr): null;
-  } catch(error) {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (error) {
     console.error('Failed to parse user data', error)
   }
 
@@ -79,7 +81,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 2. 인증이 필요한 페이지(일반사용자 경우)
-  if (to.meta.requiresAuth && !isLoggedIn) {
+  if (to.meta.requiresAuth && !isLoggedIn && to.path !== '/setting') {
     next({
       path: '/login',
       query: { redirect: to.fullPath },
@@ -88,7 +90,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 3. 게스트 전용 페이지 (로그인/회원가입)
-  if (to.meta.requiresGuest && isLoggedIn ) {
+  if (to.meta.requiresGuest && isLoggedIn) {
     // 이미 로그인 했는데 로그인/회원가입 페이지 접근시 홈으로
     next('/')
     return;
@@ -97,7 +99,7 @@ router.beforeEach((to, from, next) => {
   // 모든 조건 통과시
   next()
 });
-  
+
 //   if (to.meta.requiresAuth && !isLoggedIn) {
 //     next('/login');
 //   } else if ((to.path === '/login' || to.path === '/signup') && isLoggedIn) { 

@@ -36,7 +36,7 @@ export class AdminService {
 
     // 검색어가 있으면 이메일 또는 이름으로 검색
     const searchConditions: FindOptionsWhere<NmsUser> | FindOptionsWhere<NmsUser>[] = search ? [
-      { ...where, email: Like(`%${search}%`) },
+      { ...where, username: Like(`%${search}%`) },
       { ...where, name: Like(`%${search}%`) },
     ]
       : where;
@@ -47,13 +47,13 @@ export class AdminService {
       skip,
       take: limit,
       order: { createdAt: 'DESC' },
-      select: ['id', 'email', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt']
+      select: ['id', 'username', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt']
     });
 
     // 응답 형식을 is_active -> isActive로 변환
     const formattedUsers = users.map(user => ({
       id: user.id,
-      email: user.email,
+      username: user.username,
       name: user.name,
       role: user.role,
       isActive: user.is_active === 1,
@@ -76,7 +76,7 @@ export class AdminService {
   async getUserById(id: number) {
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt'],
+      select: ['id', 'username', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt'],
     });
 
     if (!user) {
@@ -86,7 +86,7 @@ export class AdminService {
 
     return {
       id: user.id,
-      email: user.email,
+      username: user.username,
       name: user.name,
       role: user.role,
       isActive: user.is_active === 1,
@@ -119,7 +119,7 @@ export class AdminService {
       message: '사용자 권한이 변경되었습니다.',
       user: {
         id: user.id,
-        email: user.email,
+        username: user.username,
         name: user.name,
         role: user.role,
       },
@@ -160,7 +160,7 @@ export class AdminService {
       message: `사용자가 ${user.is_active === 1 ? '활성화' : '비활성화'} 되었습니다.`,
       user: {
         userId: user.id,
-        email: user.email,
+        username: user.username,
         isActive: user.is_active === 1,
       },
     };

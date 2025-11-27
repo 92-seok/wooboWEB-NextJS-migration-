@@ -5,7 +5,7 @@
       <!-- 아이콘, 제목 부분 -->
       <div class="d-flex align-center justify-center flex-column header-section">
         <v-img class="mx-auto logo-img" src="/favicon.ico"></v-img>
-        <div class="signup-title font-weight-bold mt-2 text-center">운영지원 시스템 회원가입</div>
+        <div class="signup-title font-weight-bold mt-2 text-center">운영지원 시스템 로그인</div>
       </div>
 
       <!-- 이름 입력 부분 -->
@@ -14,10 +14,10 @@
         variant="outlined" class="placeholder-small input-field" :error-messages="nameError"
         :disabled="loading"></v-text-field>
 
-      <!-- 이메일 입력 부분 -->
-      <div class="field-label text-medium-emphasis">이메일</div>
-      <v-text-field v-model="email" density="compact" placeholder="이메일을 입력해주세요." prepend-inner-icon="mdi-email-outline"
-        variant="outlined" class="placeholder-small input-field" type="email" :error-messages="emailError"
+      <!-- 아이디 입력 부분 -->
+      <div class="field-label text-medium-emphasis">아이디</div>
+      <v-text-field v-model="username" density="compact" placeholder="아이디를 입력해주세요." prepend-inner-icon="mdi-account"
+        variant="outlined" class="placeholder-small input-field" :error-messages="usernameError"
         :disabled="loading"></v-text-field>
 
       <!-- 비밀번호 입력 부분 -->
@@ -30,10 +30,10 @@
 
       <!-- 비밀번호 확인 부분 -->
       <div class="field-label text-medium-emphasis">비밀번호 확인</div>
-      <v-text-field v-model="passwordConfirm" :append-inner-icon="visiblePassConfirm ? 'mdi-eye-off' : 'mdi-eye'"
-        :type="visiblePassConfirm ? 'text' : 'password'" density="compact" placeholder="비밀번호를 다시 입력해주세요."
+      <v-text-field v-model="passwordConfirm" :append-inner-icon="visiblePasswordConfirm ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="visiblePasswordConfirm ? 'text' : 'password'" density=" compact" placeholder="비밀번호를 다시 입력해주세요."
         prepend-inner-icon="mdi-lock-check-outline" variant="outlined"
-        @click:append-inner="visiblePassConfirm = !visiblePassConfirm" class="placeholder-small input-field"
+        @click:append-inner="visiblePasswordConfirm = !visiblePasswordConfirm" class="placeholder-small input-field"
         :error-messages="passwordConfirmError" @keyup.enter="handleSignup" :disabled="loading"></v-text-field>
 
       <!-- 에러 메세지 표출 부분 -->
@@ -78,7 +78,8 @@ const router = useRouter()
 
 // 폼 데이터 만들기
 const name = ref('');
-const email = ref('');
+const username = ref('');
+// const email = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
 const visiblePassword = ref(false);
@@ -87,7 +88,8 @@ const loading = ref(false);
 
 // 에러 메시지 만들기
 const nameError = ref('');
-const emailError = ref('');
+const usernameError = ref('');
+// const emailError = ref('');
 const passwordError = ref('');
 const passwordConfirmError = ref('');
 const errorMessage = ref('');
@@ -99,7 +101,7 @@ const validateForm = () => {
 
   // 초기화
   nameError.value = '';
-  emailError.value = '';
+  usernameError.value = '';
   passwordError.value = '';
   passwordConfirmError.value = '';
   errorMessage.value = '';
@@ -107,31 +109,37 @@ const validateForm = () => {
 
   // 이름 검증하기
   if (!name.value) {
-    nameError.value = '이름을 입력해주세요.';
+    nameError.value = '아이디를 입력해주세요.';
     isValid = false;
   } else if (name.value.length < 2) {
     nameError.value = '이름은 최소 2자 이상이어야 합니다.';
     isValid = false;
   }
 
-  // 이메일 검증하기
-  if (!email.value) {
-    emailError.value = '이메일을 입력해주세요.';
+  // 아이디 검증하기
+  if (!username.value) {
+    usernameError.value = '아이디를 입력하세요.';
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    emailError.value = '올바른 이메일 형식이 아닙니다.';
+  } else if (username.value.length < 2) {
+    usernameError.value = '아이디는 최소 2자 이상이어야 합니다.'
     isValid = false;
   }
+
+  // 이메일 검증하기
+  // if (!email.value) {
+  //   emailError.value = '이메일을 입력해주세요.';
+  //   isValid = false;
+  // } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+  //   emailError.value = '올바른 이메일 형식이 아닙니다.';
+  //   isValid = false;
+  // }
 
   // 비밀번호 검증하기
   if (!password.value) {
     passwordError.value = '비밀번호를 입력해주세요.';
     isValid = false;
-  } else if (password.value.length < 8) {
-    passwordError.value = '비밀번호는 최소 8자 이상이어야 합니다.';
-    isValid = false;
-  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password.value)) {
-    passwordError.value = '비밀번호는 대문자, 소문자, 숫자를 포함해야 합니다.'
+  } else if (password.value.length < 6) {
+    passwordError.value = '비밀번호는 최소 6자 이상이어야 합니다.';
     isValid = false;
   }
 
@@ -159,27 +167,29 @@ const handleSignup = async () => {
   try {
     const response = await axios.post('/api/auth/signup', {
       name: name.value,
-      email: email.value,
+      // email: email.value,
+      username: username.value,
       password: password.value,
     });
 
-    console.log('회원가입 성공!', response.data);
+    // console.log('회원가입 성공!', response.data);
 
     // 성공 메세지 표시하기
     successMessage.value = '회원가입이 완료 되었습니다! 로그인 페이지로 이동합니다.'
 
     // 데이터 폼 초기화하기
     name.value = '';
-    email.value = '';
+    // email.value = '';
+    username.value = '';
     password.value = '';
     passwordConfirm.value = '';
     visiblePassword.value = false;
     visiblePasswordConfirm.value = false;
 
-    // 2초 후에 로그인 페이지로 이동하기
+    // 1.5초 후에 로그인 페이지로 이동하기
     setTimeout(() => {
       router.push('/login');
-    }, 2000);
+    }, 1500);
   } catch (error) {
     console.error('회원가입 실패: ', error);
 
@@ -194,8 +204,8 @@ const handleSignup = async () => {
           errorMessage.value = message || '입력 정보를 확인해주세요.';
           break;
         case 409:
-          errorMessage.value = '이미 가입된 이메일입니다.';
-          emailError.value = '이미 가입된 이메일입니다.';
+          errorMessage.value = '이미 가입된 아이디입니다.';
+          usernameError.value = '이미 가입된 아이디입니다.';
           break;
         case 422:
           errorMessage.value = message || '유효하지 않은 입력값 입니다..';

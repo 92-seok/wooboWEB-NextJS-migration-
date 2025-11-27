@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-gray-600">
+  <div class="admin-page">
     <!-- 권한 없음 화면 띄우기 -->
-    <div v-if="!isAdmin" class="flex items-center justify-center min-h-screen px-4">
-      <v-card class="max-w-md w-full" elevated="8">
+    <div v-if="!isAdmin" class="unauthorized-container">
+      <v-card class="unauthorized-card" elevation="8" rounded="lg">
         <v-card-text class="text-center py-12">
           <div class="mb-6">
             <v-icon size="80" color="error">mdi-shield-lock</v-icon>
           </div>
-          <h2 class="text-2xl text-bold text-gray-800 mb-4">접근 권한이 없습니다</h2>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">접근 권한이 없습니다</h2>
           <p class="text-gray-600 mb-6">이 페이지는 <strong>관리자</strong>만 접근할 수 있습니다.</p>
           <v-btn color="primary" @click="goToHome" size="large">홈으로 돌아가기</v-btn>
         </v-card-text>
@@ -15,26 +15,270 @@
     </div>
 
     <!-- 관리자 화면 페이지 -->
-    <div v-else>
-      <!-- 헤더 부분 -->
-      <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div class="flex flex-col sm:flox-row sm:items-center sm:justify-between">
-            <div>
-              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
-                관리자 페이지
-              </h1>
-              <p class="text-sm text-gray-500 mt-1">사용자 관리 및 설정</p>
+    <v-container v-else fluid class="admin-container">
+      <div class="content-wrapper">
+        <!-- 헤더 부분 -->
+        <v-card class="header-card mb-6" elevation="2" rounded="lg">
+          <v-card-text class="pa-6">
+            <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between">
+              <div class="mb-4 mb-sm-0">
+                <h1 class="text-h4 font-weight-bold text-grey-darken-3">관리자 페이지</h1>
+                <p class="text-subtitle-2 text-grey mt-1">사용자 관리 및 설정</p>
+              </div>
+              <v-btn color="primary" prepend-icon="mdi-refresh" @click="fetchUsers" :loading="loading" size="large">
+                새로고침
+              </v-btn>
             </div>
-            <v-btn color="primary" prepend-icon="mdi-refresh" @click="fetchUsers" :loading="loading">
-              새로고침
-            </v-btn>
+          </v-card-text>
+        </v-card>
+
+        <!-- 검색/필터 부분 -->
+        <v-card class="filter-card mb-6" elevation="2" rounded="lg">
+          <v-card-text class="pa-6">
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="search" label="사용자 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
+                  density="comfortable" clearable @update:model-value="handlerSearch" hide-details>
+                </v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select v-model="roleFilter" :items="roleOptions" label="역할 필터" variant="outlined"
+                  density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
+                </v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select v-model="statusFilter" :items="statusOptions" label="상태 필터" variant="outlined"
+                  density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
+        <!-- 사용자 테이블 (데스크탑) -->
+        <v-card class="table-card d-none d-md-block" elevation="2" rounded="lg">
+          <v-data-table :headers="headers" :items="users" :loading="loading" :items-per-page="limit" hide-default-footer
+            class="elevation-0">
+            <!-- 이메일(email) -->
+            <template v-slot:[`item.email`]="{ item }">
+              <div class="d-flex align-center py-2">
+                <v-avatar size="40" color="primary" class="mr-3">
+                  <span class="text-white font-weight-bold">{{ item.name.charAt(0).toUpperCase() }}</span>
+                </v-avatar>
+                <div>
+                  <div class="font-weight-medium">{{ item.email }}</div>
+                  <div class="text-caption text-grey">{{ item.name }}</div>
+                </div>
+              </div>
+            </template>
+
+            <!-- 역할(role) -->
+            <template v-slot:[`item.role`]="{ item }">
+              <v-chip :color="item.role === 'admin' ? 'error' : 'primary'" size="small" variant="flat">
+                {{ item.role === 'admin' ? '관리자' : '사용자' }}
+              </v-chip>
+            </template>
+
+            <!-- 상태(status) -->
+            <template v-slot:[`item.isActive`]="{ item }">
+              <v-chip :color="item.isActive ? 'success' : 'error'" size="small" variant="flat">
+                {{ item.isActive ? '활성' : '비활성' }}
+              </v-chip>
+            </template>
+
+            <!-- 마지막로그인(lastLoginAt) -->
+            <template v-slot:[`item.lastLoginAt`]="{ item }">
+              <span class="text-body-2 text-grey-darken-1">{{ formatDate(item.lastLoginAt) }}</span>
+            </template>
+
+            <!-- 액션(actions) -->
+            <template v-slot:[`item.actions`]="{ item }">
+              <div class="d-flex justify-center">
+                <v-tooltip text="수정" location="top">
+                  <template v-slot:activator="{ props }">
+                    <v-btn icon="mdi-pencil" size="small" variant="text" color="primary" @click="openEditDialog(item)"
+                      v-bind="props"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="비밀번호 변경" location="top">
+                  <template v-slot:activator="{ props }">
+                    <v-btn icon="mdi-key" size="small" variant="text" color="warning" @click="openPasswordDialog(item)"
+                      v-bind="props"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="삭제" location="top">
+                  <template v-slot:activator="{ props }">
+                    <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="openDeleteDialog(item)"
+                      v-bind="props"></v-btn>
+                  </template>
+                </v-tooltip>
+              </div>
+            </template>
+          </v-data-table>
+
+          <!-- 페이지네이션 -->
+          <v-divider></v-divider>
+          <v-card-actions class="justify-center pa-4">
+            <v-pagination v-model="page" :length="totalPages" @update:model-value="fetchUsers" rounded="circle"
+              density="comfortable"></v-pagination>
+          </v-card-actions>
+        </v-card>
+
+        <!-- 사용자 카드 (모바일) -->
+        <div class="d-md-none">
+          <v-card v-for="user in users" :key="user.id" class="user-mobile-card mb-4" elevation="2" rounded="lg">
+            <v-card-text class="pa-4">
+              <div class="d-flex align-start mb-4">
+                <v-avatar size="56" color="primary" class="mr-4">
+                  <span class="text-h6 text-white font-weight-bold">{{ user.name.charAt(0).toUpperCase() }}</span>
+                </v-avatar>
+                <div class="flex-grow-1">
+                  <div class="text-h6 font-weight-bold">{{ user.name }}</div>
+                  <div class="text-body-2 text-grey">{{ user.email }}</div>
+                </div>
+              </div>
+
+              <v-divider class="mb-4"></v-divider>
+
+              <div class="user-info-grid">
+                <div class="d-flex justify-space-between align-center mb-3">
+                  <span class="text-body-2 text-grey-darken-1">역할</span>
+                  <v-chip :color="user.role === 'admin' ? 'error' : 'primary'" size="small" variant="flat">
+                    {{ user.role === 'admin' ? '관리자' : '사용자' }}
+                  </v-chip>
+                </div>
+
+                <div class="d-flex justify-space-between align-center mb-3">
+                  <span class="text-body-2 text-grey-darken-1">상태</span>
+                  <v-chip :color="user.isActive ? 'success' : 'error'" size="small" variant="flat">
+                    {{ user.isActive ? '활성' : '비활성' }}
+                  </v-chip>
+                </div>
+
+                <div class="d-flex justify-space-between align-center mb-4">
+                  <span class="text-body-2 text-grey-darken-1">마지막 로그인</span>
+                  <span class="text-body-2">{{ formatDate(user.lastLoginAt) }}</span>
+                </div>
+              </div>
+
+              <v-divider class="mb-4"></v-divider>
+
+              <v-row dense>
+                <v-col cols="4">
+                  <v-btn color="primary" variant="tonal" size="small" @click="openEditDialog(user)" block>
+                    수정
+                  </v-btn>
+                </v-col>
+                <v-col cols="4">
+                  <v-btn color="warning" variant="tonal" size="small" @click="openPasswordDialog(user)" block>
+                    비밀번호
+                  </v-btn>
+                </v-col>
+                <v-col cols="4">
+                  <v-btn color="error" variant="tonal" size="small" @click="openDeleteDialog(user)" block>
+                    삭제
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
+          <!-- 모바일 페이지네이션 -->
+          <div class="d-flex justify-center mt-4">
+            <v-pagination v-model="page" :length="totalPages" @update:model-value="fetchUsers" rounded="circle"
+              density="comfortable"></v-pagination>
           </div>
         </div>
-      </header>
-    </div>
+      </div>
+    </v-container>
 
+    <!-- 수정 다이얼로그 -->
+    <v-dialog v-model="editDialog" max-width="500" persistent>
+      <v-card rounded="lg">
+        <v-card-title class="text-h5 font-weight-bold pa-6 bg-grey-lighten-4">
+          사용자 정보 수정
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="pa-6">
+          <v-select v-model="editForm.role" :items="[{ title: '사용자', value: 'user' }, { title: '관리자', value: 'admin' }]"
+            label="역할" variant="outlined" class="mb-4" hide-details>
+          </v-select>
+          <v-select v-model="editForm.isActive" :items="[{ title: '활성', value: true }, { title: '비활성', value: false }]"
+            label="상태" variant="outlined" hide-details>
+          </v-select>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="editDialog = false" :disabled="updating">
+            취소
+          </v-btn>
+          <v-btn color="primary" variant="elevated" @click="handleUpdate" :loading="updating">
+            저장
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
+    <!-- 비밀번호 변경 다이얼로그 -->
+    <v-dialog v-model="passwordDialog" max-width="500" persistent>
+      <v-card rounded="lg">
+        <v-card-title class="text-h5 font-weight-bold pa-6 bg-grey-lighten-4">
+          비밀번호 변경
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="pa-6">
+          <v-text-field v-model="passwordForm.newPassword" label="새 비밀번호" type="password" variant="outlined"
+            :rules="[v => !!v || '비밀번호를 입력하세요']" placeholder="새 비밀번호를 입력하세요" hide-details>
+          </v-text-field>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="passwordDialog = false" :disabled="updating">
+            취소
+          </v-btn>
+          <v-btn color="primary" variant="elevated" @click="handlePasswordUpdate" :loading="updating">
+            변경
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 삭제 확인 다이얼로그 -->
+    <v-dialog v-model="deleteDialog" max-width="400" persistent>
+      <v-card rounded="lg">
+        <v-card-title class="text-h5 font-weight-bold pa-6 bg-error-lighten-4">
+          사용자 삭제
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="pa-6">
+          <div class="text-center">
+            <v-icon size="64" color="error" class="mb-4">mdi-alert-circle-outline</v-icon>
+            <p class="text-body-1">정말로 이 사용자를 삭제하시겠습니까?</p>
+            <p class="text-caption text-grey mt-2">이 작업은 되돌릴 수 없습니다.</p>
+          </div>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="deleteDialog = false" :disabled="updating">
+            취소
+          </v-btn>
+          <v-btn color="error" variant="elevated" @click="handleDelete" :loading="updating">
+            삭제
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 스낵바 표출 -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top" timeout="3000">
+      {{ snackbar.message }}
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar.show = false">닫기</v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -55,16 +299,16 @@ const loading = ref(false);
 const updating = ref(false);
 const page = ref(1);
 const limit = ref(10);
-const totalPage = ref(1);
+const totalPages = ref(1);
 const search = ref('');
 const roleFilter = ref(null);
 const statusFilter = ref(null);
 
 // 다이얼로그
-const editDialog = ref(false); 
-const passwordDialog = ref(false); 
-const deleteDialog = ref(false); 
-const selectedUser = ref(null); 
+const editDialog = ref(false);
+const passwordDialog = ref(false);
+const deleteDialog = ref(false);
+const selectedUser = ref(null);
 
 // 폼
 const editForm = ref({ role: '', isActive: true });
@@ -74,22 +318,22 @@ const passwordForm = ref({ newPassword: '' });
 const snackbar = ref({ show: false, message: '', color: 'success' });
 
 // 테이블 헤더 부분
-const header = [
+const headers = [
   { title: '사용자', key: 'email', sortable: false },
-  { title: '역할', key: 'role', sortable: false },
-  { title: '상태', key: 'status', sortable: false },
+  { title: '권한', key: 'role', sortable: false },
+  { title: '상태', key: 'isActive', sortable: false },
   { title: '마지막 로그인', key: 'lastLoginAt', sortable: false },
   { title: '액션', key: 'actions', sortable: false, align: 'center' },
 ];
 
 // 필터 옵션 확인
-const roleOption = [
+const roleOptions = [
   { title: '전체', value: null },
   { title: '사용자', value: 'user' },
   { title: '관리자', value: 'admin' },
 ];
 
-const statusOption = [
+const statusOptions = [
   { title: '전체', value: null },
   { title: '활성', value: true },
   { title: '비활성', value: false },
@@ -110,9 +354,10 @@ const fetchUsers = async () => {
 
     const response = await adminApi.getUsers(params);
     users.value = response.data.data;
-    totalPage.value = response.data.data.totalPage;
-  } catch(error) {
+    totalPages.value = response.data.meta.totalPages;
+  } catch (error) {
     console.error('사용자 목록을 불러오는데 실패했습니다.', error);
+    showSnackbar('사용자 목록을 불러오는데 실패했습니다.', 'error');
   } finally {
     loading.value = false;
   }
@@ -141,25 +386,32 @@ const openEditDialog = (user) => {
 }
 
 // 사용자 정보 업데이트하기
-const handlerUpdate = async () => {
+const handleUpdate = async () => {
   updating.value = true;
   try {
     // 역할변경
-    await adminApi.updateUsersRole(selectedUser.value.id, editForm.value.role);
+    await adminApi.updateUserRole(selectedUser.value.id, editForm.value.role);
     // 상태 변경하기
-    await adminApi.updateUsersStatus(selectedUser.value.id, editForm.value.isActive);
+    await adminApi.updateUserStatus(selectedUser.value.id, editForm.value.isActive);
 
     showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
     editDialog.value = false;
     fetchUsers();
   } catch (error) {
-    showSnackbar('업데이트에 실패하였습니다.', error);
+    showSnackbar('업데이트에 실패하였습니다.', 'error');
   } finally {
     updating.value = false;
   }
 }
 
-// 비밀번호 다이얼로그 열기
+// 비밀번호 변경 다이얼로그 열기
+const openPasswordDialog = (user) => {
+  selectedUser.value = user;
+  passwordForm.value.newPassword = '';
+  passwordDialog.value = true;
+}
+
+// 비밀번호 업데이트
 const handlePasswordUpdate = async () => {
   if (!passwordForm.value.newPassword) {
     showSnackbar('비밀번호를 입력하세요.', 'error');
@@ -175,7 +427,7 @@ const handlePasswordUpdate = async () => {
     showSnackbar('비밀번호가 변경되었습니다.', 'success');
     passwordDialog.value = false;
   } catch (error) {
-    showSnackbar('비밀번호가 변경이 실패하였습니다.', 'error');
+    showSnackbar('비밀번호 변경에 실패하였습니다.', 'error');
   } finally {
     updating.value = false;
   }
@@ -208,7 +460,7 @@ const showSnackbar = (message, color = 'success') => {
 };
 
 // 날짜 포맷
-const formetDate = (date) => {
+const formatDate = (date) => {
   if (!date) return '-';
   return new Date(date).toLocaleString('ko-KR');
 }
@@ -224,8 +476,80 @@ onMounted(() => {
     fetchUsers();
   }
 });
-
-
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.unauthorized-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.unauthorized-card {
+  max-width: 480px;
+  width: 100%;
+}
+
+.admin-container {
+  padding-top: 24px;
+  padding-bottom: 48px;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-card {
+  // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: black;
+
+  // h1,
+  // p {
+  //   color: white !important;
+  // }
+}
+
+.filter-card {
+  background: white;
+}
+
+.table-card {
+  background: white;
+}
+
+.user-mobile-card {
+  background: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.user-info-grid {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* 반응형 조정 */
+@media (max-width: 600px) {
+  .admin-container {
+    padding-top: 16px;
+    padding-bottom: 32px;
+  }
+
+  .content-wrapper {
+    padding: 0 8px;
+  }
+}
+</style>

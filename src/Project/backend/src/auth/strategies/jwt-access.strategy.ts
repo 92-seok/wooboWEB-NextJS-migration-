@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 type JwtPayload = {
   sub: number; // user id
-  email: string;
+  username: string;
   role: string;
 };
 
@@ -26,7 +26,7 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt') {
     // request.user에 들어갈 값 로직
     return {
       userId: payload.sub,
-      email: payload.email,
+      username: payload.username,
       role: payload.role,
     };
   }

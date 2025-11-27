@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Axios 인스턴스 생성하기
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -12,10 +12,10 @@ const apiClient = axios.create({
 // 요청 인터셉터 구성: 모든 요청에 JWT 토큰 자동 추가
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
 
     if (token) {
-      config.headers.Authorization = `Bearere ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -25,16 +25,16 @@ apiClient.interceptors.request.use(
 );
 
 // 응답 인터셉터: 401 에러시 로그인 페이지로 이동시키기
-apiClient.interceptors.request.use(
+apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
       // 토큰 만료 또는 인증 실패했을 때
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);

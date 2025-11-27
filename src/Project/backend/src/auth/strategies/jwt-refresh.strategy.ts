@@ -6,7 +6,7 @@ import { Request } from 'express';
 
 type JwtPayload = {
   sub: number;
-  email: string;
+  username: string;
 }
 
 @Injectable()
@@ -34,6 +34,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw new UnauthorizedException('Refresh token not found');
     }
 
-    return { userId: payload.sub, email: payload.email, refreshToken };
+    return { userId: payload.sub, username: payload.username, refreshToken };
   }
 }

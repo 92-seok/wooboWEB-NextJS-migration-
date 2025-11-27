@@ -97,13 +97,12 @@ const loading = ref(false);
 const isLoggedIn = ref(!!sessionStorage.getItem('accessToken'));
 
 // 사용자 이름
-const userName = computed(() => {
-  return sessionStorage.getItem('userName') || '사용자';
-})
+const userName = ref(sessionStorage.getItem('userName') || '사용자');
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
   isLoggedIn.value = !!sessionStorage.getItem('accessToken');
+  userName.value = sessionStorage.getItem('userName') || '사용자';
 }
 
 watch(() => router.currentRoute.value, () => {

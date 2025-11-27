@@ -60,13 +60,12 @@ const isLoggedIn = ref(!!sessionStorage.getItem('accessToken'));
 const logoutDialog = ref(false);
 const loading = ref(false);
 
-const userName = computed(() => {
-  return sessionStorage.getItem('userName') || '사용자'
-});
+const userName = ref(sessionStorage.getItem('userName') || '사용자');
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
   isLoggedIn.value = !!sessionStorage.getItem('accessToken');
+  userName.value = sessionStorage.getItem('userName') || '사용자';
 }
 // 라우터 변경 시 로그인 상태 체크하는 로직
 watch(() => router.currentRoute.value, () => {

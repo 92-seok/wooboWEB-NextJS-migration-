@@ -11,7 +11,6 @@ import { NmsUserAuthority } from './nms_user_authority.entity';
 import { NmsUserToken } from './nms_user_token.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 
-
 @Entity('nms_user')
 export class NmsUser {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -20,8 +19,11 @@ export class NmsUser {
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100 })
   email: string;
+
+  @Column({ type: 'varchar', length: 50, unique: true })
+  username: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   phone?: string;

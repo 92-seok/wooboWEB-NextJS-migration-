@@ -5,13 +5,14 @@
         <v-img class="mx-auto logo-img" src="/favicon.ico"></v-img>
         <div class="login-title font-weight-bold mt-2 text-center">운영지원 시스템 로그인</div>
       </div>
-      <!-- email 입력부분 -->
+
+      <!-- 아이디 입력부분 -->
       <div class="field-label text-medium-emphasis">
-        이메일
+        아이디
       </div>
-      <v-text-field v-model="email" density="compact" placeholder="이메일을 입력해주세요" prepend-inner-icon="mdi-email-outline"
-        variant="outlined" class="placeholder-small input-field" type="email" :error-messages="emailError"
-        @keyup.enter="handleLogin" :disabled="loading"></v-text-field>
+      <v-text-field v-model="username" density="compact" placeholder="아이디를 입력해주세요"
+        prepend-inner-icon="mdi-account-outline" variant="outlined" class="placeholder-small input-field"
+        :error-messages="usernameError" @keyup.enter="handleLogin" :disabled="loading"></v-text-field>
 
       <!-- password 입력부분 -->
       <div class="field-label text-medium-emphasis d-flex align-center justify-space-between">
@@ -24,7 +25,8 @@
         :disabled="loading"></v-text-field>
 
       <!-- error message 표시 -->
-      <v-alert v-if="errorMessage" type="error" variant="tonal" class="alert-message" closable @click:close="errorMessage = ''">
+      <v-alert v-if="errorMessage" type="error" variant="tonal" class="alert-message" closable
+        @click:close="errorMessage = ''">
         {{ errorMessage }}
       </v-alert>
 
@@ -38,8 +40,8 @@
       </v-card>
 
       <!-- 로그인 버튼 -->
-      <v-btn block color="primary" variant="elevated" @click="handleLogin" :loading="loading"
-        :disabled="loading" class="login-btn">로그인</v-btn>
+      <v-btn block color="primary" variant="elevated" @click="handleLogin" :loading="loading" :disabled="loading"
+        class="login-btn">로그인</v-btn>
 
       <!-- 회원가입 페이지 이동 버튼 -->
       <div class="text-center signup-link">
@@ -60,13 +62,13 @@ import axios from 'axios';
 const router = useRouter();
 
 // 폼 데이터
-const email = ref('');
+const username = ref('');
 const password = ref('');
 const visible = ref(false);
 const loading = ref(false);
 
 // 에러메세지
-const emailError = ref('');
+const usernameError = ref('');
 const passwordError = ref('');
 const errorMessage = ref('');
 
@@ -75,16 +77,16 @@ const validateForm = () => {
   let isValid = true;
 
   // 초기화
-  emailError.value = '';
+  usernameError.value = '';
   passwordError.value = '';
   errorMessage.value = '';
 
-  // 이메일 검증하기
-  if (!email.value) {
-    emailError.value = '이메일을 입력해주세요.';
+  // 아이디 검증하기
+  if (!username.value) {
+    usernameError.value = '아이디를 입력해주세요.';
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    emailError.value = '올바른 이메일 형식이 아닙니다.';
+  } else if (username.value.length < 2) {
+    usernameError.value = '아이디 최소 2자 이상이어야 합니다.';
     isValid = false;
   }
 
@@ -92,8 +94,8 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = '비밀번호를 입력해주세요.';
     isValid = false;
-  } else if (password.value.length < 8) {
-    passwordError.value = '비밀번호는 최소 8자 이상이어야 합니다.';
+  } else if (password.value.length < 6) {
+    passwordError.value = '비밀번호는 최소 6자 이상이어야 합니다.';
     isValid = false;
   }
 
@@ -111,7 +113,7 @@ const handleLogin = async () => {
 
   try {
     const response = await axios.post('/api/auth/signin', {
-      email: email.value,
+      username: username.value,
       password: password.value,
     });
 
@@ -144,14 +146,14 @@ const handleLogin = async () => {
       sessionStorage.setItem('user', JSON.stringify(user));
 
       // 개별 필드도 저장 (다른 곳에서 사용할 수 있음)
-      sessionStorage.setItem('userName', user.name || user.email || '사용자');
-      sessionStorage.setItem('userId', user.id || user._id || '');
-      sessionStorage.setItem('userEmail', user.email || email.value);
+      sessionStorage.setItem('userName', user.name || user.username || user.email || '사용자');
+      sessionStorage.setItem('userId', user.id || user._id || user.username || '');
+      sessionStorage.setItem('userEmail', user.email || '');
       sessionStorage.setItem('userRole', user.role || 'user');
     } else {
-      // user 객체가 없으면 이메일이라도 저장하기
-      sessionStorage.setItem('userName', email.value.split('@')[0]); // 이메일 @ 앞부분 확인
-      sessionStorage.setItem('userEmail', email.value);
+      // user 객체가 없으면 아이디라도 저장하기
+      sessionStorage.setItem('userName', username.value); // 아이디라도 저장
+      // sessionStorage.setItem('userEmail', email.value);
     }
 
     // axios 기본 헤더에 토큰 설정 추가해주기
@@ -159,10 +161,10 @@ const handleLogin = async () => {
 
     console.log('로그인 성공')
     console.log('사용자 이름:', sessionStorage.getItem('userName'))
-    console.log('axios 헤더:', axios.defaults.headers.common['Authorzation'])
+    console.log('axios 헤더:', axios.defaults.headers.common['Authorization'])
 
     // 민감한 정보 초기화로직
-    email.value = '';
+    username.value = '';
     password.value = '';
     visible.value = false;
 
@@ -179,7 +181,7 @@ const handleLogin = async () => {
 
       switch (status) {
         case 401:
-          errorMessage.value = '이메일 또는 비밀번호가 일치하지 않습니다.';
+          errorMessage.value = '아이디 또는 비밀번호가 일치하지 않습니다.';
           break;
         case 400:
           errorMessage.value = message || '입력 정보를 확인해주세요.';

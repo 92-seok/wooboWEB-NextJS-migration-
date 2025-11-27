@@ -37,22 +37,23 @@ export class AuthService {
   // * 회원가입 로직 *
   async signUp(dto: SignUpDto): Promise<Tokens> {
     const exists = await this.userRepo.findOne({
-      where: { email: dto.email },
+      where: { username: dto.username },
     });
 
     if (exists) {
       throw new ConflictException('이미 가입된 이메일입니다.');
     }
 
-    const hashedPw = await bcrypt.hash(dto.password, 10);
+    const normalizedPw = dto.password.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hashedPw = await bcrypt.hash(normalizedPw, 10);
 
     const user = this.userRepo.create({
-      email: dto.email,
+      username: dto.username,
       password: hashedPw,
       name: dto.name,
       is_active: 1,
       role: UserRole.USER,
-    })
+    });
 
     const savedUser = await this.userRepo.save(user);
 
@@ -66,7 +67,7 @@ export class AuthService {
     // role 추가하여 토큰 생성
     const tokens = await this.getTokens(
       savedUser.id,
-      savedUser.email,
+      savedUser.username,
       savedUser.role,
     );
     await this.saveRefreshToken(savedUser.id, tokens.refreshToken);
@@ -77,26 +78,29 @@ export class AuthService {
   // * 로그인 로직 *
   async signIn(dto: SignInDto): Promise<any> {
     const user = await this.userRepo.findOne({
-      where: { email: dto.email, is_active: 1 },
+      where: { username: dto.username, is_active: 1 },
     });
-
 
     if (!user) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 맞지 않습니다.');
     }
 
-    const isMatch = await bcrypt.compare(dto.password, user.password);
+    // 입력된 비밀번호를 소문자와 숫자만 추출
+    const normalizedPw = dto.password.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isMatch = await bcrypt.compare(normalizedPw, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 맞지 않습니다.');
+      throw new UnauthorizedException('아이디 또는 비밀번호가 맞지 않습니다.');
     }
 
     // 사용자 권한 조회하기
     const authorities = await this.userAuthRepo.find({
-      where: { user: { id: user.id } }
-    })
+      where: { user: { id: user.id } },
+    });
 
     // 역할 결정하기 = ROLE_ADMIN 이 있으면 'admin' 아니면 'user'
-    const hasAdminRole = authorities.some(auth => auth.authorityName === 'ROLE_ADMIN');
+    const hasAdminRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_ADMIN',
+    );
     const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
 
     // 엔티티의 롤 필드도 동기화 시키기
@@ -110,24 +114,25 @@ export class AuthService {
     await this.userRepo.save(user);
 
     // 토큰 생성
-    const tokens = await this.getTokens(user.id, user.email, role);
+    const tokens = await this.getTokens(user.id, user.username, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
       ...tokens,
       user: {
         id: user.id,
-        email: user.email,
+        username: user.username,
         name: user.name,
         role: role,
-      }
-    }
+      },
+    };
   }
 
   // * 로그아웃: DB에 저장된 refresh token 제거하기
   async logout(userId: number): Promise<void> {
     await this.userTokenRepo.update(
-      { userId }, { hashedRt: null }, // hash 토큰 삭제하기
+      { userId },
+      { hashedRt: null }, // hash 토큰 삭제하기
     );
   }
 
@@ -153,17 +158,23 @@ export class AuthService {
     const authorities = await this.userAuthRepo.find({
       where: { user: { id: user.id } },
     });
-    const hasAdminRole = authorities.some((auth) => auth.authorityName === 'ROLE_ADMIN',);
+    const hasAdminRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_ADMIN',
+    );
     const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
 
-    const tokens = await this.getTokens(user.id, user.email, role);
+    const tokens = await this.getTokens(user.id, user.username, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  private async getTokens(userId: number, email: string, role: string): Promise<Tokens> {
-    const payload = { sub: userId, email, role, };
+  private async getTokens(
+    userId: number,
+    username: string,
+    role: string,
+  ): Promise<Tokens> {
+    const payload = { sub: userId, username, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
