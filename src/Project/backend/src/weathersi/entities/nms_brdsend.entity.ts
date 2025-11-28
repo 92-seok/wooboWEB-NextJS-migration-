@@ -116,9 +116,9 @@ export class NmsBrdSend {
   @Column({
     name: 'Auth',
     type: 'varchar',
-    length: 10,
+    length: 50,
     nullable: true,
-    comment: '사용자 인증',
+    comment: '제어한 아이디(username)',
   })
   Auth: string;
 

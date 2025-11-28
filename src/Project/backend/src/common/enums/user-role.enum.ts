@@ -3,6 +3,8 @@
 // - ADMIN : 관리자 (모든 권한)
 
 export enum UserRole {
+  GUEST = 'guest',
+  OPERATOR = 'operator',
   USER = 'user',
   ADMIN = 'admin',
 }

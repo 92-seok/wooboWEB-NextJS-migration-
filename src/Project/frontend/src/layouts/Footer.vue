@@ -15,13 +15,20 @@
       <span class="text-subtitle-2">소하천</span>
     </v-btn>
 
-    <v-btn @click="router.push('/setting')">
-      <v-icon>mdi-book</v-icon>
+    <!-- 관리자 전용: 사용자 관리 페이지 -->
+    <!-- <v-btn v-if="isAdmin" @click="router.push('/admin')">
+      <v-icon>mdi-account-cog</v-icon>
+      <span class="text-subtitle-2">관리자</span>
+    </v-btn> -->
+
+    <!-- 관리자 전용: 제어 이력 페이지 -->
+    <v-btn v-if="isAdmin" @click="router.push('/setting')">
+      <v-icon>mdi-history</v-icon>
       <span class="text-subtitle-2">관리</span>
     </v-btn>
 
     <!-- 로그인 상태일 때 : 로그아웃 버튼 -->
-    <v-btn v-if="isLoggedIn" @click="handleLogout">
+    <v-btn v-if="isLoggedIn" @click="isAdmin ? router.push('/admin') : handleLogout()">
       <v-icon>mdi-account</v-icon>
       <span class="text-subtitle-2">{{ userName }}님</span>
     </v-btn>
@@ -61,6 +68,18 @@ const logoutDialog = ref(false);
 const loading = ref(false);
 
 const userName = ref(sessionStorage.getItem('userName') || '사용자');
+
+// 관리자 권한 체크
+const isAdmin = computed(() => {
+  try {
+    const userStr = sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user?.role === 'admin';
+  } catch (error) {
+    console.error('Failed to parse user data', error);
+    return false;
+  }
+});
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {

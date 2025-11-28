@@ -34,7 +34,7 @@ export const usePermission = () => {
   // 관리자 여부
   const isAdmin = computed(() => {
     const result = isLoggedIn.value && userRole.value === 'admin'
-    console.log('👤 isAdmin:', result)
+    console.log('isAdmin:', result)
     return result
   })
 
@@ -42,6 +42,12 @@ export const usePermission = () => {
   const isUser = computed(() => {
     return isLoggedIn.value && userRole.value === 'user'
   })
+
+  // 일반 사용자 여부
+  const isOperator = computed(() => {
+    return isLoggedIn.value && userRole.value === 'operator'
+  })
+
 
   // 게스트 여부
   const isGuest = computed(() => {
@@ -57,8 +63,9 @@ export const usePermission = () => {
 
     const roleHierarchy = {
       'guest': 0,
-      'user': 1,
-      'admin': 2
+      'operator': 1,
+      'user': 2,
+      'admin': 3,
     }
 
     const currentLevel = roleHierarchy[userRole.value] || 0
@@ -67,9 +74,9 @@ export const usePermission = () => {
     return currentLevel >= requiredLevel
   }
 
-  // 장비 테스트 권한 (관리자만 + 로그인 필수)
+  // 장비 테스트 권한 (user 이상 = user + admin)
   const canAccessDeviceTest = computed(() => {
-    const result = isLoggedIn.value && isAdmin.value
+    const result = isLoggedIn.value && hasPermission('user');
     // console.log('canAccessDeviceTest:', result, {
     //   isLoggedIn: isLoggedIn.value,
     //   isAdmin: isAdmin.value,
@@ -78,12 +85,12 @@ export const usePermission = () => {
     return result
   })
 
-  // 편집 권한 (user 이상 + 로그인 필수)
+  // 편집 권한 (user 이상 = user + admin)
   const canEdit = computed(() => {
     return isLoggedIn.value && hasPermission('user')
   })
 
-  // 조회 권한 (로그인한 모든 사용자)
+  // 조회 권한 (로그인한 모든 사용자 = operator, user, admin)
   const canView = computed(() => {
     return isLoggedIn.value
   })
@@ -105,6 +112,7 @@ export const usePermission = () => {
     isAdmin,
     isUser,
     isGuest,
+    isOperator,
     hasPermission,
     canAccessDeviceTest,
     canEdit,

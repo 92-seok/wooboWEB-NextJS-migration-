@@ -28,7 +28,7 @@ export class NmsUser {
   @Column({ type: 'varchar', length: 100, nullable: true })
   phone?: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.OPERATOR })
   role: UserRole;
 
   @Column({ type: 'varchar', length: 50 })
@@ -40,13 +40,13 @@ export class NmsUser {
   @Column({ type: 'varchar', length: 100, nullable: true })
   kakao_id?: string;
 
-  @Column({ type: 'timestamp', nullable: true, name: 'last_login_at' })
+  @Column({ name: 'last_login_at', type: 'timestamp', nullable: true, })
   lastLoginAt: Date;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp', nullable: true, })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', nullable: true, })
   updatedAt: Date;
 
   @OneToMany(() => NmsUserAuthority, (ua) => ua.user)

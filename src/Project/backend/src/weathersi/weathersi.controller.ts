@@ -7,15 +7,26 @@ import {
   Req,
   Res,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 
 // Service
 import { WeatherSiService } from './weathersi.service';
 
+// Guard
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+
+// Decorator
+import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
+import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
+
+
 @Controller('weathersi')
 export class WeatherSiController {
-  constructor(private readonly service: WeatherSiService) {}
+  constructor(private readonly service: WeatherSiService) { }
+
+  // Get, Post, getAdm, setAdm, getAreaList, getDevices, getControl... 등등 메서드
 
   @Get()
   async Get(
@@ -43,7 +54,7 @@ export class WeatherSiController {
 
     try {
       data = await this.service.getAreaList();
-    } catch {}
+    } catch { }
 
     return {
       header: {
@@ -188,83 +199,117 @@ export class WeatherSiController {
     }
   }
 
+  // ****** 제어 이력 조회 로직 ******
+
+  @UseGuards(JwtAuthGuard)
   @Post('sendBrd')
   async postBrd(
     @Body() BODY: any,
     @Body('BDONG_CD') BDONG_CD: string,
     @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
     @Body('Message') Message: string,
-    @Body('Auth') Auth: string,
+    @Req() req: any,
   ): Promise<any> {
-    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+    const username = req.user?.username || 'unknown';
+    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
+    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      const controlDevices = await this.service.insertBrdSend(BODY);
+      // username을 Auth 필드에 추가하기
+      const bodyWithAuth = {
+        ...BODY,
+        Auth: username,
+      };
+
+      const controlDevices = await this.service.insertBrdSend(bodyWithAuth);
 
       return {
         success: true,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
+        username: username,
       };
-    } catch {
+    } catch (error) {
+      console.error('방송 제어 실패', error)
       return {
         success: false,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
+        error: error.message,
       };
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('sendDisplay')
   async postDis(
     @Body() BODY: any,
     @Body('BDONG_CD') BDONG_CD: string,
     @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
     @Body('Message') Message: string,
-    @Body('Auth') Auth: string,
+    @Req() req: any,
   ): Promise<any> {
-    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+    const username = req.user?.username || 'unknown';
+    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
+    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      const controlDevices = await this.service.insertDisSend(BODY);
+      // username을 Auth 필드에 추가하기
+      const bodyWithAuth = {
+        ...BODY,
+        Auth: username,
+      };
+
+      const controlDevices = await this.service.insertDisSend(bodyWithAuth);
 
       return {
         success: true,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
       };
-    } catch {
+    } catch (error) {
       return {
         success: false,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
+        error: error.message,
       };
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('sendGate')
   async postGate(
     @Body() BODY: any,
     @Body('BDONG_CD') BDONG_CD: string,
     @Body('CD_DIST_OBSV') CD_DIST_OBSV: string,
     @Body('Gate') Gate: string,
-    @Body('Auth') Auth: string,
+    @Req() req: any,
   ): Promise<any> {
-    console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Gate} ${Auth}`);
+    const username = req.user?.username || 'unknown';
+    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Gate}`);
+    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      const controlDevices = await this.service.insertGateControl(BODY);
+      // username을 Auth 필드에 추가하기
+      const bodyWithAuth = {
+        ...BODY,
+        Auth: username,
+      };
+
+      const controlDevices = await this.service.insertDisSend(bodyWithAuth);
 
       return {
         success: true,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
       };
-    } catch {
+    } catch (error) {
       return {
         success: false,
         BDONG_CD: BDONG_CD,
         CD_DIST_OBSV: CD_DIST_OBSV,
+        error: error.message,
       };
     }
   }

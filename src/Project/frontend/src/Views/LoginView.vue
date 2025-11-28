@@ -159,9 +159,9 @@ const handleLogin = async () => {
     // axios 기본 헤더에 토큰 설정 추가해주기
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-    console.log('로그인 성공')
-    console.log('사용자 이름:', sessionStorage.getItem('userName'))
-    console.log('axios 헤더:', axios.defaults.headers.common['Authorization'])
+    // console.log('로그인 성공')
+    // console.log('사용자 이름:', sessionStorage.getItem('userName'))
+    // console.log('axios 헤더:', axios.defaults.headers.common['Authorization'])
 
     // 민감한 정보 초기화로직
     username.value = '';

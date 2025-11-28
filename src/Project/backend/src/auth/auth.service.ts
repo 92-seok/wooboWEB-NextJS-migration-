@@ -52,7 +52,7 @@ export class AuthService {
       password: hashedPw,
       name: dto.name,
       is_active: 1,
-      role: UserRole.USER,
+      role: UserRole.OPERATOR,
     });
 
     const savedUser = await this.userRepo.save(user);
@@ -60,7 +60,7 @@ export class AuthService {
     // 기본 권한 USER 부여하기
     const authority = this.userAuthRepo.create({
       user: savedUser,
-      authorityName: 'ROLE_USER',
+      authorityName: 'ROLE_OPERATOR',
     });
     await this.userAuthRepo.save(authority);
 
@@ -101,7 +101,25 @@ export class AuthService {
     const hasAdminRole = authorities.some(
       (auth) => auth.authorityName === 'ROLE_ADMIN',
     );
-    const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
+    const hasUserRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_USER',
+    );
+    const hasOperatorRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_OPERATOR',
+    );
+
+    let role: UserRole;
+    if (hasAdminRole) {
+      role = UserRole.ADMIN;
+    } else if (hasUserRole) {
+      role = UserRole.USER;
+    } else if (hasOperatorRole) {
+      role = UserRole.OPERATOR;
+    } else {
+      role = UserRole.GUEST;
+    };
+
+    // const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
 
     // 엔티티의 롤 필드도 동기화 시키기
     if (user.role !== role) {
@@ -158,10 +176,28 @@ export class AuthService {
     const authorities = await this.userAuthRepo.find({
       where: { user: { id: user.id } },
     });
+
+
     const hasAdminRole = authorities.some(
       (auth) => auth.authorityName === 'ROLE_ADMIN',
     );
-    const role = hasAdminRole ? UserRole.ADMIN : UserRole.USER;
+    const hasUserRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_USER',
+    );
+    const hasOperatorRole = authorities.some(
+      (auth) => auth.authorityName === 'ROLE_OPERATOR',
+    );
+
+    let role: UserRole;
+    if (hasAdminRole) {
+      role = UserRole.ADMIN;
+    } else if (hasUserRole) {
+      role = UserRole.USER;
+    } else if (hasOperatorRole) {
+      role = UserRole.OPERATOR;
+    } else {
+      role = UserRole.GUEST;
+    };
 
     const tokens = await this.getTokens(user.id, user.username, role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);

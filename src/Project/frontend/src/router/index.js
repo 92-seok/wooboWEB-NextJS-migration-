@@ -16,6 +16,7 @@ import TestView from "@/Views/TestView.vue";
 import MapView from "@/Views/MapView.vue";
 import KakaoCallback from "@/Views/KakaoCallback.vue";
 import SignupView from "@/Views/SignupView.vue";
+import AdminView from "@/Views/AdminView.vue";
 
 const routes = [
   { path: "/", component: HomeView },
@@ -33,6 +34,11 @@ const routes = [
     path: "/setting",
     component: SettingView,
     // meta: { requiresAuth: true, requiresAdmin: true } // 로그인 필수로하기 
+  },
+  {
+    path: "/admin",
+    component: AdminView,
+
   },
   { path: "/about", component: AboutView },
   { path: "/login", component: LoginView, meta: { requiresGuest: true } },

@@ -4,6 +4,9 @@ import { Repository, Like, FindOptionsWhere } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { NmsUser } from '../auth/entities/nms_user.entity';
 import { NmsUserAuthority } from '../auth/entities/nms_user_authority.entity';
+import { NmsBrdSend } from '../weathersi/entities/nms_brdsend.entity';
+import { NmsDisSend } from '../weathersi/entities/nms_dissend.entity';
+import { NmsGateControl } from '../weathersi/entities/nms_gatecontrol.entity';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
@@ -17,7 +20,13 @@ export class AdminService {
     @InjectRepository(NmsUser)
     private userRepository: Repository<NmsUser>,
     @InjectRepository(NmsUserAuthority)
-    private userAuthRepo: Repository<NmsUserAuthority>
+    private userAuthRepo: Repository<NmsUserAuthority>,
+    @InjectRepository(NmsBrdSend, 'weathersi')
+    private brdSendRepository: Repository<NmsBrdSend>,
+    @InjectRepository(NmsDisSend, 'weathersi')
+    private disSendRepository: Repository<NmsDisSend>,
+    @InjectRepository(NmsGateControl, 'weathersi')
+    private gateControlRepository: Repository<NmsGateControl>,
   ) { }
 
   // 전체 사용자 목록 조회하기 (페이징 + 필터링)
@@ -190,5 +199,122 @@ export class AdminService {
     };
   }
 
+  // 방송 제어 이력 조회하기
+  async getBroadcastHistory(query: any) {
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
 
+    const where: any = {};
+    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    const history = await this.brdSendRepository.find({
+      where,
+      order: { dtmCreate: 'DESC' },
+      take: limit,
+    });
+
+    return {
+      success: true,
+      message: '방송 제어 이력을 조회했습니다.',
+      data: history,
+      total: history.length,
+    };
+  }
+
+  // 전광판 제어 이력 조회하기
+  async getDisplayHistory(query: any) {
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+
+    const where: any = {};
+    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    const history = await this.disSendRepository.find({
+      where,
+      order: { dtmCreate: 'DESC' },
+      take: limit,
+    });
+
+    return {
+      success: true,
+      message: '전광판 제어 이력을 조회했습니다.',
+      data: history,
+      total: history.length,
+    };
+  }
+
+  // 차단기 제어 이력 조회하기
+  async getGateHistory(query: any) {
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+
+    const where: any = {};
+    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    const history = await this.gateControlRepository.find({
+      where,
+      order: { dtmCreate: 'DESC' },
+      take: limit,
+    });
+
+    return {
+      success: true,
+      message: '방송 제어 이력을 조회했습니다.',
+      data: history,
+      total: history.length,
+    };
+  }
+
+  // 모든 장비 제어 이력 통합 조회
+  async getAllControlHistory(query: any) {
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+
+    const where: any = {};
+    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    // 3개 테이블에서 모두 조회하기
+    const [broadcastHistory, displayHistory, gateHistory] = await Promise.all([
+      this.brdSendRepository.find({
+        where,
+        order: { dtmCreate: 'DESC' },
+        take: limit,
+      }),
+      this.disSendRepository.find({
+        where,
+        order: { dtmCreate: 'DESC' },
+        take: limit,
+      }),
+      this.gateControlRepository.find({
+        where,
+        order: { dtmCreate: 'DESC' },
+        take: limit,
+      }),
+    ]);
+
+    // 타입 구분을 위해서 type 필드 추가하기
+    const broadcast = broadcastHistory.map(item => ({ ...item, type: 'broadcast' }));
+    const display = displayHistory.map(item => ({ ...item, type: 'display' }));
+    const gate = gateHistory.map(item => ({ ...item, type: 'gate' }));
+
+    // 모든 이력을 합치고 시간순으로 정렬
+    const allHistory = [...broadcast, ...display, ...gate]
+      .sort((a, b) => {
+        const dateA = new Date(a.dtmCreate).getTime();
+        const dateB = new Date(b.dtmCreate).getTime();
+        return dateB - dateA; //최신순으로
+      }).slice(0, limit);
+
+    return {
+      success: true,
+      message: '모든 제어 이력을 조회했습니다.',
+      data: allHistory,
+      total: allHistory,
+      summary: {
+        broadcast: broadcast.length,
+        display: display.length,
+        gate: gate.length,
+      },
+    };
+  }
 }

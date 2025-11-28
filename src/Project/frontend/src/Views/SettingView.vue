@@ -17,124 +17,108 @@
     <!-- 관리자 화면 페이지 -->
     <v-container v-else fluid class="admin-container">
       <div class="content-wrapper">
-        <!-- 헤더 부분 -->
+        <!-- 장비 제어 헤더 부분 -->
         <v-card class="header-card mb-6" elevation="2" rounded="lg">
           <v-card-text class="pa-6">
             <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between">
               <div class="mb-4 mb-sm-0">
-                <h1 class="text-h4 font-weight-bold text-grey-darken-3">관리자 페이지</h1>
-                <p class="text-subtitle-2 text-grey mt-1">사용자 관리 및 설정</p>
+                <h1 class="text-h4 font-weight-bold text-grey-darken-3">제어 이력</h1>
+                <p class="text-subtitle-2 text-grey mt-1">장비 제어 이력 조회</p>
               </div>
-              <v-btn color="primary" prepend-icon="mdi-refresh" @click="fetchUsers" :loading="loading" size="large">
+              <v-btn color="primary" prepend-icon="mdi-refresh" @click="fetchControlHistory" :loading="historyLoading"
+                size="large">
                 새로고침
               </v-btn>
             </div>
           </v-card-text>
         </v-card>
 
-        <!-- 검색/필터 부분 -->
+        <!-- 제어 이력 검색/필터 부분 -->
         <v-card class="filter-card mb-6" elevation="2" rounded="lg">
           <v-card-text class="pa-6">
             <v-row>
               <v-col cols="12" md="4">
-                <v-text-field v-model="search" label="사용자 검색" prepend-inner-icon="mdi-magnify" variant="outlined"
-                  density="comfortable" clearable @update:model-value="handlerSearch" hide-details>
-                </v-text-field>
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-select v-model="roleFilter" :items="roleOptions" label="역할 필터" variant="outlined"
-                  density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
+                <v-select v-model="historyTypeFilter" :items="historyTypeOptions" label="장비 유형" variant="outlined"
+                  density="comfortable" clearable @update:model-value="fetchControlHistory" hide-details>
                 </v-select>
               </v-col>
               <v-col cols="12" md="4">
-                <v-select v-model="statusFilter" :items="statusOptions" label="상태 필터" variant="outlined"
-                  density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
+                <v-text-field v-model="historySearch" label="사용자 검색" prepend-icon="mdi-magnify" variant="outlined"
+                  density="comfortable" clearable hide-details>
+                </v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select v-model="historyLimit" :items="[
+                  { title: '50개', value: 50 },
+                  { title: '100개', value: 100 },
+                  { title: '500개', value: 200 },
+                ]" label="조회 개수" variant="outlined" density="comfortable" hide-details>
                 </v-select>
               </v-col>
             </v-row>
           </v-card-text>
         </v-card>
 
-        <!-- 사용자 테이블 (데스크탑) -->
+        <!-- 제어 이력 테이블 테이블 (데스크탑) -->
         <v-card class="table-card d-none d-md-block" elevation="2" rounded="lg">
-          <v-data-table :headers="headers" :items="users" :loading="loading" :items-per-page="limit" hide-default-footer
-            class="elevation-0">
-            <!-- 이메일(email) -->
-            <template v-slot:[`item.email`]="{ item }">
+          <v-data-table :headers="historyHeaders" :items="filteredHistory" :loading="historyLoading"
+            :items-per-page="historyLimit" hide-default-footer class="elevation-0">
+            <!-- 장비 유형 -->
+            <template v-slot:[`item.type`]="{ item }">
               <div class="d-flex align-center py-2">
-                <v-avatar size="40" color="primary" class="mr-3">
-                  <span class="text-white font-weight-bold">{{ item.name.charAt(0).toUpperCase() }}</span>
+                <v-chip :color="getTypeColor(item.type)" size="small" variant="flat">
+                  {{ getTypeLabel(item.type) }}
+                </v-chip>
+              </div>
+            </template>
+
+            <!-- 제어 시간 -->
+            <template v-slot:[`item.dtmCreate`]="{ item }">
+              <span class="text-body-2 text-grey-darken-1">{{ formatDate(item.dtmCreate) }}</span>
+            </template>
+
+            <!-- 제어 아이디 -->
+            <template v-slot:[`item.Auth`]="{ item }">
+              <div class="d-flex align-center py-2">
+                <v-avatar size="32" color="info" class="mr-2">
+                  <span class="text-white font-weight-bold text-caption">
+                    {{ (item.Auth || 'U').charAt(0).toUpperCase() }}
+                  </span>
                 </v-avatar>
-                <div>
-                  <div class="font-weight-medium">{{ item.email }}</div>
-                  <div class="text-caption text-grey">{{ item.name }}</div>
-                </div>
+                <span class="font-weight-medium">{{ item.Auth || '알 수 없음' }}</span>
               </div>
             </template>
 
-            <!-- 역할(role) -->
-            <template v-slot:[`item.role`]="{ item }">
-              <v-chip :color="item.role === 'admin' ? 'error' : 'primary'" size="small" variant="flat">
-                {{ item.role === 'admin' ? '관리자' : '사용자' }}
-              </v-chip>
+            <!-- 장비명 -->
+            <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
+              <span class="text-body-2">{{ item.NM_DIST_OBSV || '-' }}</span>
             </template>
 
-            <!-- 상태(status) -->
-            <template v-slot:[`item.isActive`]="{ item }">
-              <v-chip :color="item.isActive ? 'success' : 'error'" size="small" variant="flat">
-                {{ item.isActive ? '활성' : '비활성' }}
-              </v-chip>
-            </template>
-
-            <!-- 마지막로그인(lastLoginAt) -->
-            <template v-slot:[`item.lastLoginAt`]="{ item }">
-              <span class="text-body-2 text-grey-darken-1">{{ formatDate(item.lastLoginAt) }}</span>
-            </template>
-
-            <!-- 액션(actions) -->
-            <template v-slot:[`item.actions`]="{ item }">
-              <div class="d-flex justify-center">
-                <v-tooltip text="수정" location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-pencil" size="small" variant="text" color="primary" @click="openEditDialog(item)"
-                      v-bind="props"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="비밀번호 변경" location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-key" size="small" variant="text" color="warning" @click="openPasswordDialog(item)"
-                      v-bind="props"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="삭제" location="top">
-                  <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="openDeleteDialog(item)"
-                      v-bind="props"></v-btn>
-                  </template>
-                </v-tooltip>
+            <template v-slot:[`item.status`]="{ item }">
+              <div class="d-flex align-center py-2">
+                <v-chip :color="getStatusColor(item.BStatus || item.GStatus)" size="small" variant="flat">
+                  {{ item.BStatus || item.GStatus || '-' }}
+                </v-chip>
               </div>
             </template>
+
           </v-data-table>
-
-          <!-- 페이지네이션 -->
-          <v-divider></v-divider>
-          <v-card-actions class="justify-center pa-4">
-            <v-pagination v-model="page" :length="totalPages" @update:model-value="fetchUsers" rounded="circle"
-              density="comfortable"></v-pagination>
-          </v-card-actions>
         </v-card>
 
-        <!-- 사용자 카드 (모바일) -->
+        <!-- 제어 이력 카드 (모바일) -->
         <div class="d-md-none">
-          <v-card v-for="user in users" :key="user.id" class="user-mobile-card mb-4" elevation="2" rounded="lg">
+          <v-card v-for="(history, index) in filteredHistory" :key="index" class="user-mobile-card mb-4" elevation="2"
+            rounded="lg">
             <v-card-text class="pa-4">
               <div class="d-flex align-start mb-4">
-                <v-avatar size="56" color="primary" class="mr-4">
-                  <span class="text-h6 text-white font-weight-bold">{{ user.name.charAt(0).toUpperCase() }}</span>
+                <v-avatar :color="getTypeColor(history.type)" size="56" class="mr-4">
+                  <span class="text-h6 text-white font-weight-bold">
+                    {{ getTypeLabel(history.type).charAt(0) }}
+                  </span>
                 </v-avatar>
                 <div class="flex-grow-1">
-                  <div class="text-h6 font-weight-bold">{{ user.name }}</div>
-                  <div class="text-body-2 text-grey">{{ user.email }}</div>
+                  <div class="text-h6 font-weight-bold">{{ getTypeLabel(history.type) }}</div>
+                  <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>
                 </div>
               </div>
 
@@ -142,52 +126,27 @@
 
               <div class="user-info-grid">
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">역할</span>
-                  <v-chip :color="user.role === 'admin' ? 'error' : 'primary'" size="small" variant="flat">
-                    {{ user.role === 'admin' ? '관리자' : '사용자' }}
-                  </v-chip>
+                  <span class="text-body-2 text-grey-darken-1">제어 시간</span>
+                  <span class="text-body-2">{{ formatDate(history.dtmCreate) }}</span>
                 </div>
-
+                <div class="d-flex justify-space-between align-center mb-3">
+                  <span class="text-body-2 text-grey-darken-1">장비명</span>
+                  <span class="text-body-2">{{ history.NM_DIST_OBSV || '-' }}</span>
+                </div>
                 <div class="d-flex justify-space-between align-center mb-3">
                   <span class="text-body-2 text-grey-darken-1">상태</span>
-                  <v-chip :color="user.isActive ? 'success' : 'error'" size="small" variant="flat">
-                    {{ user.isActive ? '활성' : '비활성' }}
-                  </v-chip>
-                </div>
-
-                <div class="d-flex justify-space-between align-center mb-4">
-                  <span class="text-body-2 text-grey-darken-1">마지막 로그인</span>
-                  <span class="text-body-2">{{ formatDate(user.lastLoginAt) }}</span>
+                  <span class="text-body-2">{{ history.BStatus || history.GStatus || '-' }}</span>
                 </div>
               </div>
 
-              <v-divider class="mb-4"></v-divider>
-
-              <v-row dense>
-                <v-col cols="4">
-                  <v-btn color="primary" variant="tonal" size="small" @click="openEditDialog(user)" block>
-                    수정
-                  </v-btn>
-                </v-col>
-                <v-col cols="4">
-                  <v-btn color="warning" variant="tonal" size="small" @click="openPasswordDialog(user)" block>
-                    비밀번호
-                  </v-btn>
-                </v-col>
-                <v-col cols="4">
-                  <v-btn color="error" variant="tonal" size="small" @click="openDeleteDialog(user)" block>
-                    삭제
-                  </v-btn>
-                </v-col>
-              </v-row>
+              <!-- 데이터 없음 표시 -->
+              <v-card v-if="!historyLoading && filteredHistory.length === 0" class="text-center pa-8" elevation="1"
+                rounded="lg">
+                <v-icon size="64" color="grey-light-1">mdi-history</v-icon>
+                <p class="text-body-1 text-grey mt-4">제어 이력이 없습니다.</p>
+              </v-card>
             </v-card-text>
           </v-card>
-
-          <!-- 모바일 페이지네이션 -->
-          <div class="d-flex justify-center mt-4">
-            <v-pagination v-model="page" :length="totalPages" @update:model-value="fetchUsers" rounded="circle"
-              density="comfortable"></v-pagination>
-          </div>
         </div>
       </div>
     </v-container>
@@ -200,8 +159,12 @@
         </v-card-title>
         <v-divider></v-divider>
         <v-card-text class="pa-6">
-          <v-select v-model="editForm.role" :items="[{ title: '사용자', value: 'user' }, { title: '관리자', value: 'admin' }]"
-            label="역할" variant="outlined" class="mb-4" hide-details>
+          <v-select v-model="editForm.role" :items="[
+            { title: '사용자', value: 'user' },
+            { title: '관리자', value: 'admin' },
+            { title: '일반', value: 'operator' },
+            { title: '게스트', value: 'guest' },
+          ]" label="권한" variant="outlined" class="mb-4" hide-details>
           </v-select>
           <v-select v-model="editForm.isActive" :items="[{ title: '활성', value: true }, { title: '비활성', value: false }]"
             label="상태" variant="outlined" hide-details>
@@ -293,53 +256,106 @@ const router = useRouter();
 const currentUser = ref(JSON.parse(sessionStorage.getItem('user') || '{}'));
 const isAdmin = computed(() => currentUser.value.role === 'admin');
 
-// 데이터 처리
-const users = ref([]);
-const loading = ref(false);
-const updating = ref(false);
-const page = ref(1);
-const limit = ref(10);
-const totalPages = ref(1);
-const search = ref('');
-const roleFilter = ref(null);
-const statusFilter = ref(null);
-
-// 다이얼로그
-const editDialog = ref(false);
-const passwordDialog = ref(false);
-const deleteDialog = ref(false);
-const selectedUser = ref(null);
-
-// 폼
-const editForm = ref({ role: '', isActive: true });
-const passwordForm = ref({ newPassword: '' });
+// 제어 이력 데이터
+const controlHistory = ref([]);
+const historyLoading = ref(false);
+const historyTypeFilter = ref(null);
+const historySearch = ref('');
+const historyLimit = ref(50);
 
 // 스낵바
 const snackbar = ref({ show: false, message: '', color: 'success' });
 
-// 테이블 헤더 부분
-const headers = [
-  { title: '사용자', key: 'email', sortable: false },
-  { title: '권한', key: 'role', sortable: false },
-  { title: '상태', key: 'isActive', sortable: false },
-  { title: '마지막 로그인', key: 'lastLoginAt', sortable: false },
-  { title: '액션', key: 'actions', sortable: false, align: 'center' },
+// 제어 이력 테이블 헤어 부분
+const historyHeaders = [
+  { title: '장비 유형', key: 'type', sortable: false },
+  { title: '제어 시간', key: 'dtmCreate', sortable: false },
+  { title: '제어 아이디', key: 'Auth', sortable: false },
+  { title: '장비명', key: 'NM_DIST_OBSV', sortable: false },
+  { title: '상태', key: 'status', sortable: false },
 ];
 
-// 필터 옵션 확인
-const roleOptions = [
+const historyOptions = [
   { title: '전체', value: null },
-  { title: '사용자', value: 'user' },
-  { title: '관리자', value: 'admin' },
-];
+  { title: '방송', value: 'broadcast' },
+  { title: '전광판', value: 'display' },
+  { title: '차단기', value: 'gate' },
+]
 
-const statusOptions = [
-  { title: '전체', value: null },
-  { title: '활성', value: true },
-  { title: '비활성', value: false },
-];
+// 제어 이력 필터링
+const filteredHistory = computed(() => {
+  if (!historySearch.value) {
+    return controlHistory.value;
+  }
+  return controlHistory.value.filter(item =>
+    item.Auth?.toLowerCase().includes(historySearch.value.toLowerCase())
+  );
+});
 
-// 사용자 목록 조회하기
+// 제어 이력 조회하기
+const fetchControlHistory = async () => {
+  historyLoading.value = true;
+
+  try {
+    const params = {
+      limit: historyLimit.value,
+    };
+
+    let response;
+    if (historyTypeFilter.value === 'broadcast') {
+      response = await adminApi.getBroadcastHistory(params);
+    } else if (historyTypeFilter.value === 'display') {
+      response = await adminApi.getDisplayHistory(params);
+    } else if (historyTypeFilter.value === 'gate') {
+      response = await adminApi.getGateHistory(params);
+    } else {
+      response = await adminApi.getAllControlHistory(params);
+    }
+
+    // console.log('API 응답: ', response);
+    // console.log('response.data: ', response.data);
+    // console.log('response.data.data: ', response.data.data);
+
+    controlHistory.value = response.data.data || [];
+    // console.log('controleHistory 설정: ', controlHistory.value);
+  } catch (error) {
+    console.error('제어 이력 조회 실패: ', error);
+    // console.error('에러 상세: ', error.response);
+  } finally {
+    historyLoading.value = false;
+  }
+};
+
+// 장비 유형 색상
+const getTypeColor = (type) => {
+  const colorMap = {
+    'broadcast': '방송',
+    'display': '전광판',
+    'gate': '차단기',
+  };
+  return colorMap[type] || type;
+};
+
+// 장비 유형 라벨
+const getTypeLabel = (type) => {
+  const labelMap = {
+    'broadcast': '방송',
+    'display': '전광판',
+    'gate': '차단기',
+  };
+  return labelMap[type] || type;
+};
+
+// 제어 상태 색상
+const getStatusColor = (status) => {
+  if (!status) return 'grep';
+  if (status === 'end' || status === 'success') return 'success';
+  if (status === 'ing' || status === 'processing') return 'warning';
+  if (status === 'start') return 'info';
+  return 'grey';
+};
+
+// 사용자/장비 제어 이력 목록 조회하기
 const fetchUsers = async () => {
   loading.value = true;
 
@@ -363,97 +379,6 @@ const fetchUsers = async () => {
   }
 };
 
-// 검색 핸들러
-const handlerSearch = () => {
-  page.value = 1;
-  fetchUsers();
-};
-
-// 필터 핸들러
-const handlerFilter = () => {
-  page.value = 1;
-  fetchUsers();
-};
-
-// 수정 다이얼로그 열기
-const openEditDialog = (user) => {
-  selectedUser.value = user;
-  editForm.value = {
-    role: user.role,
-    isActive: user.isActive,
-  };
-  editDialog.value = true;
-}
-
-// 사용자 정보 업데이트하기
-const handleUpdate = async () => {
-  updating.value = true;
-  try {
-    // 역할변경
-    await adminApi.updateUserRole(selectedUser.value.id, editForm.value.role);
-    // 상태 변경하기
-    await adminApi.updateUserStatus(selectedUser.value.id, editForm.value.isActive);
-
-    showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
-    editDialog.value = false;
-    fetchUsers();
-  } catch (error) {
-    showSnackbar('업데이트에 실패하였습니다.', 'error');
-  } finally {
-    updating.value = false;
-  }
-}
-
-// 비밀번호 변경 다이얼로그 열기
-const openPasswordDialog = (user) => {
-  selectedUser.value = user;
-  passwordForm.value.newPassword = '';
-  passwordDialog.value = true;
-}
-
-// 비밀번호 업데이트
-const handlePasswordUpdate = async () => {
-  if (!passwordForm.value.newPassword) {
-    showSnackbar('비밀번호를 입력하세요.', 'error');
-    return;
-  }
-
-  updating.value = true;
-  try {
-    await adminApi.updateUserPassword(
-      selectedUser.value.id,
-      passwordForm.value.newPassword
-    );
-    showSnackbar('비밀번호가 변경되었습니다.', 'success');
-    passwordDialog.value = false;
-  } catch (error) {
-    showSnackbar('비밀번호 변경에 실패하였습니다.', 'error');
-  } finally {
-    updating.value = false;
-  }
-};
-
-// 삭제 다이얼로그 열기
-const openDeleteDialog = (user) => {
-  selectedUser.value = user;
-  deleteDialog.value = true;
-};
-
-// 사용자 삭제
-const handleDelete = async () => {
-  updating.value = true;
-  try {
-    await adminApi.deleteUser(selectedUser.value.id);
-    showSnackbar('사용자가 삭제되었습니다.', 'success');
-    deleteDialog.value = false;
-    fetchUsers();
-  } catch (error) {
-    showSnackbar(error.response?.data?.message || '삭제에 실패하였습니다.', 'error');
-  } finally {
-    updating.value = false;
-  }
-};
-
 // 스낵바 표시하기
 const showSnackbar = (message, color = 'success') => {
   snackbar.value = { show: true, message, color };
@@ -474,6 +399,7 @@ const goToHome = () => {
 onMounted(() => {
   if (isAdmin.value) {
     fetchUsers();
+    fetchControlHistory();
   }
 });
 </script>
@@ -505,16 +431,6 @@ onMounted(() => {
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.header-card {
-  // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: black;
-
-  // h1,
-  // p {
-  //   color: white !important;
-  // }
 }
 
 .filter-card {

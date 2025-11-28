@@ -66,4 +66,38 @@ export class AdminController {
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.deleteUser(id);
   }
+
+  // 제어 이력 조회 API (Auth 필드에 username 저장됨)
+
+  // 모든 장비 제어 이력 통합 조회하기
+  // GET /admin/control-history?BDONG_CD=1234567890&CD_DIST_OBSV=ABC123&limit=100
+  @Get('control-history')
+  async getAllControlHistory(@Query() query: any) {
+    return this.adminService.getAllControlHistory(query);
+  }
+
+  // 모든 장비 제어 이력 통합 조회하기
+  // GET /admin/control-history/broadcast?BDONG_CD=1234567890&CD_DIST_OBSV=ABC123&limit=100
+  @Get('control-history/broadcast')
+  async getBroadcastHistory(@Query() query: any) {
+    return this.adminService.getBroadcastHistory(query);
+  }
+
+  // 모든 장비 제어 이력 통합 조회하기
+  // GET /admin/control-history/display?BDONG_CD=1234567890&CD_DIST_OBSV=ABC123&limit=100
+  @Get('control-history/display')
+  async getDisplayHistory(@Query() query: any) {
+    return this.adminService.getDisplayHistory(query);
+  }
+
+  // 모든 장비 제어 이력 통합 조회하기
+  // GET /admin/control-history/gate?BDONG_CD=1234567890&CD_DIST_OBSV=ABC123&limit=100
+  @Get('control-history/gate')
+  async getGateHistory(@Query() query: any) {
+    return this.adminService.getGateHistory(query);
+  }
+
+
 }
+
+

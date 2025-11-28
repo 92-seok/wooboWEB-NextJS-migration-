@@ -6,7 +6,7 @@ export const adminApi = {
   getUsers(params = {}) {
     return apiClient.get('/admin/users', { params })
   },
-  
+
   // * 특정 사용자 조회하기 *
   getUserById(id) {
     return apiClient.get(`/admin/users/${id}`);
@@ -30,5 +30,25 @@ export const adminApi = {
   // * 사용자 삭제 *
   deleteUser(id) {
     return apiClient.delete(`/admin/users/${id}`);
+  },
+
+  // * 모든 제어 이력 조회 *
+  getAllControlHistory(params = {}) {
+    return apiClient.get('/admin/control-history', { params });
+  },
+
+  // * 방송 제어 이력 조회 *
+  getAllControlHistory(params = {}) {
+    return apiClient.get('/admin/control-history', { params });
+  },
+
+  // * 전광판 제어 이력 조회 *
+  getAllControlHistory(params = {}) {
+    return apiClient.get('/admin/control-history', { params });
+  },
+
+  // * 차단기 제어 이력 조회 *
+  getAllControlHistory(params = {}) {
+    return apiClient.get('/admin/control-history', { params });
   },
 };
