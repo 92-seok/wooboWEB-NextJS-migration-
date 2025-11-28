@@ -70,21 +70,21 @@ const loading = ref(false);
 const userName = ref(sessionStorage.getItem('userName') || '사용자');
 
 // 관리자 권한 체크
-const isAdmin = computed(() => {
-  try {
-    const userStr = sessionStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    return user?.role === 'admin';
-  } catch (error) {
-    console.error('Failed to parse user data', error);
-    return false;
-  }
-});
+const isAdmin = ref(false);
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
   isLoggedIn.value = !!sessionStorage.getItem('accessToken');
   userName.value = sessionStorage.getItem('userName') || '사용자';
+
+  try {
+    const userStr = sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    isAdmin.value = user?.role === 'admin';
+  } catch (error) {
+    console.error('Failed to parse user data', error);
+    isAdmin.value = false;
+  }
 }
 // 라우터 변경 시 로그인 상태 체크하는 로직
 watch(() => router.currentRoute.value, () => {
@@ -96,8 +96,8 @@ watch(() => router.currentRoute.value, () => {
 ////////////////////////////////////////
 
 // 로그아웃 버튼 클릭
-const handleLogout = () => {
-  router.push('')
+const handleLogout = async () => {
+  await confirmLogout();
 };
 
 // 로그아웃 확인
@@ -120,12 +120,15 @@ const confirmLogout = async () => {
     console.error('로그아웃 API 실패: ', error);
     // 에러가 발생해도 계속 진행하기 (로컬 데이터는 삭제)
   } finally {
-    // 로컬 데이터 정리하기
-    clearAuthData()
 
     // 다이얼로그 닫기
     logoutDialog.value = false;
     isLoggedIn.value = false;
+    isAdmin.value = false;
+    loading.value = false;
+
+    // 로컬 데이터 정리하기
+    clearAuthData()
 
     // 로그인 페이지로 이동
     router.push('/login');
@@ -138,7 +141,9 @@ const clearAuthData = () => {
   sessionStorage.removeItem('accessToken');
   sessionStorage.removeItem('refreshToken');
   sessionStorage.removeItem('userName');
-  sessionStorage.removeItem('userId');
+  sessionStorage.removeItem('user');
+  sessionStorage.removeItem('userEmail');
+  sessionStorage.removeItem('userRole');
 
   // axios 기본 헤더에서 토큰 제거하기
   delete axios.defaults.headers.common['Authorizaion'];

@@ -120,7 +120,23 @@ export class AdminService {
     await this.userAuthRepo.delete({ user: { id } });
 
     // 새 권한 추가하기
-    const authorityName = updateUserRoleDto.role === UserRole.ADMIN ? 'ROLE_ADMIN' : 'ROLE_USER';
+    let authorityName: string;
+    switch (updateUserRoleDto.role) {
+      case UserRole.ADMIN:
+        authorityName = 'ROLE_ADMIN';
+        break;
+      case UserRole.USER:
+        authorityName = 'ROLE_USER';
+        break;
+      case UserRole.OPERATOR:
+        authorityName = 'ROLE_OPERATOR';
+        break;
+      case UserRole.GUEST:
+        authorityName = 'ROLE_GUEST';
+        break;
+      default:
+        authorityName = 'ROLE_OPERATOR'
+    }
     const authority = this.userAuthRepo.create({ user, authorityName, });
     await this.userAuthRepo.save(authority);
 

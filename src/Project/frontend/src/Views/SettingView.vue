@@ -49,9 +49,9 @@
               </v-col>
               <v-col cols="12" md="4">
                 <v-select v-model="historyLimit" :items="[
+                  { title: '10개', value: 10 },
+                  { title: '30개', value: 30 },
                   { title: '50개', value: 50 },
-                  { title: '100개', value: 100 },
-                  { title: '500개', value: 200 },
                 ]" label="조회 개수" variant="outlined" density="comfortable" hide-details>
                 </v-select>
               </v-col>
@@ -131,7 +131,7 @@
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
                   <span class="text-body-2 text-grey-darken-1">장비명</span>
-                  <span class="text-body-2">{{ history.NM_DIST_OBSV || '-' }}</span>
+                  <span class="text-body-2">{{ history.CD_DIST_OBSV || '-' }}</span>
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
                   <span class="text-body-2 text-grey-darken-1">상태</span>
@@ -150,98 +150,6 @@
         </div>
       </div>
     </v-container>
-
-    <!-- 수정 다이얼로그 -->
-    <v-dialog v-model="editDialog" max-width="500" persistent>
-      <v-card rounded="lg">
-        <v-card-title class="text-h5 font-weight-bold pa-6 bg-grey-lighten-4">
-          사용자 정보 수정
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text class="pa-6">
-          <v-select v-model="editForm.role" :items="[
-            { title: '사용자', value: 'user' },
-            { title: '관리자', value: 'admin' },
-            { title: '일반', value: 'operator' },
-            { title: '게스트', value: 'guest' },
-          ]" label="권한" variant="outlined" class="mb-4" hide-details>
-          </v-select>
-          <v-select v-model="editForm.isActive" :items="[{ title: '활성', value: true }, { title: '비활성', value: false }]"
-            label="상태" variant="outlined" hide-details>
-          </v-select>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions class="pa-4">
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="editDialog = false" :disabled="updating">
-            취소
-          </v-btn>
-          <v-btn color="primary" variant="elevated" @click="handleUpdate" :loading="updating">
-            저장
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- 비밀번호 변경 다이얼로그 -->
-    <v-dialog v-model="passwordDialog" max-width="500" persistent>
-      <v-card rounded="lg">
-        <v-card-title class="text-h5 font-weight-bold pa-6 bg-grey-lighten-4">
-          비밀번호 변경
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text class="pa-6">
-          <v-text-field v-model="passwordForm.newPassword" label="새 비밀번호" type="password" variant="outlined"
-            :rules="[v => !!v || '비밀번호를 입력하세요']" placeholder="새 비밀번호를 입력하세요" hide-details>
-          </v-text-field>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions class="pa-4">
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="passwordDialog = false" :disabled="updating">
-            취소
-          </v-btn>
-          <v-btn color="primary" variant="elevated" @click="handlePasswordUpdate" :loading="updating">
-            변경
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- 삭제 확인 다이얼로그 -->
-    <v-dialog v-model="deleteDialog" max-width="400" persistent>
-      <v-card rounded="lg">
-        <v-card-title class="text-h5 font-weight-bold pa-6 bg-error-lighten-4">
-          사용자 삭제
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text class="pa-6">
-          <div class="text-center">
-            <v-icon size="64" color="error" class="mb-4">mdi-alert-circle-outline</v-icon>
-            <p class="text-body-1">정말로 이 사용자를 삭제하시겠습니까?</p>
-            <p class="text-caption text-grey mt-2">이 작업은 되돌릴 수 없습니다.</p>
-          </div>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions class="pa-4">
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="deleteDialog = false" :disabled="updating">
-            취소
-          </v-btn>
-          <v-btn color="error" variant="elevated" @click="handleDelete" :loading="updating">
-            삭제
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- 스낵바 표출 -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top" timeout="3000">
-      {{ snackbar.message }}
-      <template v-slot:actions>
-        <v-btn variant="text" @click="snackbar.show = false">닫기</v-btn>
-      </template>
-    </v-snackbar>
   </div>
 </template>
 
@@ -261,7 +169,7 @@ const controlHistory = ref([]);
 const historyLoading = ref(false);
 const historyTypeFilter = ref(null);
 const historySearch = ref('');
-const historyLimit = ref(50);
+const historyLimit = ref(10);
 
 // 스낵바
 const snackbar = ref({ show: false, message: '', color: 'success' });
@@ -275,7 +183,7 @@ const historyHeaders = [
   { title: '상태', key: 'status', sortable: false },
 ];
 
-const historyOptions = [
+const historyTypeOptions = [
   { title: '전체', value: null },
   { title: '방송', value: 'broadcast' },
   { title: '전광판', value: 'display' },
@@ -355,30 +263,6 @@ const getStatusColor = (status) => {
   return 'grey';
 };
 
-// 사용자/장비 제어 이력 목록 조회하기
-const fetchUsers = async () => {
-  loading.value = true;
-
-  try {
-    const params = {
-      page: page.value,
-      limit: limit.value,
-      search: search.value || undefined,
-      role: roleFilter.value || undefined,
-      isActive: statusFilter.value,
-    };
-
-    const response = await adminApi.getUsers(params);
-    users.value = response.data.data;
-    totalPages.value = response.data.meta.totalPages;
-  } catch (error) {
-    console.error('사용자 목록을 불러오는데 실패했습니다.', error);
-    showSnackbar('사용자 목록을 불러오는데 실패했습니다.', 'error');
-  } finally {
-    loading.value = false;
-  }
-};
-
 // 스낵바 표시하기
 const showSnackbar = (message, color = 'success') => {
   snackbar.value = { show: true, message, color };
@@ -398,7 +282,6 @@ const goToHome = () => {
 // 초기 로드 시도
 onMounted(() => {
   if (isAdmin.value) {
-    fetchUsers();
     fetchControlHistory();
   }
 });
