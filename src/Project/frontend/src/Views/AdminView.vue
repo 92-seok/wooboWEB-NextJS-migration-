@@ -62,9 +62,6 @@
             <!-- 아이디(username) -->
             <template v-slot:[`item.username`]="{ item }">
               <div class="d-flex align-center justify-center py-2">
-                <!-- <v-avatar size="40" color="primary" class="mr-3">
-                  <span class="text-white font-weight-bold">{{ item.name.charAt(0).toUpperCase() }}</span>
-                </v-avatar> -->
                 <div>
                   <div class="font-weight-medium">{{ item.username }}</div>
                   <div class="text-caption text-grey">{{ item.name }}</div>
@@ -74,11 +71,12 @@
 
             <!-- 권한(role) -->
             <template v-slot:[`item.role`]="{ item }">
-              <v-chip
+              <!-- <v-chip
                 :color="item.role === 'admin' ? 'error' : item.role === 'user' ? 'primary' : item.role === 'operator' ? 'green' : 'grey'"
                 size="small" variant="flat">
                 {{ getRoleLabel(item.role) }}
-              </v-chip>
+              </v-chip> -->
+              <span class="font-weight-medium">{{ getRoleLabel(item.role) }}</span>
             </template>
 
             <!-- 상태(status) -->

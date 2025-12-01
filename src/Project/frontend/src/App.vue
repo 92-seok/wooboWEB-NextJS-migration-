@@ -54,7 +54,7 @@ const syncUserPermissions = async () => {
       sessionStorage.setItem('userRole', user.role);
       sessionStorage.setItem('userName', user.name || user.username);
 
-      console.log('권한 정보 동기화 완료: ', user.role);
+      // console.log('권한 정보 동기화 완료: ', user.role);
     }
   } catch (error) {
     console.error('사용자 정보 동기화 실패: ', error);

@@ -69,11 +69,17 @@
             <!-- 장비 유형 -->
             <template v-slot:[`item.type`]="{ item }">
               <div class="d-flex align-center justify-center py-2">
-                <v-icon :color="getTypeColor(item.type)" size="large" variant="flat" class="mr-1">
+                <v-img v-if="getTypeImage(item.type)" :src="getTypeImage(item.type)" height="35" contain></v-img>
+                <!-- <v-icon :color="getTypeColor(item.type)" size="large" variant="flat" class="mr-1">
                   {{ getTypeIcon(item.type) }}
-                </v-icon>
-                <span class="font-weight-bold pa-2">{{ getTypeLabel(item.type) }}</span>
+                </v-icon> -->
               </div>
+              <span class="font-weight-medium ml-2">{{ getTypeLabel(item.type) }}</span>
+            </template>
+
+            <!-- 장비명 -->
+            <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
+              <span class="text-body-2 font-weight-medium">{{ item.NM_DIST_OBSV || '-' }}</span>
             </template>
 
             <!-- 제어 시간 -->
@@ -93,10 +99,6 @@
               </div>
             </template>
 
-            <!-- 장비명 -->
-            <template v-slot:[`item.NM_DIST_OBSV`]="{ item }">
-              <span class="text-body-2">{{ item.NM_DIST_OBSV || '-' }}</span>
-            </template>
 
             <template v-slot:[`item.status`]="{ item }">
               <div class="d-flex align-center justify-center py-2">
@@ -210,6 +212,11 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin.api';
 
+// 장비 이미지
+import broadImg from '@/assets/broad.png'
+import displayImg from '@/assets/display.png'
+import gateImg from '@/assets/gate.png'
+
 const router = useRouter();
 
 // 사용자 정보 sessionStorage에서 가져오기
@@ -237,9 +244,9 @@ const snackbar = ref({ show: false, message: '', color: 'success' });
 // 제어 이력 테이블 헤어 부분
 const historyHeaders = [
   { title: '장비 유형', key: 'type', sortable: false, align: 'center' },
-  { title: '제어 시간', key: 'dtmCreate', sortable: false, align: 'center' },
-  { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
   { title: '장비명', key: 'NM_DIST_OBSV', sortable: false, align: 'center' },
+  { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
+  { title: '제어 시간', key: 'dtmCreate', sortable: false, align: 'center' },
   { title: '상태', key: 'status', sortable: false, align: 'center' },
 ];
 
@@ -401,13 +408,13 @@ const getTypeLabel = (type) => {
 };
 
 // 장비 유형 아이콘
-const getTypeIcon = (type) => {
-  const iconMap = {
-    'broadcast': 'mdi-bullhorn',
-    'display': 'mdi-monitor-shimmer',
-    'gate': 'mdi-boom-gate-alert',
+const getTypeImage = (type) => {
+  const imageMap = {
+    broadcast: broadImg,
+    display: displayImg,
+    gate: gateImg,
   };
-  return iconMap[type] || 'mdi-help-circle';
+  return imageMap[type] || null;
 }
 
 // 제어 상태 색상
