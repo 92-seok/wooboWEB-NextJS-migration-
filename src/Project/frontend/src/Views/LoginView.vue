@@ -183,13 +183,13 @@ const handleLogin = async () => {
     // 응답오는 데이터 안전하게 추출하기
     const { accessToken, refreshToken, user } = response.data || {}
 
-    // 디버깅 : 로그인 응답 데이터 확인
-    // console.log('==== 로그인 응답 데이터 확인 ====');
-    // console.log('response.data: ', response.data);
-    // console.log('user: ', user);
-    // console.log('user.name: ', user.name);
-    // console.log('user.username: ', user.username);
-    // console.log('user.Role: ', user.role);
+    // 디버깅: 로그인 응답 데이터 확인
+    console.log('==== 로그인 응답 데이터 확인 ====');
+    console.log('response.data: ', response.data);
+    console.log('user: ', user);
+    console.log('user.name: ', user.name);
+    console.log('user.username: ', user.username);
+    console.log('user.Role: ', user.role);
 
     // 토큰 확인하기
     if (!accessToken || !refreshToken) {

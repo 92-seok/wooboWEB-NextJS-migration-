@@ -96,8 +96,6 @@ export class AdminController {
   async getGateHistory(@Query() query: any) {
     return this.adminService.getGateHistory(query);
   }
-
-
 }
 
 
