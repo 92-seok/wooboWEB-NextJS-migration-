@@ -593,6 +593,7 @@ function showSnackbar(item) {
   else {
     url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
     url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LON}`;
+    url = `http://map.naver.com/index.nhn?elng=${item.LON}&elat=${item.LAT}&pathType=0&showMap=true&etext=${item.NM_DIST_OBSV}&menu=route`
     window.open(url, '_blank')
   }
 }
