@@ -19,14 +19,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 
 // Decorator
 import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
-import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
-
+import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator'
 
 @Controller('weathersi')
 export class WeatherSiController {
   constructor(private readonly service: WeatherSiService) { }
-
-  // Get, Post, getAdm, setAdm, getAreaList, getDevices, getControl... 등등 메서드
 
   @Get()
   async Get(
@@ -199,8 +196,6 @@ export class WeatherSiController {
     }
   }
 
-  // ****** 제어 이력 조회 로직 ******
-
   @UseGuards(JwtAuthGuard)
   @Post('sendBrd')
   async postBrd(
@@ -215,7 +210,6 @@ export class WeatherSiController {
     // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      // username을 Auth 필드에 추가하기
       const bodyWithAuth = {
         ...BODY,
         Auth: username,
@@ -250,11 +244,10 @@ export class WeatherSiController {
     @Req() req: any,
   ): Promise<any> {
     const username = req.user?.username || 'unknown';
-    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
+    console.log(`전광판 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
     // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      // username을 Auth 필드에 추가하기
       const bodyWithAuth = {
         ...BODY,
         Auth: username,
@@ -287,17 +280,16 @@ export class WeatherSiController {
     @Req() req: any,
   ): Promise<any> {
     const username = req.user?.username || 'unknown';
-    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Gate}`);
+    console.log(`차단기 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Gate}`);
     // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
 
     try {
-      // username을 Auth 필드에 추가하기
       const bodyWithAuth = {
         ...BODY,
         Auth: username,
       };
 
-      const controlDevices = await this.service.insertDisSend(bodyWithAuth);
+      const controlDevices = await this.service.insertGateControl(bodyWithAuth);
 
       return {
         success: true,

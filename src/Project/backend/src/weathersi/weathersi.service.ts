@@ -26,7 +26,7 @@ export class WeatherSiService {
     private NmsDisSendRepository: Repository<NmsDisSend>,
     @InjectRepository(NmsGateControl, 'weathersi')
     private NmsGateControlRepository: Repository<NmsGateControl>,
-  ) {}
+  ) { }
 
   // 지역 조회
   async getAreaList(): Promise<TcmCouDngrAdm[]> {
@@ -150,7 +150,7 @@ export class WeatherSiService {
       obj.Gate = body.Gate;
       obj.GStatus = body.GStatus;
       obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
-      obj.Auth = 'online';
+      obj.Auth = body.Auth;
 
       return await this.NmsGateControlRepository.insert(obj);
     } catch (error) {

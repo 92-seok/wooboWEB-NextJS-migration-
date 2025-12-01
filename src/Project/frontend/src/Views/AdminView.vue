@@ -42,12 +42,12 @@
                 </v-text-field>
               </v-col>
               <v-col cols="12" md="4">
-                <v-select v-model="roleFilter" :items="roleOptions" label="역할 필터" variant="outlined"
+                <v-select v-model="roleFilter" :items="roleOptions" label="권한 필터" variant="outlined"
                   density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
                 </v-select>
               </v-col>
               <v-col cols="12" md="4">
-                <v-select v-model="statusFilter" :items="statusOptions" label="상태 필터" variant="outlined"
+                <v-select v-model="statusFilter" :items="statusOptions" label="로그인 제어 필터" variant="outlined"
                   density="comfortable" clearable @update:model-value="handlerFilter" hide-details>
                 </v-select>
               </v-col>
@@ -61,10 +61,10 @@
             class="elevation-0">
             <!-- 아이디(username) -->
             <template v-slot:[`item.username`]="{ item }">
-              <div class="d-flex align-center py-2">
-                <v-avatar size="40" color="primary" class="mr-3">
+              <div class="d-flex align-center justify-center py-2">
+                <!-- <v-avatar size="40" color="primary" class="mr-3">
                   <span class="text-white font-weight-bold">{{ item.name.charAt(0).toUpperCase() }}</span>
-                </v-avatar>
+                </v-avatar> -->
                 <div>
                   <div class="font-weight-medium">{{ item.username }}</div>
                   <div class="text-caption text-grey">{{ item.name }}</div>
@@ -74,7 +74,9 @@
 
             <!-- 권한(role) -->
             <template v-slot:[`item.role`]="{ item }">
-              <v-chip :color="item.role === 'admin' ? 'error' : 'primary'" size="small" variant="flat">
+              <v-chip
+                :color="item.role === 'admin' ? 'error' : item.role === 'user' ? 'primary' : item.role === 'operator' ? 'green' : 'grey'"
+                size="small" variant="flat">
                 {{ getRoleLabel(item.role) }}
               </v-chip>
             </template>
@@ -82,7 +84,7 @@
             <!-- 상태(status) -->
             <template v-slot:[`item.isActive`]="{ item }">
               <v-chip :color="item.isActive ? 'success' : 'error'" size="small" variant="flat">
-                {{ item.isActive ? '활성' : '비활성' }}
+                {{ item.isActive ? '사용가능' : '사용불가' }}
               </v-chip>
             </template>
 
@@ -96,19 +98,19 @@
               <div class="d-flex justify-center">
                 <v-tooltip text="수정" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-pencil" size="small" variant="text" color="primary" @click="openEditDialog(item)"
+                    <v-btn icon="mdi-pencil" size="large" variant="text" color="primary" @click="openEditDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="비밀번호 변경" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-key" size="small" variant="text" color="warning" @click="openPasswordDialog(item)"
+                    <v-btn icon="mdi-key" size="large" variant="text" color="warning" @click="openPasswordDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="삭제" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="openDeleteDialog(item)"
+                    <v-btn icon="mdi-delete" size="large" variant="text" color="error" @click="openDeleteDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
@@ -119,8 +121,8 @@
           <!-- 페이지네이션 -->
           <v-divider></v-divider>
           <v-card-actions class="justify-center pa-4">
-            <v-pagination v-model="page" :length="totalPages" @update:model-value="fetchUsers" rounded="circle"
-              density="comfortable"></v-pagination>
+            <v-pagination v-model="page" :length="totalPages" :total-visible="5" @update:model-value="fetchUsers"
+              rounded="circle" density="comfortable"></v-pagination>
           </v-card-actions>
         </v-card>
 
@@ -128,13 +130,13 @@
         <div class="d-md-none">
           <v-card v-for="user in users" :key="user.id" class="user-mobile-card mb-4" elevation="2" rounded="lg">
             <v-card-text class="pa-4">
-              <div class="d-flex align-start mb-4">
-                <v-avatar size="56" color="primary" class="mr-4">
+              <div class="d-flex align-center justify-center mb-4">
+                <!-- <v-avatar size="56" color="primary" class="mr-4">
                   <span class="text-h6 text-white font-weight-bold">{{ user.name.charAt(0).toUpperCase() }}</span>
-                </v-avatar>
+                </v-avatar> -->
                 <div class="flex-grow-1">
-                  <div class="text-h6 font-weight-bold">{{ user.name }}</div>
-                  <div class="text-body-2 text-grey">{{ user.email }}</div>
+                  <div class="text-h6 font-weight-bold">{{ user.username }}</div>
+                  <div class="text-body-2 text-grey">{{ user.name }}</div>
                 </div>
               </div>
 
@@ -142,16 +144,16 @@
 
               <div class="user-info-grid">
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">역할</span>
+                  <span class="text-body-2 text-grey-darken-1">권한</span>
                   <v-chip :color="getRoleColor(user.role)" size="small" variant="flat">
-                    {{ getRoleColor(user.role) }}
+                    {{ getRoleLabel(user.role) }}
                   </v-chip>
                 </div>
 
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">상태</span>
+                  <span class="text-body-2 text-grey-darken-1">로그인 제어</span>
                   <v-chip :color="user.isActive ? 'success' : 'error'" size="small" variant="flat">
-                    {{ user.isActive ? '활성' : '비활성' }}
+                    {{ user.isActive ? '사용가능' : '사용불가' }}
                   </v-chip>
                 </div>
 
@@ -207,9 +209,18 @@
             { title: '게스트', value: 'guest' },
           ]" label="권한" variant="outlined" class="mb-4" hide-details>
           </v-select>
-          <v-select v-model="editForm.isActive" :items="[{ title: '활성', value: true }, { title: '비활성', value: false }]"
-            label="상태" variant="outlined" hide-details>
-          </v-select>
+          <v-switch v-model="editForm.isActive" size="small" color="primary" :false-value="false" :true-value="true"
+            hide-details inset>
+            <template v-slot:label>
+              <div class="d-flex align-center">
+                <span class="mr-2">로그인 제어: </span>
+                <v-chip :color="editForm.isActive ? 'success' : 'error'" size="small" variant="flat">
+                  {{ editForm.isActive ? 'ON' : 'OFF' }}
+                </v-chip>
+              </div>
+            </template>
+          </v-switch>
+          <span class="text-grey-darken-1 text-caption">로그인 제어 비활성화 시 로그인이 되지 않습니다.</span>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions class="pa-4">
@@ -323,11 +334,11 @@ const snackbar = ref({ show: false, message: '', color: 'success' });
 
 // 사용자 테이블 헤더 부분
 const headers = [
-  { title: '사용자', key: 'username', sortable: false },
-  { title: '권한', key: 'role', sortable: false },
-  { title: '상태', key: 'isActive', sortable: false },
-  { title: '마지막 로그인', key: 'lastLoginAt', sortable: false },
-  { title: '액션', key: 'actions', sortable: false, align: 'center' },
+  { title: '사용자', key: 'username', sortable: false, align: 'center', },
+  { title: '권한', key: 'role', sortable: false, align: 'center', },
+  { title: '로그인 제어', key: 'isActive', sortable: false, align: 'center', },
+  { title: '마지막 로그인', key: 'lastLoginAt', sortable: false, align: 'center', },
+  { title: '수정/변경/삭제', key: 'actions', sortable: false, align: 'center' },
 ];
 
 // 필터 옵션 확인
@@ -341,8 +352,8 @@ const roleOptions = [
 
 const statusOptions = [
   { title: '전체', value: null },
-  { title: '활성', value: true },
-  { title: '비활성', value: false },
+  { title: '사용가능', value: true },
+  { title: '사용불가', value: false },
 ];
 
 // 사용자 목록 조회하기
@@ -395,12 +406,38 @@ const openEditDialog = (user) => {
 const handleUpdate = async () => {
   updating.value = true;
   try {
-    // 역할변경
+    // 권한 변경
     await adminApi.updateUserRole(selectedUser.value.id, editForm.value.role);
     // 상태 변경하기
     await adminApi.updateUserStatus(selectedUser.value.id, editForm.value.isActive);
 
-    showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
+    // 현재 로그인된 사용자가 본인의 권한이 변경된 경우
+    const currentUserId = currentUser.value.id;
+    if (selectedUser.value.id === currentUserId) {
+      // sessionStorage 업데이트
+      const updateUser = {
+        ...currentUser.value,
+        role: editForm.value.role,
+        isActive: editForm.value.isAction
+      };
+
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      sessionStorage.setItem('userRole', editForm.value.role);
+
+      // 현재 페이지의 currentUser도 업데이트
+      currentUser.value = updateUser;
+
+      // 권한 변경됨 알림
+      showSnackbar('권한이 변경되었습니다. 장비 테스트 기능이 활성화 됩니다.', 'info');
+
+      // 즉시 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
+    }
+
     editDialog.value = false;
     fetchUsers();
   } catch (error) {
@@ -481,7 +518,7 @@ const getRoleColor = (role) => {
   const colorMap = {
     'admin': 'error',
     'user': 'primary',
-    'operator': 'info',
+    'operator': 'green',
     'guest': 'grey',
   };
   return colorMap[role] || 'grey';

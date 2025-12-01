@@ -5,11 +5,8 @@ import {
   Query,
   Res,
   Body,
-  BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { post } from 'axios';
 
 @Controller()
 export class AppController {

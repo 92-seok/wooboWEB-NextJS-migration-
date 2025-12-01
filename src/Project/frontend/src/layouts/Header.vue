@@ -101,8 +101,13 @@ const userName = ref(sessionStorage.getItem('userName') || '사용자');
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
+  // console.log('=== Header checkLoginStatus 호출 ===');
+
   isLoggedIn.value = !!sessionStorage.getItem('accessToken');
   userName.value = sessionStorage.getItem('userName') || '사용자';
+
+  // console.log('sessionStorage userName:', sessionStorage.getItem('userName'));
+  // console.log('userName.value:', userName.value);
 }
 
 watch(() => router.currentRoute.value, () => {
@@ -128,7 +133,7 @@ const confirmLogout = async () => {
         { refreshToken },
         { headers: { 'Authorization': `Bearer ${accessToken}` } }
       );
-      console.log('로그아웃 API 호출 성공')
+      // console.log('로그아웃 API 호출 성공')
     }
   } catch (error) {
     console.error('로그아웃 API 실패: ', error);
@@ -153,12 +158,20 @@ const clearAuthData = () => {
   sessionStorage.removeItem('accessToken');
   sessionStorage.removeItem('refreshToken');
   sessionStorage.removeItem('userName');
+  sessionStorage.removeItem('user');
   sessionStorage.removeItem('userId');
+  sessionStorage.removeItem('userEmail');
+  sessionStorage.removeItem('userRole');
+
+  // localStorage 자동로그인 데이터 삭제하기
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  // localStorage.removeItem('autoLogin');
 
   // axios 기본 헤더에서 토큰 제거하기
-  delete axios.defaults.headers.common['Authorizaion'];
+  delete axios.defaults.headers.common['Authorization'];
 
-  console.log('인증 데이터 정리 완료');
+  // console.log('인증 데이터 정리 완료');
 }
 
 ////////////////////////////////////////
@@ -168,7 +181,7 @@ onMounted(() => {
   // 페이지 로드 시 토큰이 있으면 axios 헤더에 설정해주기
   const token = sessionStorage.getItem('accessToken');
   if (token) {
-    axios.defaults.headers.common['Authorizaion'] = `Bearer ${token}`
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
   }
 });
 

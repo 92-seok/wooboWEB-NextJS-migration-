@@ -280,10 +280,10 @@
           </div>
           <p class="text-center text-h6 mb-2">접근 권한이 없습니다.</p>
           <p class="text-center text-body-2 text-medium-emphasis">
-            장비테스트 기능은 <strong>관리자 계정</strong>만 이용 할 수 있습니다.
+            장비테스트 기능은 <strong>허용된 계정</strong>만 이용 할 수 있습니다.
           </p>
           <p class="text-center text-body-2 text-medium-emphasis">
-            권한이 필요한 경우 시스템사업부에 문의하세요.
+            장비제어가 필요한 경우 시스템사업부에 문의하세요.
           </p>
         </v-card-text>
 
@@ -454,7 +454,6 @@ const dialog_test = ref(false);
 
 const broadTestMessage = ref("");
 const loading = ref(false);
-
 
 
 //////////////////////////////////
@@ -823,7 +822,6 @@ const sendBrd = async (item) => {
       Parm3: broadTestMessage.value,
       BStatus: 'start',
       RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-      Auth: 'online'
     });
 
     const ok = response.status >= 200 && response.status < 300;
@@ -862,7 +860,6 @@ const sendGate = async (item, gate) => {
       CD_DIST_OBSV: item.CD_DIST_OBSV,
       Gate: gate,
       GStatus: 'start',
-      Auth: 'online'
     });
 
     const ok = response.status >= 200 && response.status < 300;
@@ -905,7 +902,6 @@ const sendDisplay = async (item, display) => {
       Parm2: '',
       Parm3: '',
       BStatus: 'start',
-      Auth: 'online'
     });
 
     const ok = response.status >= 200 && response.status < 300;

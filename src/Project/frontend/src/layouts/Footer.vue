@@ -28,7 +28,7 @@
     </v-btn>
 
     <!-- 로그인 상태일 때 : 로그아웃 버튼 -->
-    <v-btn v-if="isLoggedIn" @click="isAdmin ? router.push('/admin') : handleLogout()">
+    <v-btn v-if="isLoggedIn" @click="isAdmin && router.push('/admin')">
       <v-icon>mdi-account</v-icon>
       <span class="text-subtitle-2">{{ userName }}님</span>
     </v-btn>
@@ -74,13 +74,25 @@ const isAdmin = ref(false);
 
 // 로그인 상태 체크 함수 로직
 const checkLoginStatus = () => {
+  // console.log('=== footer checkLoginStatus ===');
+
   isLoggedIn.value = !!sessionStorage.getItem('accessToken');
   userName.value = sessionStorage.getItem('userName') || '사용자';
+
+  // console.log('sessionStorage userName', sessionStorage.getItem('userName'));
+  // console.log('userName.value', userName.value);
 
   try {
     const userStr = sessionStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
+
+    // console.log('=== Footer checkLoginStatus ===');
+    // console.log('parsed user', user);
+    // console.log('user.role', user?.role);
+
     isAdmin.value = user?.role === 'admin';
+
+    // console.log('isAdmin', isAdmin.value);
   } catch (error) {
     console.error('Failed to parse user data', error);
     isAdmin.value = false;
@@ -120,6 +132,8 @@ const confirmLogout = async () => {
     console.error('로그아웃 API 실패: ', error);
     // 에러가 발생해도 계속 진행하기 (로컬 데이터는 삭제)
   } finally {
+    // 로컬 데이터 정리하기
+    clearAuthData()
 
     // 다이얼로그 닫기
     logoutDialog.value = false;
@@ -127,8 +141,6 @@ const confirmLogout = async () => {
     isAdmin.value = false;
     loading.value = false;
 
-    // 로컬 데이터 정리하기
-    clearAuthData()
 
     // 로그인 페이지로 이동
     router.push('/login');

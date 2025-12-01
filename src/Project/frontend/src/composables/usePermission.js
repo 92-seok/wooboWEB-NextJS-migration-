@@ -16,7 +16,7 @@ export const usePermission = () => {
   // 로그인 상태 확인
   const isLoggedIn = computed(() => {
     const token = getStorageValue('accessToken')
-    console.log('isLoggedIn computed:', !!token)
+    // console.log('isLoggedIn computed:', !!token)
     return !!token
   })
 
@@ -27,14 +27,14 @@ export const usePermission = () => {
       return 'guest'
     }
     const role = getStorageValue('userRole') || 'guest'
-    console.log('userRole:', role)
+    // console.log('userRole:', role)
     return role
   })
 
   // 관리자 여부
   const isAdmin = computed(() => {
     const result = isLoggedIn.value && userRole.value === 'admin'
-    console.log('isAdmin:', result)
+    // console.log('isAdmin:', result)
     return result
   })
 

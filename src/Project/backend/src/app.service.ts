@@ -126,7 +126,8 @@ export class AppService {
       obj.Gate = body.Gate;
       obj.GStatus = body.GStatus;
       obj.RegDate = dayjs().format('YYYY-MM-DD HH:mm:ss');
-      obj.Auth = 'online';
+      // 제어 이력 아이디 가져오기
+      obj.Auth = body.Auth;
 
       return await this.NmsGateControlRepository.insert(obj);
     } catch (error) {

@@ -50,9 +50,11 @@
               <v-col cols="12" md="4">
                 <v-select v-model="historyLimit" :items="[
                   { title: '10개', value: 10 },
+                  { title: '20개', value: 20 },
                   { title: '30개', value: 30 },
                   { title: '50개', value: 50 },
-                ]" label="조회 개수" variant="outlined" density="comfortable" hide-details>
+                ]" label="조회 개수" variant="outlined" density="comfortable" hide-details
+                  @update:model-value="handleLimitChange">
                 </v-select>
               </v-col>
             </v-row>
@@ -63,12 +65,14 @@
         <v-card class="table-card d-none d-md-block" elevation="2" rounded="lg">
           <v-data-table :headers="historyHeaders" :items="filteredHistory" :loading="historyLoading"
             :items-per-page="historyLimit" hide-default-footer class="elevation-0">
+
             <!-- 장비 유형 -->
             <template v-slot:[`item.type`]="{ item }">
-              <div class="d-flex align-center py-2">
-                <v-chip :color="getTypeColor(item.type)" size="small" variant="flat">
-                  {{ getTypeLabel(item.type) }}
-                </v-chip>
+              <div class="d-flex align-center justify-center py-2">
+                <v-icon :color="getTypeColor(item.type)" size="large" variant="flat" class="mr-1">
+                  {{ getTypeIcon(item.type) }}
+                </v-icon>
+                <span class="font-weight-bold pa-2">{{ getTypeLabel(item.type) }}</span>
               </div>
             </template>
 
@@ -79,12 +83,12 @@
 
             <!-- 제어 아이디 -->
             <template v-slot:[`item.Auth`]="{ item }">
-              <div class="d-flex align-center py-2">
-                <v-avatar size="32" color="info" class="mr-2">
+              <div class="d-flex align-center justify-center py-2">
+                <!-- <v-avatar size="32" color="info" class="mr-2">
                   <span class="text-white font-weight-bold text-caption">
                     {{ (item.Auth || 'U').charAt(0).toUpperCase() }}
                   </span>
-                </v-avatar>
+                </v-avatar> -->
                 <span class="font-weight-medium">{{ item.Auth || '알 수 없음' }}</span>
               </div>
             </template>
@@ -95,7 +99,7 @@
             </template>
 
             <template v-slot:[`item.status`]="{ item }">
-              <div class="d-flex align-center py-2">
+              <div class="d-flex align-center justify-center py-2">
                 <v-chip :color="getStatusColor(item.BStatus || item.GStatus)" size="small" variant="flat">
                   {{ item.BStatus || item.GStatus || '-' }}
                 </v-chip>
@@ -103,19 +107,44 @@
             </template>
 
           </v-data-table>
+
+          <!-- 페이지 네이션 -->
+          <v-divider></v-divider>
+          <v-card-actions class="justify-center py-4">
+            <!-- 이전 그룹으로 -->
+            <v-btn v-if="paginationRange.hasPrev" icon="mdi-chevron-double-left" variant="text" size="small"
+              @click="goToPage(paginationRange.prevGroup)"></v-btn>
+
+            <!-- 이전페이지 -->
+            <v-btn :disabled="historyPage === 1" icon="mdi-chevron-left" variant="text" size="small"
+              @click="goToPage(historyPage - 1)"></v-btn>
+
+            <!-- 페이지 번호 -->
+            <v-btn v-for="page in paginationRange.pages" :key="page" :variant="historyPage === page ? 'flat' : 'text'"
+              :color="historyPage === page ? 'primary' : ''" size="small" @click="goToPage(page)" class="mx-1">{{ page
+              }}</v-btn>
+
+            <!-- 이전페이지 -->
+            <v-btn :disabled="historyPage === historyTotalPages" icon="mdi-chevron-right" variant="text" size="small"
+              @click="goToPage(historyPage + 1)"></v-btn>
+
+            <!-- 이전 그룹으로 -->
+            <v-btn v-if="paginationRange.hasNext" icon="mdi-chevron-double-right" variant="text" size="small"
+              @click="goToPage(paginationRange.nextGroup)"></v-btn>
+          </v-card-actions>
         </v-card>
 
         <!-- 제어 이력 카드 (모바일) -->
         <div class="d-md-none">
-          <v-card v-for="(history, index) in filteredHistory" :key="index" class="user-mobile-card mb-4" elevation="2"
+          <v-card v-for="(history, index) in paginatedHistory" :key="index" class="user-mobile-card mb-4" elevation="2"
             rounded="lg">
             <v-card-text class="pa-4">
               <div class="d-flex align-start mb-4">
-                <v-avatar :color="getTypeColor(history.type)" size="56" class="mr-4">
+                <!-- <v-avatar :color="getTypeColor(history.type)" size="56" class="mr-4">
                   <span class="text-h6 text-white font-weight-bold">
                     {{ getTypeLabel(history.type).charAt(0) }}
                   </span>
-                </v-avatar>
+                </v-avatar> -->
                 <div class="flex-grow-1">
                   <div class="text-h6 font-weight-bold">{{ getTypeLabel(history.type) }}</div>
                   <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>
@@ -131,11 +160,11 @@
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
                   <span class="text-body-2 text-grey-darken-1">장비명</span>
-                  <span class="text-body-2">{{ history.CD_DIST_OBSV || '-' }}</span>
+                  <span class="text-body-2">{{ history.NM_DIST_OBSV || '-' }}</span>
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
                   <span class="text-body-2 text-grey-darken-1">상태</span>
-                  <span class="text-body-2">{{ history.BStatus || history.GStatus || '-' }}</span>
+                  <span class="text-body-2">{{ (history.BStatus || history.GStatus || '-') }}</span>
                 </div>
               </div>
 
@@ -147,6 +176,29 @@
               </v-card>
             </v-card-text>
           </v-card>
+          <div class="d-md-none d-flex justify-center mt-4">
+            <!-- 이전 그룹으로 -->
+            <v-btn v-if="mobilePageRange.hasPrev" icon="mdi-chevron-double-left" variant="text" size="small"
+              @click="goToMobilePage(mobilePageRange.prevGroup)"></v-btn>
+
+            <!-- 이전페이지 -->
+            <v-btn :disabled="mobilePage === 1" icon="mdi-chevron-left" variant="text" size="small"
+              @click="goToMobilePage(mobilePage - 1)"></v-btn>
+
+            <!-- 페이지 번호 -->
+            <v-btn v-for="page in mobilePageRange.pages" :key="page" :variant="mobilePage === page ? 'flat' : 'text'"
+              :color="mobilePage === page ? 'primary' : ''" size="small" @click="goToMobilePage(page)" class="mx-1">{{
+                page
+              }}</v-btn>
+
+            <!-- 이전페이지 -->
+            <v-btn :disabled="mobilePage === mobileTotalPages" icon="mdi-chevron-right" variant="text" size="small"
+              @click="goToMobilePage(mobilePage + 1)"></v-btn>
+
+            <!-- 이전 그룹으로 -->
+            <v-btn v-if="mobilePageRange.hasNext" icon="mdi-chevron-double-right" variant="text" size="small"
+              @click="goToMobilePage(mobilePageRange.nextGroup)"></v-btn>
+          </div>
         </div>
       </div>
     </v-container>
@@ -171,21 +223,29 @@ const historyTypeFilter = ref(null);
 const historySearch = ref('');
 const historyLimit = ref(10);
 
+// 데스크탑 페이지 네이션 함수
+const historyPage = ref(1);
+const historyTotalPages = ref(1);
+
+// 모바일 페이지 네이션 함수
+const mobileItemsPerPage = ref(5);
+const mobilePage = ref(1);
+
 // 스낵바
 const snackbar = ref({ show: false, message: '', color: 'success' });
 
 // 제어 이력 테이블 헤어 부분
 const historyHeaders = [
-  { title: '장비 유형', key: 'type', sortable: false },
-  { title: '제어 시간', key: 'dtmCreate', sortable: false },
-  { title: '제어 아이디', key: 'Auth', sortable: false },
-  { title: '장비명', key: 'NM_DIST_OBSV', sortable: false },
-  { title: '상태', key: 'status', sortable: false },
+  { title: '장비 유형', key: 'type', sortable: false, align: 'center' },
+  { title: '제어 시간', key: 'dtmCreate', sortable: false, align: 'center' },
+  { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
+  { title: '장비명', key: 'NM_DIST_OBSV', sortable: false, align: 'center' },
+  { title: '상태', key: 'status', sortable: false, align: 'center' },
 ];
 
 const historyTypeOptions = [
   { title: '전체', value: null },
-  { title: '방송', value: 'broadcast' },
+  { title: '예경보', value: 'broadcast' },
   { title: '전광판', value: 'display' },
   { title: '차단기', value: 'gate' },
 ]
@@ -200,6 +260,90 @@ const filteredHistory = computed(() => {
   );
 });
 
+// 모바일용 페이지네이션 데이터
+const paginatedHistory = computed(() => {
+  const start = (mobilePage.value - 1) * mobileItemsPerPage.value;
+  const end = start + mobileItemsPerPage.value;
+  return filteredHistory.value.slice(start, end);
+})
+
+// 모바일 총 페이지 수
+const mobileTotalPages = computed(() => {
+  return Math.ceil(filteredHistory.value.length / mobileItemsPerPage.value);
+})
+
+// 데스크탑 페이지 네이션
+const paginationRange = computed(() => {
+  const total = historyTotalPages.value;
+  const current = historyPage.value;
+
+  // 5개씩 묶음으로 (1-5, 6-10, 11-15...)
+  const groupSize = 5;
+  const currentGroup = Math.ceil(current / groupSize);
+  const startPage = (currentGroup - 1) * groupSize + 1;
+  const endPage = Math.min(startPage + groupSize - 1, total);
+
+  const pages = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return {
+    pages,
+    hasPrev: startPage > 1,
+    hasNext: endPage < total,
+    prevGroup: startPage - 1,
+    nextGroup: endPage + 1,
+  };
+});
+
+// 모바일 페이지 네이션
+const mobilePageRange = computed(() => {
+  const total = mobileTotalPages.value;
+  const current = mobilePage.value;
+
+  const groupSize = 5;
+  const currentGroup = Math.ceil(current / groupSize);
+  const startPage = (currentGroup - 1) * groupSize + 1;
+  const endPage = Math.min(startPage + groupSize - 1, total);
+
+  const pages = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return {
+    pages,
+    hasPrev: startPage > 1,
+    hasNext: endPage < total,
+    prevGroup: startPage - 1,
+    nextGroup: endPage + 1,
+  };
+});
+
+// 페이지 이동 함수
+const goToPage = (page) => {
+  historyPage.value = page;
+  fetchControlHistory();
+}
+
+const goToMobilePage = (page) => {
+  mobilePage.value = page;
+  fetchControlHistory();
+
+  window.scrollTo({
+    top: 0,
+    begavior: 'smooth'
+  });
+}
+
+
+// 장비 제어 이력 페이징 핸들러
+const handleLimitChange = () => {
+  historyPage.value = 1;
+  fetchControlHistory();
+}
+
 // 제어 이력 조회하기
 const fetchControlHistory = async () => {
   historyLoading.value = true;
@@ -207,6 +351,7 @@ const fetchControlHistory = async () => {
   try {
     const params = {
       limit: historyLimit.value,
+      page: historyPage.value,
     };
 
     let response;
@@ -225,6 +370,7 @@ const fetchControlHistory = async () => {
     // console.log('response.data.data: ', response.data.data);
 
     controlHistory.value = response.data.data || [];
+    historyTotalPages.value = response.data.meta?.totalPages || 1;
     // console.log('controleHistory 설정: ', controlHistory.value);
   } catch (error) {
     console.error('제어 이력 조회 실패: ', error);
@@ -237,9 +383,9 @@ const fetchControlHistory = async () => {
 // 장비 유형 색상
 const getTypeColor = (type) => {
   const colorMap = {
-    'broadcast': '방송',
-    'display': '전광판',
-    'gate': '차단기',
+    'broadcast': '#EC407A',
+    'display': '#00E5FF',
+    'gate': '#FDD835',
   };
   return colorMap[type] || type;
 };
@@ -247,20 +393,40 @@ const getTypeColor = (type) => {
 // 장비 유형 라벨
 const getTypeLabel = (type) => {
   const labelMap = {
-    'broadcast': '방송',
+    'broadcast': '예경보',
     'display': '전광판',
     'gate': '차단기',
   };
   return labelMap[type] || type;
 };
 
+// 장비 유형 아이콘
+const getTypeIcon = (type) => {
+  const iconMap = {
+    'broadcast': 'mdi-bullhorn',
+    'display': 'mdi-monitor-shimmer',
+    'gate': 'mdi-boom-gate-alert',
+  };
+  return iconMap[type] || 'mdi-help-circle';
+}
+
 // 제어 상태 색상
 const getStatusColor = (status) => {
-  if (!status) return 'grep';
-  if (status === 'end' || status === 'success') return 'success';
-  if (status === 'ing' || status === 'processing') return 'warning';
-  if (status === 'start') return 'info';
+  if (!status) return 'grey';
+  if (status === 'end' || status === 'success' || status === '제어 성공') return 'success';
+  if (status === 'ing' || status === 'processing' || status === '제어 중') return 'warning';
+  if (status === 'start' || status === '제어 시작') return 'info';
   return 'grey';
+};
+
+const getStatusLabel = (status) => {
+  const labelMap = {
+    'start': '제어 시작',
+    'ing': '제어 중',
+    'processing': '장비 진행 중',
+    'end': '제어 성공',
+  };
+  return labelMap[status] || status;
 };
 
 // 스낵바 표시하기

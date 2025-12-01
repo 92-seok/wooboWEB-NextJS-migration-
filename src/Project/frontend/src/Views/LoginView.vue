@@ -24,6 +24,13 @@
         class="placeholder-small input-field" :error-messages="passwordError" @keyup.enter="handleLogin"
         :disabled="loading"></v-text-field>
 
+      <!-- 체크박스 영역 추가하기 -->
+      <div class="checkbox-wrapper mb-4">
+        <v-checkbox v-model="saveId" label="아이디 저장" density="compact" hide-details :disabled="loading"
+          class="mr-4"></v-checkbox>
+        <v-checkbox v-model="autoLogin" label="자동 로그인" density="compact" hide-details :disabled="loading"></v-checkbox>
+      </div>
+
       <!-- error message 표시 -->
       <v-alert v-if="errorMessage" type="error" variant="tonal" class="alert-message" closable
         @click:close="errorMessage = ''">
@@ -55,17 +62,73 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
+
+// 페이지 로드 시 저장된 정보 불러오기
+onMounted(async () => {
+  // 1. 아이디 저장 확인
+  const savedUsername = localStorage.getItem('savedUsername');
+  const savedIdChecked = localStorage.getItem('saveId') === 'true';
+
+  if (savedIdChecked && savedUsername) {
+    username.value = savedUsername;
+    saveId.value = true;
+  }
+
+  // 2. 자동 로그인 확인
+  const autoLoginChecked = localStorage.getItem('autoLogin') === 'true';
+  const savedAccessToken = localStorage.getItem('accessToken');
+  const savedRefreshToken = localStorage.getItem('refreshToken');
+
+  // 체크박스 상태 복원 (무조건으로)
+  if (autoLoginChecked) {
+    autoLogin.value = true;
+  }
+
+  if (autoLoginChecked && savedAccessToken && savedRefreshToken) {
+    // autoLogin.value = true;
+
+    try {
+      // 토큰 유효성 검증 (Backend에 요청하기)
+      axios.defaults.headers.common['Authorization'] = `Bearer ${savedAccessToken}`;
+      const response = await axios.get('/api/auth/verify');
+
+      if (response.data && response.data.user) {
+        // 토큰이 유효하면 sessionStorage에도 저장하기
+        sessionStorage.setItem('accessToken', savedAccessToken);
+        sessionStorage.setItem('refreshToken', savedRefreshToken);
+        sessionStorage.setItem('user', JSON.stringify(response.data.user));
+        sessionStorage.setItem('userName', response.data.user.name || response.data.user.username);
+        sessionStorage.setItem('userId', response.data.user.id);
+        sessionStorage.setItem('userRole', response.data.user.role || 'user');
+
+        // 자동으로 메인 페이지로 이동하기
+        await router.push('/');
+      }
+    } catch (error) {
+      console.error('자동 로그인 실패: ', error);
+      // 토큰이 만료 되었으면 삭제
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('autoLogin');
+      autoLogin.value = false; // 체크박스 해제
+    }
+  }
+});
 
 // 폼 데이터
 const username = ref('');
 const password = ref('');
 const visible = ref(false);
 const loading = ref(false);
+
+// 체크박스 상태 추가
+const saveId = ref(false);
+const autoLogin = ref(false);
 
 // 에러메세지
 const usernameError = ref('');
@@ -94,8 +157,8 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = '비밀번호를 입력해주세요.';
     isValid = false;
-  } else if (password.value.length < 6) {
-    passwordError.value = '비밀번호는 최소 6자 이상이어야 합니다.';
+  } else if (password.value.length < 4) {
+    passwordError.value = '비밀번호는 최소 4자 이상이어야 합니다.';
     isValid = false;
   }
 
@@ -120,6 +183,14 @@ const handleLogin = async () => {
     // 응답오는 데이터 안전하게 추출하기
     const { accessToken, refreshToken, user } = response.data || {}
 
+    // 디버깅 : 로그인 응답 데이터 확인
+    // console.log('==== 로그인 응답 데이터 확인 ====');
+    // console.log('response.data: ', response.data);
+    // console.log('user: ', user);
+    // console.log('user.name: ', user.name);
+    // console.log('user.username: ', user.username);
+    // console.log('user.Role: ', user.role);
+
     // 토큰 확인하기
     if (!accessToken || !refreshToken) {
       errorMessage.value = '로그인 응답 형식이 올바르지 않습니다.';
@@ -139,6 +210,17 @@ const handleLogin = async () => {
     // 토큰 영구 저장하기 => localStorage
     // localStorage.setItem('accessToken', accessToken);
     // localStorage.setItem('refreshToken', refreshToken);
+
+    if (autoLogin.value) {
+      // 자동로그인: localStorage에 저장 (영구 보관)
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('autoLogin', 'true');
+    } else {
+      sessionStorage.setItem('accessToken', accessToken);
+      sessionStorage.setItem('refreshToken', refreshToken);
+      localStorage.removeItem('autoLogin');
+    }
 
     // 사용자 정보 저장하기
     if (user) {
@@ -162,6 +244,15 @@ const handleLogin = async () => {
     // console.log('로그인 성공')
     // console.log('사용자 이름:', sessionStorage.getItem('userName'))
     // console.log('axios 헤더:', axios.defaults.headers.common['Authorization'])
+
+    // 아이디 저장 처리
+    if (saveId.value) {
+      localStorage.setItem('savedUsername', username.value);
+      localStorage.setItem('saveId', 'true');
+    } else {
+      localStorage.removeItem('savedUsername');
+      localStorage.removeItem('saveId');
+    }
 
     // 민감한 정보 초기화로직
     username.value = '';
@@ -281,6 +372,12 @@ const goToSignup = () => {
 
 .signup-text {
   font-size: 12px;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
 }
 
 :deep(.placeholder-small input::placeholder) {

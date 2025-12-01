@@ -350,7 +350,7 @@ const loading = ref(false);
 ////////////////////////////////////////
 onMounted(async () => {
 
-  console.log("WeatherSRView::onMounted()" + useRoute().params.BDONG_CD);
+  // console.log("WeatherSRView::onMounted()" + useRoute().params.BDONG_CD);
   console.log(os.value);
 
   if (refresh_timer) {
@@ -363,7 +363,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  console.log("WeatherSRView::onUnmount()");
+  // console.log("WeatherSRView::onUnmount()");
 
   if (refresh_timer) {
     clearInterval(refresh_timer);
@@ -477,7 +477,7 @@ const OnTimer_Refresh = async () => {
 }
 
 const Process = async () => {
-  console.log("Process()");
+  // console.log("Process()");
 
   try {
     const response_areaList = await axios.get('/api/weathersr/areaList');
@@ -508,8 +508,8 @@ const OnChange_AreaList = async (newArea) => {
       ...item,
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
-    console.log(areaList.value);
-    console.log(devices.value);
+    // console.log(areaList.value);
+    // console.log(devices.value);
   } catch (err) {
     console.log('데이터를 가져오는 중 오류 발생: ', err)
   }

@@ -43,10 +43,10 @@ export class NmsUser {
   @Column({ name: 'last_login_at', type: 'timestamp', nullable: true, })
   lastLoginAt: Date;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', nullable: true, })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 0, nullable: true })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', nullable: true, })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', precision: 0, nullable: true })
   updatedAt: Date;
 
   @OneToMany(() => NmsUserAuthority, (ua) => ua.user)

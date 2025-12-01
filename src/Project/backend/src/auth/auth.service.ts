@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -34,7 +35,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) { }
 
-  // * 회원가입 로직 *
+  // ********************* 회원가입 로직 *********************
   async signUp(dto: SignUpDto): Promise<Tokens> {
     const exists = await this.userRepo.findOne({
       where: { username: dto.username },
@@ -75,10 +76,11 @@ export class AuthService {
     return tokens;
   }
 
-  // * 로그인 로직 *
+  // ********************* 로그인 로직 *********************
   async signIn(dto: SignInDto): Promise<any> {
+    // 모든 사용자 조회
     const user = await this.userRepo.findOne({
-      where: { username: dto.username, is_active: 1 },
+      where: { username: dto.username },
     });
 
     if (!user) {
@@ -88,8 +90,13 @@ export class AuthService {
     // 입력된 비밀번호를 소문자와 숫자만 추출
     const normalizedPw = dto.password.toLowerCase().replace(/[^a-z0-9]/g, '');
     const isMatch = await bcrypt.compare(normalizedPw, user.password);
+
     if (!isMatch) {
       throw new UnauthorizedException('아이디 또는 비밀번호가 맞지 않습니다.');
+    }
+
+    if (user.is_active !== 1) {
+      throw new ForbiddenException('계정이 비활성화 되었습니다. 시스템사업부에 문의하세요.');
     }
 
     // 사용자 권한 조회하기
@@ -146,7 +153,7 @@ export class AuthService {
     };
   }
 
-  // * 로그아웃: DB에 저장된 refresh token 제거하기
+  // ********************* 로그아웃 로직: DB에 저장된 refresh token 제거하기 *********************
   async logout(userId: number): Promise<void> {
     await this.userTokenRepo.update(
       { userId },
@@ -154,7 +161,7 @@ export class AuthService {
     );
   }
 
-  // * Refresh 토큰으로 토큰 재발급하기
+  // ********************* Refresh 토큰 ---> 토큰 재발급하기 *********************
   async refreshTokens(userId: number, rt: string): Promise<Tokens> {
     const tokenRow = await this.userTokenRepo.findOne({ where: { userId } });
 
@@ -164,7 +171,7 @@ export class AuthService {
 
     const rtMatches = await bcrypt.compare(rt, tokenRow.hashedRt);
     if (!rtMatches) {
-      throw new UnauthorizedException('Refresh token이 유효하지 않습니다.');
+      throw new ForbiddenException('Refresh token이 유효하지 않습니다.');
     }
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -242,7 +249,30 @@ export class AuthService {
       await this.userTokenRepo.save(row);
     }
   }
+
+  // ********************* 현재 로그인된 사용자 정보 조회 로직 *********************
+  async getCurrentUser(userId: number) {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      select: ['id', 'username', 'name', 'role', 'email', 'is_active'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+      isActive: user.is_active === 1,
+    }
+  }
 }
+
+// --------------------------카카오로그인(추후 개발 예정)--------------------------------
 // async kakaoLogin(options: { code: string; domain: string }): Promise<any> {
 //   const { code, domain } = options;
 //   const kakaoKey = '87073966cb41...';

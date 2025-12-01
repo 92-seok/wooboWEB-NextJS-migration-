@@ -38,17 +38,17 @@ export const adminApi = {
   },
 
   // * 방송 제어 이력 조회 *
-  getAllControlHistory(params = {}) {
-    return apiClient.get('/admin/control-history', { params });
+  getBroadcastHistory(params = {}) {
+    return apiClient.get('/admin/control-history/broadcast', { params });
   },
 
   // * 전광판 제어 이력 조회 *
-  getAllControlHistory(params = {}) {
-    return apiClient.get('/admin/control-history', { params });
+  getDisplayHistory(params = {}) {
+    return apiClient.get('/admin/control-history/display', { params });
   },
 
   // * 차단기 제어 이력 조회 *
-  getAllControlHistory(params = {}) {
-    return apiClient.get('/admin/control-history', { params });
+  getGateHistory(params = {}) {
+    return apiClient.get('/admin/control-history/gate', { params });
   },
 };

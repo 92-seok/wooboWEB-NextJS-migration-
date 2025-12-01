@@ -14,6 +14,7 @@
 ////////////////////////////////////////
 import { onMounted, onUnmounted, ref, inject, provide } from 'vue'
 import { useTheme } from 'vuetify';
+import axios from 'axios';
 
 // Layouts
 import Header from './layouts/Header.vue'
@@ -37,13 +38,56 @@ provide('theme_color', { theme_color, OnClick_theme_color });
 ////////////////////////////////////////
 // Form 이벤트
 ////////////////////////////////////////
-onMounted(() => {
+const syncUserPermissions = async () => {
+  const token = sessionStorage.getItem('accessToken');
+  if (!token) return
+
+  try {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const response = await axios.get('/api/auth/me');
+
+    if (response.data && response.data.user) {
+      const user = response.data.user;
+
+      // sessionStorage 업데이트 (최신 권한 반영)
+      sessionStorage.setItem('user', JSON.stringify(user));
+      sessionStorage.setItem('userRole', user.role);
+      sessionStorage.setItem('userName', user.name || user.username);
+
+      // console.log('권한 정보 동기화 완료: ', user.role);
+    }
+  } catch (error) {
+    console.error('사용자 정보 동기화 실패: ', error);
+    // 토큰이 만료되었으면 로그아웃 처리하기
+    if (error.response?.status === 401) {
+      sessionStorage.clear();
+      window.location.href = '/login';
+    }
+  }
+}
+
+let syncInterval = null;
+
+onMounted(async () => {
   // console.log(`프로그램 시작(${inject('$title')}) / Theme(${theme.value})`); // 전역변수 Vue3 Style
+  // 최초 권한 동기화
+  await syncUserPermissions();
+
+  // 30초 마다 권한 자동 동기화
+  syncInterval = setInterval(async () => {
+    await syncUserPermissions();
+  }, 30000)
 });
 
 onUnmounted(() => {
+  if (syncInterval) {
+    clearInterval(syncInterval);
+    syncInterval = null;
+  }
   // console.log(`프로그램 종료`);
 });
+
+
 </script>
 
 <style lang="scss">

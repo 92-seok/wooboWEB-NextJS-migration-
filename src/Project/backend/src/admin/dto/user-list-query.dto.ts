@@ -23,12 +23,12 @@ export class UserListQueryDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
-  // 활성화 상태 필터링
+  // 아이디 제어 필터링
   @IsOptional()
   @Type(() => Boolean)
   isActive?: boolean;
 
-  // 검색어 (이메일 또는 이름)
+  // 검색어 (이름 또는 아이디)
   @IsOptional()
   @IsString()
   search?: string;

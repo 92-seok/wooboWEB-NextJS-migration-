@@ -182,7 +182,7 @@ export class AdminService {
     await this.userRepository.save(user);
 
     return {
-      message: `사용자가 ${user.is_active === 1 ? '활성화' : '비활성화'} 되었습니다.`,
+      message: `아이디가 ${user.is_active === 1 ? '사용가능' : '사용불가'} 변경 되었습니다.`,
       user: {
         userId: user.id,
         username: user.username,
@@ -215,117 +215,400 @@ export class AdminService {
     };
   }
 
+  // ------------------------------- 사용자 장비 제어 -------------------------------
   // 방송 제어 이력 조회하기
   async getBroadcastHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1 } = query;
+    const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // 전체 개수 조회하기
+    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('brdsend');
 
-    const history = await this.brdSendRepository.find({
-      where,
-      order: { dtmCreate: 'DESC' },
-      take: limit,
-    });
+    if (BDONG_CD) {
+      totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const total = await totalQueryBuilder.getCount();
+
+    const queryBuilder = this.brdSendRepository
+      .createQueryBuilder('brdsend')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'brdsend.IDX as IDX',
+        'brdsend.BDONG_CD as BDONG_CD',
+        'brdsend.CD_DIST_OBSV as CD_DIST_OBSV',
+        'brdsend.RCMD as RCMD',
+        'brdsend.Parm1 as Parm1',
+        'brdsend.Parm2 as Parm2',
+        'brdsend.Parm3 as Parm3',
+        'brdsend.Parm4 as Parm4',
+        'brdsend.BStatus as BStatus',
+        'brdsend.RegDate as RegDate',
+        'brdsend.RetData as RetData',
+        'brdsend.RetDate as RetDate',
+        'brdsend.Auth as Auth',
+        'brdsend.dtmCreate as dtmCreate',
+        'brdsend.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('brdsend.dtmCreate', 'DESC')
+      .skip(skip)
+      .limit(limit);
+
+    if (BDONG_CD) {
+      queryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      queryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const history = await queryBuilder.getRawMany();
+
+    // const where: any = {};
+    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    // const history = await this.brdSendRepository.find({
+    //   where,
+    //   order: { dtmCreate: 'DESC' },
+    //   take: limit,
+    // });
 
     return {
       success: true,
       message: '방송 제어 이력을 조회했습니다.',
-      data: history,
-      total: history.length,
+      data: history.map(item => ({ ...item, type: 'broadcast' })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
   // 전광판 제어 이력 조회하기
   async getDisplayHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1 } = query;
+    const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // 전체 개수 조회하기
+    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('dissend');
 
-    const history = await this.disSendRepository.find({
-      where,
-      order: { dtmCreate: 'DESC' },
-      take: limit,
-    });
+    if (BDONG_CD) {
+      totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const total = await totalQueryBuilder.getCount();
+
+    const queryBuilder = this.disSendRepository
+      .createQueryBuilder('dissend')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'dissend.IDX as IDX',
+        'dissend.BDONG_CD as BDONG_CD',
+        'dissend.CD_DIST_OBSV as CD_DIST_OBSV',
+        'dissend.RCMD as RCMD',
+        'dissend.Parm1 as Parm1',
+        'dissend.Parm2 as Parm2',
+        'dissend.Parm3 as Parm3',
+        'dissend.BStatus as BStatus',
+        'dissend.RegDate as RegDate',
+        'dissend.Auth as Auth',
+        'dissend.dtmCreate as dtmCreate',
+        'dissend.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('dissend.dtmCreate', 'DESC')
+      .skip(skip)
+      .limit(limit);
+
+    if (BDONG_CD) {
+      queryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      queryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const history = await queryBuilder.getRawMany();
+
+    // const where: any = {};
+    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    // const history = await this.disSendRepository.find({
+    //   where,
+    //   order: { dtmCreate: 'DESC' },
+    //   take: limit,
+    // });
 
     return {
       success: true,
       message: '전광판 제어 이력을 조회했습니다.',
-      data: history,
-      total: history.length,
+      data: history.map(item => ({ ...item, type: 'display' })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
   // 차단기 제어 이력 조회하기
   async getGateHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1, } = query;
+    const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // 전체 개수 조회하기
+    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('gatecontrol');
 
-    const history = await this.gateControlRepository.find({
-      where,
-      order: { dtmCreate: 'DESC' },
-      take: limit,
-    });
+    if (BDONG_CD) {
+      totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const total = await totalQueryBuilder.getCount();
+
+    const queryBuilder = this.gateControlRepository
+      .createQueryBuilder('gatecontrol')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'gatecontrol.IDX as IDX',
+        'gatecontrol.BDONG_CD as BDONG_CD',
+        'gatecontrol.CD_DIST_OBSV' as 'CD_DIST_OBSV',
+        'gatecontrol.Gate as Gate',
+        'gatecontrol.Light as Light',
+        'gatecontrol.Sound as Sound',
+        'gatecontrol.GStatus as GStatus',
+        'gatecontrol.RegDate as RegDate',
+        'gatecontrol.Auth as Auth',
+        'gatecontrol.dtmCreate as dtmCreate',
+        'gatecontrol.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('gatecontrol.dtmCreate', 'DESC')
+      .skip(skip)
+      .limit(limit);
+
+    if (BDONG_CD) {
+      queryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      queryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const history = await queryBuilder.getRawMany();
+
+    // const where: any = {};
+    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    // const history = await this.gateControlRepository.find({
+    //   where,
+    //   order: { dtmCreate: 'DESC' },
+    //   take: limit,
+    // });
 
     return {
       success: true,
-      message: '방송 제어 이력을 조회했습니다.',
-      data: history,
-      total: history.length,
+      message: '차단기 제어 이력을 조회했습니다.',
+      data: history.map(item => ({ ...item, type: 'gate' })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
   // 모든 장비 제어 이력 통합 조회
   async getAllControlHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100 } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1, } = query;
+    const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // ========== 1. Total 개수 계산 (3개 테이블 합산하기) ==========
+    const broadcastTotalBuilder = this.brdSendRepository.createQueryBuilder('brdsend');
+    const displayTotalBuilder = this.disSendRepository.createQueryBuilder('dissend');
+    const gateTotalBuilder = this.gateControlRepository.createQueryBuilder('gatecontrol');
 
-    // 3개 테이블에서 모두 조회하기
-    const [broadcastHistory, displayHistory, gateHistory] = await Promise.all([
-      this.brdSendRepository.find({
-        where,
-        order: { dtmCreate: 'DESC' },
-        take: limit,
-      }),
-      this.disSendRepository.find({
-        where,
-        order: { dtmCreate: 'DESC' },
-        take: limit,
-      }),
-      this.gateControlRepository.find({
-        where,
-        order: { dtmCreate: 'DESC' },
-        take: limit,
-      }),
+    if (BDONG_CD) {
+      broadcastTotalBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      displayTotalBuilder.andWhere('display.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      gateTotalBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      broadcastTotalBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      displayTotalBuilder.andWhere('display.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      gateTotalBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    const [broadcastTotal, displayTotal, gateTotal] = await Promise.all([
+      broadcastTotalBuilder.getCount(),
+      displayTotalBuilder.getCount(),
+      gateTotalBuilder.getCount(),
     ]);
 
-    // 타입 구분을 위해서 type 필드 추가하기
+    const total = broadcastTotal + displayTotal + gateTotal;
+
+    // ========== 2. 데이터 조회(충분한 양)하기 ==========
+    // 각 테이블에서 (skip + limit)만큼 가져와야 페이징이 정확
+    const fetchLimit = skip + limit;
+    // 방송 제어 이력
+    const broadcastQueryBuilder = this.brdSendRepository
+      .createQueryBuilder('brdsend')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'brdsend.IDX as IDX',
+        'brdsend.BDONG_CD as BDONG_CD',
+        'brdsend.CD_DIST_OBSV as CD_DIST_OBSV',
+        'brdsend.RCMD as RCMD',
+        'brdsend.Parm1 as Parm1',
+        'brdsend.Parm2 as Parm2',
+        'brdsend.Parm3 as Parm3',
+        'brdsend.Parm4 as Parm4',
+        'brdsend.BStatus as BStatus',
+        'brdsend.RegDate as RegDate',
+        'brdsend.RetData as RetData',
+        'brdsend.RetDate as RetDate',
+        'brdsend.Auth as Auth',
+        'brdsend.dtmCreate as dtmCreate',
+        'brdsend.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('brdsend.dtmCreate', 'DESC')
+      .limit(fetchLimit);
+
+    if (BDONG_CD) {
+      broadcastQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      broadcastQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    // 전광판 제어 이력
+    const displayQueryBuilder = this.disSendRepository
+      .createQueryBuilder('dissend')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'dissend.IDX as IDX',
+        'dissend.BDONG_CD as BDONG_CD',
+        'dissend.CD_DIST_OBSV as CD_DIST_OBSV',
+        'dissend.RCMD as RCMD',
+        'dissend.Parm1 as Parm1',
+        'dissend.Parm2 as Parm2',
+        'dissend.Parm3 as Parm3',
+        'dissend.BStatus as BStatus',
+        'dissend.RegDate as RegDate',
+        'dissend.Auth as Auth',
+        'dissend.dtmCreate as dtmCreate',
+        'dissend.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('dissend.dtmCreate', 'DESC')
+      .limit(fetchLimit);
+
+    if (BDONG_CD) {
+      displayQueryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      displayQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+
+    // 차단기 제어 이력
+    const gateQueryBuilder = this.gateControlRepository
+      .createQueryBuilder('gatecontrol')
+      .leftJoin(
+        'nms_device',
+        'device',
+        'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
+      )
+      .select([
+        'gatecontrol.IDX as IDX',
+        'gatecontrol.BDONG_CD as BDONG_CD',
+        'gatecontrol.CD_DIST_OBSV' as 'CD_DIST_OBSV',
+        'gatecontrol.Gate as Gate',
+        'gatecontrol.Light as Light',
+        'gatecontrol.Sound as Sound',
+        'gatecontrol.GStatus as GStatus',
+        'gatecontrol.RegDate as RegDate',
+        'gatecontrol.Auth as Auth',
+        'gatecontrol.dtmCreate as dtmCreate',
+        'gatecontrol.dtmUpdate as dtmUpdate',
+        'device.NM_DIST_OBSV as NM_DIST_OBSV',
+      ])
+      .orderBy('gatecontrol.dtmCreate', 'DESC')
+      .limit(fetchLimit);
+
+    if (BDONG_CD) {
+      gateQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+    }
+    if (CD_DIST_OBSV) {
+      gateQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+    }
+    // const where: any = {};
+    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
+    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+
+    // 3. 3개 테이블에서 모두 조회하기
+    const [broadcastHistory, displayHistory, gateHistory] = await Promise.all([
+      broadcastQueryBuilder.getRawMany(),
+      displayQueryBuilder.getRawMany(),
+      gateQueryBuilder.getRawMany(),
+    ]);
+
+    // 4. 타입 구분을 위해서 type 필드 추가/합침 하기
     const broadcast = broadcastHistory.map(item => ({ ...item, type: 'broadcast' }));
     const display = displayHistory.map(item => ({ ...item, type: 'display' }));
     const gate = gateHistory.map(item => ({ ...item, type: 'gate' }));
 
-    // 모든 이력을 합치고 시간순으로 정렬
+    // 5. 모든 이력을 합치고 시간순으로 정렬
     const allHistory = [...broadcast, ...display, ...gate]
       .sort((a, b) => {
         const dateA = new Date(a.dtmCreate).getTime();
         const dateB = new Date(b.dtmCreate).getTime();
         return dateB - dateA; //최신순으로
-      }).slice(0, limit);
+      }).slice(skip, skip + limit);
 
     return {
       success: true,
       message: '모든 제어 이력을 조회했습니다.',
       data: allHistory,
-      total: allHistory,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
       summary: {
         broadcast: broadcast.length,
         display: display.length,

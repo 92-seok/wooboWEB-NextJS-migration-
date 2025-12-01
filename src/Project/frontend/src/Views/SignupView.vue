@@ -138,8 +138,8 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = '비밀번호를 입력해주세요.';
     isValid = false;
-  } else if (password.value.length < 6) {
-    passwordError.value = '비밀번호는 최소 6자 이상이어야 합니다.';
+  } else if (password.value.length < 4) {
+    passwordError.value = '비밀번호는 최소 4자 이상이어야 합니다.';
     isValid = false;
   }
 
@@ -186,10 +186,10 @@ const handleSignup = async () => {
     visiblePassword.value = false;
     visiblePasswordConfirm.value = false;
 
-    // 1.5초 후에 로그인 페이지로 이동하기
+    // 1초 후에 로그인 페이지로 이동하기
     setTimeout(() => {
       router.push('/login');
-    }, 1500);
+    }, 1000);
   } catch (error) {
     console.error('회원가입 실패: ', error);
 

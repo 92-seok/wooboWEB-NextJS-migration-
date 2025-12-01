@@ -4,6 +4,7 @@ import {
   createWebHistory,
   createMemoryHistory,
 } from "vue-router";
+import axios from 'axios';
 
 import HomeView from "@/Views/HomeView.vue";
 import WeatherSiView from "@/Views/WeatherSIView.vue";
@@ -54,7 +55,7 @@ const router = createRouter({
 });
 
 // 라우트 가드 - 인증확인 로직
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const token = sessionStorage.getItem('accessToken');
   const userStr = sessionStorage.getItem('user');
 
@@ -65,6 +66,34 @@ router.beforeEach((to, from, next) => {
     user = userStr ? JSON.parse(userStr) : null;
   } catch (error) {
     console.error('Failed to parse user data', error)
+  }
+
+  // 로그인 상태이면 최산 권한 정보 동기화
+  if (isLoggedIn && token) {
+    try {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const response = await axios.get('/api/auth/me');
+
+      if (response.data && response.data.user) {
+        const latestUser = response.data.user;
+
+        // sessionStorage 업데이트
+        sessionStorage.setItem('user', JSON.stringify(latestUser));
+        sessionStorage.setItem('userRole', latestUser.role);
+        sessionStorage.setItem('userName', latestUser.name || latestUser.username);
+
+        // user 변수도 업데이트
+        user = latestUser;
+      }
+    } catch (error) {
+      console.error('권한 정보 동기화 실패: ', error);
+      if (error.response?.status === 401) {
+        // 토큰 만료 시 로그인 종료
+        sessionStorage.clear();
+        next('/login');
+        return;
+      }
+    }
   }
 
   // 인증이 필요한 페이지인데 토큰 없으면 로그인페이지로 이동

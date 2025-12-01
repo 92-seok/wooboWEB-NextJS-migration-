@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, NotFoundException } from '@nestjs/common';
 import { AuthService } from "./auth.service";
 import { SignUpDto } from './dto/sing-up.dto';
 import { SignInDto } from './dto/sing-in.dto';
@@ -37,4 +37,30 @@ export class AuthController {
     const user = req.user as { userId: number; refreshToken: string };
     return this.authService.refreshTokens(user.userId, user.refreshToken);
   }
+
+  // * 토큰 검증 엔드포인트 *
+  @Get('verify')
+  @UseGuards(JwtAuthGuard)
+  async verifyToken(@GetCurrentUserId() userId: number) {
+    // DB에서 최신 정보 조회하기
+    const user = await this.authService.getCurrentUser(userId);
+
+    return {
+      success: true,
+      user,
+    };
+  }
+
+  // 현재 로그인된 사용자 정보 조회
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getCurrentUser(@GetCurrentUserId() userId: number) {
+    // JwtAuthGuard에서 검증된 사용자 ID로 최신 정보 조회
+    const user = await this.authService.getCurrentUser(userId);
+
+    return {
+      success: true,
+      user,
+    }
+  };
 }
