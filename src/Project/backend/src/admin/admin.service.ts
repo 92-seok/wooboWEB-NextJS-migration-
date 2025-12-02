@@ -240,6 +240,11 @@ export class AdminService {
         'device',
         'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
       )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'brdsend.Auth = username',
+      )
       .select([
         'brdsend.IDX as IDX',
         'brdsend.BDONG_CD as BDONG_CD',
@@ -257,6 +262,7 @@ export class AdminService {
         'brdsend.dtmCreate as dtmCreate',
         'brdsend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('brdsend.dtmCreate', 'DESC')
       .skip(skip)
@@ -300,13 +306,13 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     // 전체 개수 조회하기
-    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('dissend');
+    const totalQueryBuilder = this.disSendRepository.createQueryBuilder('dissend');
 
     if (BDONG_CD) {
-      totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      totalQueryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      totalQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
     }
 
     const total = await totalQueryBuilder.getCount();
@@ -317,6 +323,11 @@ export class AdminService {
         'nms_device',
         'device',
         'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
+      )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'dissend.Auth = username',
       )
       .select([
         'dissend.IDX as IDX',
@@ -332,6 +343,7 @@ export class AdminService {
         'dissend.dtmCreate as dtmCreate',
         'dissend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('dissend.dtmCreate', 'DESC')
       .skip(skip)
@@ -375,13 +387,13 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     // 전체 개수 조회하기
-    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('gatecontrol');
+    const totalQueryBuilder = this.gateControlRepository.createQueryBuilder('gatecontrol');
 
     if (BDONG_CD) {
-      totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      totalQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      totalQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
     }
 
     const total = await totalQueryBuilder.getCount();
@@ -392,6 +404,11 @@ export class AdminService {
         'nms_device',
         'device',
         'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
+      )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'gatecontrol.Auth = username',
       )
       .select([
         'gatecontrol.IDX as IDX',
@@ -406,6 +423,7 @@ export class AdminService {
         'gatecontrol.dtmCreate as dtmCreate',
         'gatecontrol.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('gatecontrol.dtmCreate', 'DESC')
       .skip(skip)
@@ -455,12 +473,12 @@ export class AdminService {
 
     if (BDONG_CD) {
       broadcastTotalBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
-      displayTotalBuilder.andWhere('display.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      displayTotalBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
       gateTotalBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
       broadcastTotalBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
-      displayTotalBuilder.andWhere('display.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      displayTotalBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
       gateTotalBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
     }
 
@@ -483,6 +501,11 @@ export class AdminService {
         'device',
         'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
       )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'brdsend.Auth = username',
+      )
       .select([
         'brdsend.IDX as IDX',
         'brdsend.BDONG_CD as BDONG_CD',
@@ -500,6 +523,7 @@ export class AdminService {
         'brdsend.dtmCreate as dtmCreate',
         'brdsend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('brdsend.dtmCreate', 'DESC')
       .limit(fetchLimit);
@@ -519,6 +543,11 @@ export class AdminService {
         'device',
         'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
       )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'dissend.Auth = username',
+      )
       .select([
         'dissend.IDX as IDX',
         'dissend.BDONG_CD as BDONG_CD',
@@ -533,6 +562,7 @@ export class AdminService {
         'dissend.dtmCreate as dtmCreate',
         'dissend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('dissend.dtmCreate', 'DESC')
       .limit(fetchLimit);
@@ -552,6 +582,11 @@ export class AdminService {
         'device',
         'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
       )
+      .leftJoin(
+        'nms_user',
+        'user',
+        'gatecontrol.Auth = username',
+      )
       .select([
         'gatecontrol.IDX as IDX',
         'gatecontrol.BDONG_CD as BDONG_CD',
@@ -565,6 +600,7 @@ export class AdminService {
         'gatecontrol.dtmCreate as dtmCreate',
         'gatecontrol.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
+        'user.name as userName',
       ])
       .orderBy('gatecontrol.dtmCreate', 'DESC')
       .limit(fetchLimit);

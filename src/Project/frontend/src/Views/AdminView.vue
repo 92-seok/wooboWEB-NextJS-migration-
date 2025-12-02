@@ -63,8 +63,8 @@
             <template v-slot:[`item.username`]="{ item }">
               <div class="d-flex align-center justify-center py-2">
                 <div>
-                  <div class="font-weight-medium">{{ item.username }}</div>
-                  <div class="text-caption text-grey">{{ item.name }}</div>
+                  <div class="font-weight-medium ">{{ item.name }}</div>
+                  <div class="text-caption text-grey">{{ item.username }}</div>
                 </div>
               </div>
             </template>
@@ -129,12 +129,9 @@
           <v-card v-for="user in users" :key="user.id" class="user-mobile-card mb-4" elevation="2" rounded="lg">
             <v-card-text class="pa-4">
               <div class="d-flex align-center justify-center mb-4">
-                <!-- <v-avatar size="56" color="primary" class="mr-4">
-                  <span class="text-h6 text-white font-weight-bold">{{ user.name.charAt(0).toUpperCase() }}</span>
-                </v-avatar> -->
                 <div class="flex-grow-1">
-                  <div class="text-h6 font-weight-bold">{{ user.username }}</div>
-                  <div class="text-body-2 text-grey">{{ user.name }}</div>
+                  <div class="text-h6 font-weight-bold">{{ user.name }}</div>
+                  <div class="text-body-2 text-grey">{{ user.username }}</div>
                 </div>
               </div>
 

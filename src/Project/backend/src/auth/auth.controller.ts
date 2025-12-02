@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Request, UseGuards, NotFoundException } fr
 import { AuthService } from "./auth.service";
 import { SignUpDto } from './dto/sing-up.dto';
 import { SignInDto } from './dto/sing-in.dto';
+import { KakaoLoginDto } from '../auth/dto/kakao-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { GetCurrentUserId } from './decorators/get-current-user-id.decorator';
@@ -63,4 +64,10 @@ export class AuthController {
       user,
     }
   };
+
+  // --------------------- 카카오 로그인 ----------------------
+  @Post('kakao')
+  async kakaoLogin(@Body() dto: KakaoLoginDto) {
+    return this.authService.kakaoLogin(dto.code, dto.domain);
+  }
 }

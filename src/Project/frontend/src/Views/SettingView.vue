@@ -88,14 +88,16 @@
             </template>
 
             <!-- 제어 아이디 -->
-            <template v-slot:[`item.Auth`]="{ item }">
+            <!-- <template v-slot:[`item.Auth`]="{ item }">
               <div class="d-flex align-center justify-center py-2">
-                <!-- <v-avatar size="32" color="info" class="mr-2">
-                  <span class="text-white font-weight-bold text-caption">
-                    {{ (item.Auth || 'U').charAt(0).toUpperCase() }}
-                  </span>
-                </v-avatar> -->
                 <span class="font-weight-medium">{{ item.Auth || '알 수 없음' }}</span>
+              </div>
+            </template> -->
+
+            <!-- 제어 사용자 -->
+            <template v-slot:[`item.userName`]="{ item }">
+              <div class="d-flex align-center justify-center py-2">
+                <span class="font-weight-medium">{{ item.userName || '알 수 없음' }}</span>
               </div>
             </template>
 
@@ -142,14 +144,9 @@
             rounded="lg">
             <v-card-text class="pa-4">
               <div class="d-flex align-start mb-4">
-                <!-- <v-avatar :color="getTypeColor(history.type)" size="56" class="mr-4">
-                  <span class="text-h6 text-white font-weight-bold">
-                    {{ getTypeLabel(history.type).charAt(0) }}
-                  </span>
-                </v-avatar> -->
                 <div class="flex-grow-1">
                   <div class="text-h6 font-weight-bold">{{ getTypeLabel(history.type) }}</div>
-                  <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>
+                  <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>\
                 </div>
               </div>
 
@@ -245,7 +242,8 @@ const snackbar = ref({ show: false, message: '', color: 'success' });
 const historyHeaders = [
   { title: '장비 유형', key: 'type', sortable: false, align: 'center' },
   { title: '장비명', key: 'NM_DIST_OBSV', sortable: false, align: 'center' },
-  { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
+  // { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
+  { title: '장비 사용자', key: 'userName', sortable: false, align: 'center' },
   { title: '제어 시간', key: 'dtmCreate', sortable: false, align: 'center' },
   { title: '상태', key: 'status', sortable: false, align: 'center' },
 ];

@@ -50,6 +50,17 @@
       <v-btn block color="primary" variant="elevated" @click="handleLogin" :loading="loading" :disabled="loading"
         class="login-btn">로그인</v-btn>
 
+      <!-- 버튼 구분하기 -->
+      <v-divider class="mr-4">
+        <span class="text-medium-emphasis px-2">또는</span>
+      </v-divider>
+
+      <!-- 카카오 로그인 -->
+      <v-btn block color="#FEE500" variant="elevated" @click="handleKakaoLogin" :disabled="loading"
+        class="kakao-login-btn" style="color: #000000; font-weight: 600;">
+        카카오 로그인
+      </v-btn>
+
       <!-- 회원가입 페이지 이동 버튼 -->
       <div class="text-center signup-link">
         <span class="signup-text text-medium-emphasis">계정이 없으신가요?</span>
@@ -68,8 +79,29 @@ import axios from 'axios';
 
 const router = useRouter();
 
-// 페이지 로드 시 저장된 정보 불러오기
+// 폼 데이터
+const username = ref('');
+const password = ref('');
+const visible = ref(false);
+const loading = ref(false);
+
+// 체크박스 상태 추가
+const saveId = ref(false);
+const autoLogin = ref(false);
+
+// 에러메세지
+const errorMessage = ref('');
+const usernameError = ref('');
+const passwordError = ref('');
+
+// 페이지 로드 시 저장된 정보 불러오기 
 onMounted(async () => {
+  // 카카오 SDK 초기화
+  if (window.Kakao && !window.Kakao.isInitialized()) {
+    window.Kakao.init(import.meta.env.VITE_KAKAO_JS_KEY);
+    console.log('카카오 SDK 초기화 완료: ', window.Kakao.isInitialized());
+  }
+
   // 1. 아이디 저장 확인
   const savedUsername = localStorage.getItem('savedUsername');
   const savedIdChecked = localStorage.getItem('saveId') === 'true';
@@ -120,21 +152,6 @@ onMounted(async () => {
   }
 });
 
-// 폼 데이터
-const username = ref('');
-const password = ref('');
-const visible = ref(false);
-const loading = ref(false);
-
-// 체크박스 상태 추가
-const saveId = ref(false);
-const autoLogin = ref(false);
-
-// 에러메세지
-const usernameError = ref('');
-const passwordError = ref('');
-const errorMessage = ref('');
-
 // 유효성검사
 const validateForm = () => {
   let isValid = true;
@@ -164,6 +181,23 @@ const validateForm = () => {
 
   return isValid;
 }
+
+// 카카오 핸들러
+const handleKakaoLogin = () => {
+  if (!window.Kakao || !window.Kakao.isInitialized()) {
+    errorMessage.value = '카카오 SDK가 초기화되지 않았습니다.';
+    return;
+  }
+
+  const redirectUri = `${window.location.origin}/kakao-callback`;
+
+  window.Kakao.Auth.authorize({
+    redirectUri: redirectUri,
+    scope: 'profile_nickname,account_email', //필요 권한 설정
+    prompt: 'select_account',
+    // prompt: 'login', // 매번 로그인 하기
+  });
+};
 
 // 로그인 처리로직
 const handleLogin = async () => {
@@ -309,17 +343,22 @@ const goToSignup = () => {
 
 <style lang="scss" scoped>
 .login-stage {
+  display: flex;
+  justify-content: cnetr;
+  align-items: center;
+  min-height: 100vh;
   // 헤더 80px, 푸터 64px 제외하기
-  min-height: calc(100vh - 80px - 64px);
-  display: grid;
-  place-items: center;
+  // min-height: calc(100vh - 80px - 64px);
+  // display: grid;
+  // place-items: center;
   padding: 12px;
+  // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 /* 모바일 스타일 (기본: ~600px) */
 .login-card {
   width: 100%;
-  max-width: 100%;
+  max-width: 450px;
   padding: 16px;
 }
 
