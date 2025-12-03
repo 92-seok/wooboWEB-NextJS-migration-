@@ -285,10 +285,10 @@ export class AuthService {
     const kakaoRestApiKey = this.configService.get<string>('KAKAO_REST_API_KEY');
     const kakaoRedirectUri = this.configService.get<string>('KAKAO_REDIRECT_URI');
 
-    console.log('=== 카카오 로그인 시작 ===');
-    console.log('카카오 REST API 키: ', kakaoRestApiKey ? `설정됨 (${kakaoRestApiKey.substring(0, 10)}...)` : '미설정');
-    console.log('카카오 redirect URI: ', kakaoRedirectUri || '미설정');
-    console.log('받은 code: ', code ? `${code.substring(0, 20)}...` : '없음');
+    // console.log('=== 카카오 로그인 시작 ===');
+    // console.log('카카오 REST API 키: ', kakaoRestApiKey ? `설정됨 (${kakaoRestApiKey.substring(0, 10)}...)` : '미설정');
+    // console.log('카카오 redirect URI: ', kakaoRedirectUri || '미설정');
+    // console.log('받은 code: ', code ? `${code.substring(0, 20)}...` : '없음');
 
     const kakaoTokenUrl = 'https://kauth.kakao.com/oauth/token';
     const kakaoUserInfoUrl = 'https://kapi.kakao.com/v2/user/me';

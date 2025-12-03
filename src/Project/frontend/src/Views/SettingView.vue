@@ -261,7 +261,8 @@ const filteredHistory = computed(() => {
     return controlHistory.value;
   }
   return controlHistory.value.filter(item =>
-    item.Auth?.toLowerCase().includes(historySearch.value.toLowerCase())
+    item.Auth?.toLowerCase().includes(historySearch.value.toLowerCase()) ||
+    item.username?.toLowerCase().includes(historySearch.value.toLowerCase())
   );
 });
 
@@ -370,16 +371,10 @@ const fetchControlHistory = async () => {
       response = await adminApi.getAllControlHistory(params);
     }
 
-    // console.log('API 응답: ', response);
-    // console.log('response.data: ', response.data);
-    // console.log('response.data.data: ', response.data.data);
-
     controlHistory.value = response.data.data || [];
     historyTotalPages.value = response.data.meta?.totalPages || 1;
-    // console.log('controleHistory 설정: ', controlHistory.value);
   } catch (error) {
     console.error('제어 이력 조회 실패: ', error);
-    // console.error('에러 상세: ', error.response);
   } finally {
     historyLoading.value = false;
   }

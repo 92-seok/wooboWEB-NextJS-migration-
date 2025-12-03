@@ -183,6 +183,10 @@
           </div>
         </template>
 
+        <template v-slot:[`item.DATA`]="{ item }">
+          <div v-html="item.DATA" class="data-display"></div>
+        </template>
+
         <template v-slot:expanded-row="{ columns, item }">
 
           <td :colspan="columns.length">
@@ -953,6 +957,7 @@ const sendDisplay = async (item, display) => {
   :deep(.v-data-table-footer__items-per-page > .v-select) {
     color: red;
   }
+
 }
 
 :deep(.v-card-text) {
@@ -984,12 +989,31 @@ const sendDisplay = async (item, display) => {
   .table-fit td {
     padding: 0px 0px;
   }
+
 }
 
 .v-field__field input {
   cursor: pointer;
 }
 
+// .data-display {
+//   min-height: 50px;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   white-space: normal !important; // 줄바꿈 허용
+//   word-break: break-word; // 긴 단어도 줄바꿈
+//   overflow-wrap: break-word;
+
+//   :deep(p) {
+//     margin: 0;
+//     white-space: normal;
+//   }
+
+//   :deep(span) {
+//     display: inline;
+//   }
+// }
 
 .wrap {
   position: absolute;

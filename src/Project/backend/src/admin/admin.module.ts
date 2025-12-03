@@ -17,6 +17,7 @@ import { AuthModule } from '../auth/auth.module';
     ]),
     // weathserSI DB
     TypeOrmModule.forFeature([
+      NmsUser,
       NmsBrdSend,
       NmsDisSend,
       NmsGateControl,

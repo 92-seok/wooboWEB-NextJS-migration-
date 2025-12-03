@@ -71,12 +71,12 @@
 
             <!-- 권한(role) -->
             <template v-slot:[`item.role`]="{ item }">
-              <!-- <v-chip
+              <v-chip
                 :color="item.role === 'admin' ? 'error' : item.role === 'user' ? 'primary' : item.role === 'operator' ? 'green' : 'grey'"
                 size="small" variant="flat">
                 {{ getRoleLabel(item.role) }}
-              </v-chip> -->
-              <span class="font-weight-medium">{{ getRoleLabel(item.role) }}</span>
+              </v-chip>
+              <!-- <span class="font-weight-medium">{{ getRoleLabel(item.role) }}</span> -->
             </template>
 
             <!-- 상태(status) -->

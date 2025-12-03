@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindOptionsWhere } from 'typeorm';
+import { Repository, Like, FindOptionsWhere, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { NmsUser } from '../auth/entities/nms_user.entity';
 import { NmsUserAuthority } from '../auth/entities/nms_user_authority.entity';
@@ -21,6 +21,8 @@ export class AdminService {
     private userRepository: Repository<NmsUser>,
     @InjectRepository(NmsUserAuthority)
     private userAuthRepo: Repository<NmsUserAuthority>,
+    @InjectRepository(NmsUser, 'weathersi')
+    private weathersiUserRepository: Repository<NmsUser>,
     @InjectRepository(NmsBrdSend, 'weathersi')
     private brdSendRepository: Repository<NmsBrdSend>,
     @InjectRepository(NmsDisSend, 'weathersi')
@@ -240,11 +242,6 @@ export class AdminService {
         'device',
         'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
       )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'brdsend.Auth = username',
-      )
       .select([
         'brdsend.IDX as IDX',
         'brdsend.BDONG_CD as BDONG_CD',
@@ -262,7 +259,6 @@ export class AdminService {
         'brdsend.dtmCreate as dtmCreate',
         'brdsend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('brdsend.dtmCreate', 'DESC')
       .skip(skip)
@@ -277,20 +273,29 @@ export class AdminService {
 
     const history = await queryBuilder.getRawMany();
 
-    // const where: any = {};
-    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // Auth 값들을 수집
+    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
 
-    // const history = await this.brdSendRepository.find({
-    //   where,
-    //   order: { dtmCreate: 'DESC' },
-    //   take: limit,
-    // });
+    // 사용자 정보 조회
+    const users = await this.userRepository.find({
+      where: authIds.map(username => ({ username })),
+      select: ['username', 'name'],
+    });
+
+    // username을 key로 하는 Map 생성
+    const userMap = new Map(users.map(user => [user.username, user.name]));
+
+    // history에 userName 매핑
+    const historyWithUserNames = history.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'broadcast'
+    }));
 
     return {
       success: true,
       message: '방송 제어 이력을 조회했습니다.',
-      data: history.map(item => ({ ...item, type: 'broadcast' })),
+      data: historyWithUserNames,
       meta: {
         total,
         page,
@@ -324,11 +329,6 @@ export class AdminService {
         'device',
         'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
       )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'dissend.Auth = username',
-      )
       .select([
         'dissend.IDX as IDX',
         'dissend.BDONG_CD as BDONG_CD',
@@ -343,7 +343,6 @@ export class AdminService {
         'dissend.dtmCreate as dtmCreate',
         'dissend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('dissend.dtmCreate', 'DESC')
       .skip(skip)
@@ -358,20 +357,34 @@ export class AdminService {
 
     const history = await queryBuilder.getRawMany();
 
-    // const where: any = {};
-    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // Auth 값들을 수집
+    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
 
-    // const history = await this.disSendRepository.find({
-    //   where,
-    //   order: { dtmCreate: 'DESC' },
-    //   take: limit,
+    // 사용자 정보 조회
+    const users = authIds.length > 0 ? await this.userRepository.find({
+      where: { username: In(authIds) },
+      select: ['username', 'name'],
+    }) : [];
+
+    // const users = await this.userRepository.find({
+    //   where: authIds.map(username => ({ username })),
+    //   select: ['username', 'name'],
     // });
+
+    // username을 key로 하는 Map 생성
+    const userMap = new Map(users.map(user => [user.username, user.name]));
+
+    // history에 userName 매핑
+    const historyWithUserNames = history.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'display'
+    }));
 
     return {
       success: true,
       message: '전광판 제어 이력을 조회했습니다.',
-      data: history.map(item => ({ ...item, type: 'display' })),
+      data: historyWithUserNames,
       meta: {
         total,
         page,
@@ -405,11 +418,6 @@ export class AdminService {
         'device',
         'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
       )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'gatecontrol.Auth = username',
-      )
       .select([
         'gatecontrol.IDX as IDX',
         'gatecontrol.BDONG_CD as BDONG_CD',
@@ -423,7 +431,6 @@ export class AdminService {
         'gatecontrol.dtmCreate as dtmCreate',
         'gatecontrol.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('gatecontrol.dtmCreate', 'DESC')
       .skip(skip)
@@ -438,20 +445,29 @@ export class AdminService {
 
     const history = await queryBuilder.getRawMany();
 
-    // const where: any = {};
-    // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
-    // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
+    // Auth 값들을 수집
+    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
 
-    // const history = await this.gateControlRepository.find({
-    //   where,
-    //   order: { dtmCreate: 'DESC' },
-    //   take: limit,
-    // });
+    // 사용자 정보 조회
+    const users = await this.userRepository.find({
+      where: authIds.map(username => ({ username })),
+      select: ['username', 'name'],
+    });
+
+    // username을 key로 하는 Map 생성
+    const userMap = new Map(users.map(user => [user.username, user.name]));
+
+    // history에 userName 매핑
+    const historyWithUserNames = history.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'gate'
+    }));
 
     return {
       success: true,
       message: '차단기 제어 이력을 조회했습니다.',
-      data: history.map(item => ({ ...item, type: 'gate' })),
+      data: historyWithUserNames,
       meta: {
         total,
         page,
@@ -490,7 +506,7 @@ export class AdminService {
 
     const total = broadcastTotal + displayTotal + gateTotal;
 
-    // ========== 2. 데이터 조회(충분한 양)하기 ==========
+    // ========== 데이터 조회(충분한 양)하기 ==========
     // 각 테이블에서 (skip + limit)만큼 가져와야 페이징이 정확
     const fetchLimit = skip + limit;
     // 방송 제어 이력
@@ -500,11 +516,6 @@ export class AdminService {
         'nms_device',
         'device',
         'brdsend.CD_DIST_OBSV = device.CD_DIST_OBSV AND brdsend.BDONG_CD = device.BDONG_CD',
-      )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'brdsend.Auth = username',
       )
       .select([
         'brdsend.IDX as IDX',
@@ -523,7 +534,6 @@ export class AdminService {
         'brdsend.dtmCreate as dtmCreate',
         'brdsend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('brdsend.dtmCreate', 'DESC')
       .limit(fetchLimit);
@@ -543,11 +553,6 @@ export class AdminService {
         'device',
         'dissend.CD_DIST_OBSV = device.CD_DIST_OBSV AND dissend.BDONG_CD = device.BDONG_CD',
       )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'dissend.Auth = username',
-      )
       .select([
         'dissend.IDX as IDX',
         'dissend.BDONG_CD as BDONG_CD',
@@ -562,7 +567,6 @@ export class AdminService {
         'dissend.dtmCreate as dtmCreate',
         'dissend.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('dissend.dtmCreate', 'DESC')
       .limit(fetchLimit);
@@ -582,11 +586,6 @@ export class AdminService {
         'device',
         'gatecontrol.CD_DIST_OBSV = device.CD_DIST_OBSV AND gatecontrol.BDONG_CD = device.BDONG_CD',
       )
-      .leftJoin(
-        'nms_user',
-        'user',
-        'gatecontrol.Auth = username',
-      )
       .select([
         'gatecontrol.IDX as IDX',
         'gatecontrol.BDONG_CD as BDONG_CD',
@@ -600,7 +599,6 @@ export class AdminService {
         'gatecontrol.dtmCreate as dtmCreate',
         'gatecontrol.dtmUpdate as dtmUpdate',
         'device.NM_DIST_OBSV as NM_DIST_OBSV',
-        'user.name as userName',
       ])
       .orderBy('gatecontrol.dtmCreate', 'DESC')
       .limit(fetchLimit);
@@ -615,19 +613,48 @@ export class AdminService {
     // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
     // if (CD_DIST_OBSV) where.CD_DIST_OBSV = CD_DIST_OBSV;
 
-    // 3. 3개 테이블에서 모두 조회하기
+    // 3개 테이블에서 모두 조회하기
     const [broadcastHistory, displayHistory, gateHistory] = await Promise.all([
       broadcastQueryBuilder.getRawMany(),
       displayQueryBuilder.getRawMany(),
       gateQueryBuilder.getRawMany(),
     ]);
 
-    // 4. 타입 구분을 위해서 type 필드 추가/합침 하기
-    const broadcast = broadcastHistory.map(item => ({ ...item, type: 'broadcast' }));
-    const display = displayHistory.map(item => ({ ...item, type: 'display' }));
-    const gate = gateHistory.map(item => ({ ...item, type: 'gate' }));
+    // Auth 값들을 수집
+    const allAuthIds = [
+      ...broadcastHistory.map(item => item.Auth),
+      ...displayHistory.map(item => item.Auth),
+      ...gateHistory.map(item => item.Auth),
+    ].filter(Boolean);
+    const authIds = [...new Set(allAuthIds)];
 
-    // 5. 모든 이력을 합치고 시간순으로 정렬
+    // 5. 사용자 정보 조회
+    const users = await this.userRepository.find({
+      where: authIds.map(username => ({ username })),
+      select: ['username', 'name'],
+    });
+
+    // username을 key로 하는 Map 생성
+    const userMap = new Map(users.map(user => [user.username, user.name]));
+
+    // 타입 구분 및 userName 매핑
+    const broadcast = broadcastHistory.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'broadcast'
+    }));
+    const display = displayHistory.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'display'
+    }));
+    const gate = gateHistory.map(item => ({
+      ...item,
+      userName: userMap.get(item.Auth) || null,
+      type: 'gate'
+    }));
+
+    // 모든 이력을 합치고 시간순으로 정렬
     const allHistory = [...broadcast, ...display, ...gate]
       .sort((a, b) => {
         const dateA = new Date(a.dtmCreate).getTime();
