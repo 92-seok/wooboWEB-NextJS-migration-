@@ -184,7 +184,12 @@
         </template>
 
         <template v-slot:[`item.DATA`]="{ item }">
-          <div v-html="item.DATA" class="data-display"></div>
+          <div class="data-display">
+            <!-- URL 패턴 체크 -->
+            <v-img v-if="isImageUrl(item.DATA)" :src="item.DATA" max-width="200" max-height="100" contain />
+            <!-- HTML 렌더링 -->
+            <div v-else v-html="item.DATA"></div>
+          </div>
         </template>
 
         <template v-slot:expanded-row="{ columns, item }">
@@ -926,6 +931,12 @@ const sendDisplay = async (item, display) => {
     loading.value = false; // 로딩 종료
   }
   dialog_test.value = false;
+}
+
+// 전광판 데이터 글자로 표출 시키는 함수
+const isImageUrl = (data) => {
+  if (!data) return false;
+  return /^https?:\/\//i.test(data);
 }
 </script>
 
