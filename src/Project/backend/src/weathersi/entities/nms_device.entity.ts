@@ -149,8 +149,7 @@ export class NmsDevice {
 
   @Column({
     name: 'DATA',
-    type: 'varchar',
-    length: 500,
+    type: 'mediumtext',
     nullable: true,
     comment: '데이터',
   })

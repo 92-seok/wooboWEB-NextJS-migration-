@@ -239,7 +239,6 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import broadImg from '@/assets/broad.png'

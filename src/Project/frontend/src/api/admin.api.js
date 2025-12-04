@@ -1,4 +1,4 @@
-import apiClient from '../axios/axios.config'
+import apiClient from '../config/axios.config'
 
 // ADMIN API 모음
 export const adminApi = {

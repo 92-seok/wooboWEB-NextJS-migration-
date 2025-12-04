@@ -283,7 +283,7 @@ export class AuthService {
   // --------------------------카카오로그인 로직--------------------------------
   async kakaoLogin(code: string, domain: string): Promise<any> {
     const kakaoRestApiKey = this.configService.get<string>('KAKAO_REST_API_KEY');
-    const kakaoRedirectUri = this.configService.get<string>('KAKAO_REDIRECT_URI');
+    // const kakaoRedirectUri = this.configService.get<string>('KAKAO_REDIRECT_URI');
 
     // console.log('=== 카카오 로그인 시작 ===');
     // console.log('카카오 REST API 키: ', kakaoRestApiKey ? `설정됨 (${kakaoRestApiKey.substring(0, 10)}...)` : '미설정');
@@ -298,17 +298,18 @@ export class AuthService {
       console.error('KAKAO_REST_API_KEY가 설정 되지 않음');
       throw new UnauthorizedException('카카오 로그인 설정이 올바르지 않습니다.');
     }
-    if (!kakaoRedirectUri) {
-      console.error('KAKAO_REDIRECT_URI가 설정 되지 않음');
-      throw new UnauthorizedException('카카오 로그인 설정이 올바르지 않습니다.');
-    }
+    // if (!kakaoRedirectUri) {
+    //   console.error('KAKAO_REDIRECT_URI가 설정 되지 않음');
+    //   throw new UnauthorizedException('카카오 로그인 설정이 올바르지 않습니다.');
+    // }
 
     try {
       // 1. 카카오 AccessToken 요청하기
       const tokenBody = {
         grant_type: 'authorization_code',
         client_id: kakaoRestApiKey,
-        redirect_uri: kakaoRedirectUri,
+        redirect_uri: `${domain}/kakao-callback`, // 모바일 환경에서도 테스트 할 수 있도록 도메인으로 받아버리기
+        // redirect_uri: kakaoRedirectUri,
         code,
       };
 

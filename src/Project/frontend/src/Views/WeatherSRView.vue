@@ -1,5 +1,5 @@
 <template>
-  <v-container max-width="960px" fluid>
+  <v-container max-width="1400px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>

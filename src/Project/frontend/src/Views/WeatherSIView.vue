@@ -1,5 +1,5 @@
 <template>
-  <v-container max-width="960px" fluid>
+  <v-container max-width="1400px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
@@ -179,7 +179,7 @@
         <template v-slot:[`item.ErrorChk`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
+              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="small" label></v-chip>
           </div>
         </template>
 
@@ -188,7 +188,8 @@
             <!-- URL 패턴 체크 -->
             <v-img v-if="isImageUrl(item.DATA)" :src="item.DATA" max-width="200" max-height="100" contain />
             <!-- HTML 렌더링 -->
-            <div v-else v-html="item.DATA"></div>
+            <div v-else-if="isHtmlContent(item.DATA)" v-html="item.DATA" class="html-display-bg"></div>
+            <div v-else>{{ item.DATA }}</div>
           </div>
         </template>
 
@@ -317,7 +318,7 @@
         <template v-slot:actions>
           <v-spacer></v-spacer>
           <v-btn @click="dialog = false">아니오</v-btn>
-          <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
+          <v-btn color="primary" @click="openNaverMap(selectedItem)">네</v-btn>
         </template>
       </v-card>
     </v-dialog>
@@ -397,7 +398,10 @@ import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs'
-import * as libmap from '@/component/KakaoMap.js';
+import * as libmap from '@/components/KakaoMap.js';
+import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api'
+import { useNotification } from '@/composables/useNotification'
+
 // 이미지 imports
 import rainImg from '@/assets/rain.png'
 import waterImg from '@/assets/water.png'
@@ -537,12 +541,12 @@ const menuList = [
 ];
 
 const headers = [
-  { key: 'data-table-expand', width: '35px', sortable: false },
-  { key: 'index', width: '25px', sortable: false },
+  { key: 'data-table-expand', width: '25px', sortable: false },
+  { key: 'index', width: '15px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px' },
   { key: 'GB_OBSV', title: '종류', width: '50px' },
-  { key: 'NM_DIST_OBSV', title: '장비명' },
-  { key: 'ErrorChk', title: '상태', width: '50px' },
+  { key: 'NM_DIST_OBSV', title: '장비명', },
+  { key: 'ErrorChk', title: '상태', width: '75px' },
   { key: 'DATA', title: '데이터', align: 'center' },
 ]
 ////////////////////////////////////////
@@ -560,17 +564,8 @@ const filterAndSortArea = (filterTerms) => {
     .toSorted((a, b) => a.title.localeCompare(b.title));
 };
 
-const snackbar = reactive({
-  show: false,
-  message: ''
-})
-
-const snackbar_test = reactive({
-  show: false,
-  message: '',
-  color: 'success',
-})
-
+// 스낵바 사용하기
+const { snackbar, showSnackbar } = useNotification();
 
 function openGuideDialog(item) {
   // console.log(item);
@@ -584,7 +579,7 @@ function openTestDialog(item) {
   dialog_test.value = true
 }
 
-function showSnackbar(item) {
+function openNaverMap(item) {
   snackbar.message = `${item.NM_DIST_OBSV}`
   snackbar.show = true;
   dialog.value = false;
@@ -607,12 +602,12 @@ function showSnackbar(item) {
   }
 }
 
-function showSnackbar_test(message, color = 'success') {
-  snackbar_test.message = message;
-  snackbar_test.show = true;
-  snackbar_test.color = color;
-  dialog_test.value = false;
-}
+// function showSnackbar_test(message, color = 'success') {
+//   snackbar_test.message = message;
+//   snackbar_test.show = true;
+//   snackbar_test.color = color;
+//   dialog_test.value = false;
+// }
 
 function onExpended(items) {
   // console.log("onExpended()", items);
@@ -636,9 +631,9 @@ const Process = async () => {
   // console.log("Process()");
 
   try {
-    const response_areaList = await axios.get('/api/weathersi/areaList');
+    const response_areaList = await getAreaList()
 
-    areaList.value = response_areaList.data.data.map(item => ({
+    areaList.value = response_areaList.data.map(item => ({
       title: item.RM, value: item.ADMCODE
     }));
 
@@ -663,9 +658,9 @@ const OnChange_AreaList = async (newArea) => {
   }
 
   try {
-    const response = await axios.get(`/api/weathersi/devices?BDONG_CD=${areaList_selected.value}`)
+    const response = await getDevices(areaList_selected.value);
 
-    devices.value = response.data.data.map(item => ({
+    devices.value = response.data.map(item => ({
       ...item,
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
@@ -811,43 +806,34 @@ const sendBrd = async (item) => {
   // console.log('제어 요청' + item)
 
   if (loading.value) {
-    showSnackbar_test('테스트중 입니다.', 'error');
+    showSnackbar('테스트중 입니다.', 'error');
     return; // 이미 로딩 중이면 무시
   }
 
   if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
+    showSnackbar('문구를 작성해주세요.', 'error');
     return;
   }
   try {
     loading.value = true; // 로딩 시작
 
     // DB에 전송
-    const response = await axios.post('/api/weathersi/sendBrd', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      RCMD: 'B010',
-      Parm1: '00000000',
-      Parm2: '1',
-      Parm3: broadTestMessage.value,
-      BStatus: 'start',
-      RegDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    });
+    const response = await sendBroadcast(item, broadTestMessage.value);
 
     const ok = response.status >= 200 && response.status < 300;
     const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
     if (ok && serverOk) {
-      showSnackbar_test("메세지가 성공적으로 전송되었습니다.", 'success');
+      showSnackbar("메세지가 성공적으로 전송되었습니다.", 'success');
       broadTestMessage.value = "";
       dialog_test.value = false;
     } else {
       const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
 
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
+      showSnackbar(`전송실패: ${msg}`, 'error');
     }
   } catch (err) {
     const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
+    showSnackbar(msg, 'error');
   } finally {
     loading.value = false; // 로딩 종료
   }
@@ -858,34 +844,29 @@ const sendBrd = async (item) => {
 const sendGate = async (item, gate) => {
   if (loading.value) return; // 이미 로딩 중이면 무시
   if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
+    showSnackbar('문구를 작성해주세요.', 'error');
     return;
   }
   try {
     loading.value = true; // 로딩시작
 
     // DB에 전송
-    const response = await axios.post('/api/weathersi/sendGate', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      Gate: gate,
-      GStatus: 'start',
-    });
+    const response = await sendGateControl(item, gate);
 
     const ok = response.status >= 200 && response.status < 300;
     const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
     if (ok && serverOk) {
-      showSnackbar_test("장비 제어가 정상적으로 등록 되었습니다.", 'success');
+      showSnackbar("장비 제어가 정상적으로 등록 되었습니다.", 'success');
       broadTestMessage.value = "";
       dialog_test.value = false;
     } else {
       const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
 
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
+      showSnackbar(`전송실패: ${msg}`, 'error');
     }
   } catch (err) {
     const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
+    showSnackbar(msg, 'error');
   } finally {
     loading.value = false; // 로딩 종료
   }
@@ -897,36 +878,28 @@ const sendGate = async (item, gate) => {
 const sendDisplay = async (item, display) => {
   if (loading.value) return; // 이미 로딩 중이면 무시
   if (!item) {
-    showSnackbar_test('문구를 작성해주세요.', 'error');
+    showSnackbar('문구를 작성해주세요.', 'error');
     return;
   }
   try {
     loading.value = true; // 로딩시작
 
     // DB에 전송
-    const response = await axios.post('/api/weathersi/sendDisplay', {
-      BDONG_CD: item.BDONG_CD,
-      CD_DIST_OBSV: item.CD_DIST_OBSV,
-      RCMD: 'S170',
-      Parm1: '',
-      Parm2: '',
-      Parm3: '',
-      BStatus: 'start',
-    });
+    const response = await sendDisplayControl(item);
 
     const ok = response.status >= 200 && response.status < 300;
     const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
     if (ok && serverOk) {
-      showSnackbar_test("장비 제어가 정상적으로 등록 되었습니다.", 'success');
+      showSnackbar("장비 제어가 정상적으로 등록 되었습니다.", 'success');
       dialog_test.value = false;
     } else {
       const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
 
-      showSnackbar_test(`전송실패: ${msg}`, 'error');
+      showSnackbar(`전송실패: ${msg}`, 'error');
     }
   } catch (err) {
     const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar_test(msg, 'error');
+    showSnackbar(msg, 'error');
   } finally {
     loading.value = false; // 로딩 종료
   }
@@ -938,6 +911,13 @@ const isImageUrl = (data) => {
   if (!data) return false;
   return /^https?:\/\//i.test(data);
 }
+
+// HTML 태그가 포함된 데이터인지 체크하는 함수
+const isHtmlContent = (data) => {
+  if (!data) return false;
+  return /<[^>]+>/i.test(data); // HTML 태그가 있으면 true
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -976,7 +956,7 @@ const isImageUrl = (data) => {
   padding-right: 0 !important;
 }
 
-/* 열 개수에 따라 자동 균등 분배 */
+
 
 
 /* 반응형 크기 조절 */
@@ -988,6 +968,20 @@ const isImageUrl = (data) => {
   .table-fit th,
   .table-fit td {
     padding: 4px 6px;
+  }
+
+  .html-display-bg {
+    padding: 4px;
+    font-size: 0.7rem;
+
+    :deep(*) {
+      font-size: 0.7rem !important;
+      line-height: 1.2;
+    }
+  }
+
+  .data-display {
+    font-size: 0.75rem;
   }
 }
 
@@ -1001,6 +995,18 @@ const isImageUrl = (data) => {
     padding: 0px 0px;
   }
 
+  .html-display-bg {
+    padding: 4px;
+
+    :deep(*) {
+      font-size: 0.65rem !important;
+      line-height: 1.1;
+    }
+  }
+
+  .data-display {
+    font-size: 0.7rem;
+  }
 }
 
 .v-field__field input {
@@ -1130,5 +1136,26 @@ const isImageUrl = (data) => {
 
 .info .link {
   color: #5085BB;
+}
+
+// v-html 전광판 데이터만 검은 배경
+.html-display-bg {
+  background-color: black;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+
+  :deep(*) {
+    line-height: 1.3;
+  }
+}
+
+// 일반 데이터 표시 영역
+.data-display {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 </style>
