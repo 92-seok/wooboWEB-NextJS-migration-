@@ -1,8 +1,8 @@
-import axios from 'axios'
+import apiClient from '@/config/axios.config';
 
 // * 로그인 API *
 export const signin = async (username, password) => {
-  const response = await axios.post('/api/auth/signin', {
+  const response = await apiClient.post('/auth/signin', {
     username,
     password,
   })
@@ -11,8 +11,8 @@ export const signin = async (username, password) => {
 
 // * 토큰 검증 API *
 export const verifyToken = async (token) => {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-  const response = await axios.get('/api/auth/verify')
+  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  const response = await apiClient.get('/auth/verify')
   return response.data
 }
 

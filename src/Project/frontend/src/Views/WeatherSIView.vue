@@ -210,7 +210,7 @@
                 </v-row>
                 <v-row class="text-subtitle-2">
                   <v-col cols="4">{{ item.DTL_ADRES }}</v-col>
-                  <v-col cols="4">{{ item.LAT && item.LAT.toFixed(4) }} / {{ item.LON && item.LON.toFixed(4) }}</v-col>
+                  <v-col cols="4">{{ formatCoordinate(item.LAT) }} / {{ formatCoordinate(item.LON) }}</v-col>
                   <v-col cols="4">
                     <v-btn @click="openGuideDialog(item)" width=50px height="40px">
                       <v-img :src="nmapImg" alt="네이버 지도" width="40px" cover></v-img>
@@ -365,7 +365,7 @@
                 :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'close')">
                 <v-img :src="gateCloseImg" width="50px" height="40px" />
-                <strong>닫기</strong>
+                <strong>닫기</strong>ㄴ
               </v-btn>
             </v-col>
           </v-row>
@@ -376,8 +376,13 @@
         </v-card>
       </div>
       <div v-else-if="selectedItem.GB_OBSV === '18'" class="ga-3">
-        <v-card title="테스트 문구">
+        <v-card title="테스트 이미지">
           <v-card-text class="text-center" v-if="selectedItem">
+            <v-row class="ma-0 pa-0" jutify="center" align="center">
+              <v-col cols=" 12" align="center">
+                <v-img :src="displayTestImg" width="80%" />
+              </v-col>
+            </v-row>
           </v-card-text>
           <template v-slot:actions>
             <v-spacer></v-spacer>
@@ -399,8 +404,23 @@ import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs'
 import * as libmap from '@/components/KakaoMap.js';
-import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api'
+
+// API IMPORT
+import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api';
+
+// COMPOSABLES IMPORT
 import { useNotification } from '@/composables/useNotification'
+import { useDeviceControl } from '@/composables/useDeviceControl';
+import { useTimer } from '@/composables/useTimer';
+import { usePermission } from '@/composables/usePermission'; // 권한 체크
+
+// CONFIG IMPORT
+import { MAP_CONFIG, TIMER_CONFIG, REGION_MENU, TABLE_CONFIG } from '@/config/constants';
+
+// UTILS IMPORT
+import { formatCoordinate } from '@/utils/format';
+import { isImageUrl, isHtmlContent } from '@/utils/validators';
+import { filterAndSortArea as filterArea } from '@/utils/helpers';
 
 // 이미지 imports
 import rainImg from '@/assets/rain.png'
@@ -422,16 +442,16 @@ import snowMarker from '@/assets/snow_marker.png'
 import tiltMarker from '@/assets/tilt_marker.png'
 import broadMarker from '@/assets/broad_marker.png'
 import displayMarker from '@/assets/display_marker.png'
+import displayTestImg from '@/assets/display_test.png'
 import gateMarker from '@/assets/gate_marker.png'
 import floodMarker from '@/assets/flood_marker.png'
 
-// 권한체크 Composable import 하기
-import { usePermission } from '@/composables/usePermission'
+// 장비 제어 관련 함수
+const { snackbar, showSnackbar } = useNotification();
+const { loading, controlBroadcast, controlGate, controlDisplay } = useDeviceControl(showSnackbar);
 
-// 권한 체크 실행
+// 권한 체크 관련 함수
 const { isLoggedIn, isAdmin, canAccessDeviceTest, userRole, refreshPermissions } = usePermission()
-
-// 권한없음 다이얼로그
 const permissionDialog = ref(false);
 
 const showPerssionDialog = () => {
@@ -447,9 +467,8 @@ const { theme_color } = inject('theme_color');
 ////////////////////////////////////////
 // 프로세스 타이머
 ////////////////////////////////////////
-let refresh_timer = null; // setInterval 핸들러
-const refresh_time = ref(20);
-const process_time = ref(refresh_time.value);
+const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
+// const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
 const model = ref(null);
 
@@ -466,7 +485,7 @@ const dialog = ref(false);
 const dialog_test = ref(false);
 
 const broadTestMessage = ref("");
-const loading = ref(false);
+// const loading = ref(false);
 
 
 //////////////////////////////////
@@ -481,11 +500,11 @@ var mapCustomOverlay = null
 var bounds = null;
 
 // 초기값
-var init_key = 'f4592e97c349ab41d02ff73bd314a201';
-var init_lat = 37.4341;
-var init_lon = 127.174;
-var init_level = 11;
-var init_max_level = 14;
+// var init_key = 'f4592e97c349ab41d02ff73bd314a201';
+// var init_lat = 37.4341;
+// var init_lon = 127.174;
+// var init_level = 11;
+// var init_max_level = 14;
 
 ////////////////////////////////////////
 // EVENT 생명주기
@@ -494,21 +513,24 @@ onMounted(async () => {
 
   refreshPermissions();
 
+  // 타이머 시작 (useTimer의 startTimer 사용)
+  startTimer();
+
   // console.log("WeatherSIView::onMounted()" + useRoute().params.BDONG_CD);
   // console.log(os.value);
 
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-  }
+  // if (refresh_timer) {
+  //   clearInterval(refresh_timer);
+  // }
 
-  refresh_timer = setInterval(OnTimer_Refresh, 1000);
+  // refresh_timer = setInterval(OnTimer_Refresh, 1000);
 
   /// 지도 초기화
   if (window.kakao === undefined) {
     // console.log(`WeatherSIView.vue::scrip() / kakao = ${window.kakao}`);
     const script = document.createElement("script");
     /* global kakao */
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${init_key}&autoload=false&libraries=services`;
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${MAP_CONFIG.KAKAO_API_KEY}&autoload=false&libraries=services`;
     script.onload = () => window.kakao.maps.load(loadMap);
     document.head.appendChild(script);
   }
@@ -523,22 +545,11 @@ onMounted(async () => {
 onUnmounted(() => {
   // console.log("WeatherSIView::onUnmount()");
 
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-    refresh_timer = null;
-  }
+  // useTimer에서 자동으로 stopTimer() 실행되는 중
 })
 
 ////////////////////////////////////////
-const menuList = [
-  { name: '전국', filter: ['전국'] },
-  { name: '전라도', filter: ['전라', '광주'] },
-  { name: '경상도', filter: ['경상', '부산', '울산', '대구'] },
-  { name: '충청도', filter: ['충청', '대전', '세종'] },
-  { name: '강원도', filter: ['강원'] },
-  { name: '경기도', filter: ['경기', '서울'] },
-  { name: '인천/제주도', filter: ['인천', '제주'] },
-];
+const menuList = REGION_MENU;
 
 const headers = [
   { key: 'data-table-expand', width: '25px', sortable: false },
@@ -552,20 +563,18 @@ const headers = [
 ////////////////////////////////////////
 
 const filterAndSortArea = (filterTerms) => {
-  return areaList.value
-    .filter(area => {
-      // 필터가 배열인 경우 OR 조건으로 처리
-      if (Array.isArray(filterTerms)) {
-        return filterTerms.some(term => area.title.includes(term));
-      }
-      // 단일 필터인 경우
-      return area.title.includes(filterTerms);
-    })
-    .toSorted((a, b) => a.title.localeCompare(b.title));
+  return filterArea(areaList.value, filterTerms);
+  // return areaList.value
+  //   .filter(area => {
+  //     // 필터가 배열인 경우 OR 조건으로 처리
+  //     if (Array.isArray(filterTerms)) {
+  //       return filterTerms.some(term => area.title.includes(term));
+  //     }
+  //     // 단일 필터인 경우
+  //     return area.title.includes(filterTerms);
+  //   })
+  //   .toSorted((a, b) => a.title.localeCompare(b.title));
 };
-
-// 스낵바 사용하기
-const { snackbar, showSnackbar } = useNotification();
 
 function openGuideDialog(item) {
   // console.log(item);
@@ -602,13 +611,6 @@ function openNaverMap(item) {
   }
 }
 
-// function showSnackbar_test(message, color = 'success') {
-//   snackbar_test.message = message;
-//   snackbar_test.show = true;
-//   snackbar_test.color = color;
-//   dialog_test.value = false;
-// }
-
 function onExpended(items) {
   // console.log("onExpended()", items);
 }
@@ -620,12 +622,13 @@ function showTooltip(item) {
   }, 2000) // 2초 후 자동 닫힘
 }
 
-const OnTimer_Refresh = async () => {
-  process_time.value--;
-  if (process_time.value == 0) {
+// 장비 새로고침 시간 관련 함수
+const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTimer(
+  refresh_time.value,
+  async () => {
     await Process();
-  }
-}
+  },
+);
 
 const Process = async () => {
   // console.log("Process()");
@@ -641,7 +644,7 @@ const Process = async () => {
   }
   catch (ex) { console.log(ex) }
 
-  process_time.value = refresh_time.value;
+  resetTimer();
 };
 
 const OnChange_AreaList = async (newArea) => {
@@ -679,11 +682,10 @@ const OnChange_AreaList = async (newArea) => {
 }
 
 function loadMap() {
-
-  var lat = init_lat;
-  var lon = init_lon;
-  var zoom_level = init_level;
-  var zoom_level_max = init_max_level;
+  var lat = MAP_CONFIG.INIT_LAT;
+  var lon = MAP_CONFIG.INIT_LON;
+  var zoom_level = MAP_CONFIG.INIT_LEVEL;
+  var zoom_level_max = MAP_CONFIG.MAX_LEVEL;
   var mapCenter = new kakao.maps.LatLng(lat, lon);
 
   const mapContainer = document.getElementById("map");
@@ -803,121 +805,30 @@ function closeOverlay() {
 // 테스트 전송
 // 방송장비 테스트 제어 함수
 const sendBrd = async (item) => {
-  // console.log('제어 요청' + item)
-
-  if (loading.value) {
-    showSnackbar('테스트중 입니다.', 'error');
-    return; // 이미 로딩 중이면 무시
-  }
-
-  if (!item) {
-    showSnackbar('문구를 작성해주세요.', 'error');
-    return;
-  }
-  try {
-    loading.value = true; // 로딩 시작
-
-    // DB에 전송
-    const response = await sendBroadcast(item, broadTestMessage.value);
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar("메세지가 성공적으로 전송되었습니다.", 'success');
-      broadTestMessage.value = "";
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
+  const success = await controlBroadcast(item, broadTestMessage.value);
+  if (success) {
+    broadTestMessage.value = "";
+    dialog_test.value = false;
   }
 }
 
 
 // 차단기 테스트 제어 함수
 const sendGate = async (item, gate) => {
-  if (loading.value) return; // 이미 로딩 중이면 무시
-  if (!item) {
-    showSnackbar('문구를 작성해주세요.', 'error');
-    return;
+  const success = await controlGate(item, gate);
+  if (success) {
+    dialog_test.value = false;
   }
-  try {
-    loading.value = true; // 로딩시작
-
-    // DB에 전송
-    const response = await sendGateControl(item, gate);
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar("장비 제어가 정상적으로 등록 되었습니다.", 'success');
-      broadTestMessage.value = "";
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
-  }
-  dialog_test.value = false;
 }
 
 
 // 전광판 테스트 제어 함수
-const sendDisplay = async (item, display) => {
-  if (loading.value) return; // 이미 로딩 중이면 무시
-  if (!item) {
-    showSnackbar('문구를 작성해주세요.', 'error');
-    return;
+const sendDisplay = async (item) => {
+  const success = await controlDisplay(item);
+  if (success) {
+    dialog_test.value = false;
   }
-  try {
-    loading.value = true; // 로딩시작
-
-    // DB에 전송
-    const response = await sendDisplayControl(item);
-
-    const ok = response.status >= 200 && response.status < 300;
-    const serverOk = response.data?.succes !== false && response.data?.result !== 'fail';
-    if (ok && serverOk) {
-      showSnackbar("장비 제어가 정상적으로 등록 되었습니다.", 'success');
-      dialog_test.value = false;
-    } else {
-      const msg = response.data?.message || response.statusText || "전송 중 오류가 발생 했습니다.";
-
-      showSnackbar(`전송실패: ${msg}`, 'error');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err.message || "전송 중 오류가 발생했습니다.";
-    showSnackbar(msg, 'error');
-  } finally {
-    loading.value = false; // 로딩 종료
-  }
-  dialog_test.value = false;
 }
-
-// 전광판 데이터 글자로 표출 시키는 함수
-const isImageUrl = (data) => {
-  if (!data) return false;
-  return /^https?:\/\//i.test(data);
-}
-
-// HTML 태그가 포함된 데이터인지 체크하는 함수
-const isHtmlContent = (data) => {
-  if (!data) return false;
-  return /<[^>]+>/i.test(data); // HTML 태그가 있으면 true
-}
-
 </script>
 
 <style lang="scss" scoped>
@@ -955,8 +866,6 @@ const isHtmlContent = (data) => {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
-
-
 
 
 /* 반응형 크기 조절 */
@@ -1141,14 +1050,15 @@ const isHtmlContent = (data) => {
 // v-html 전광판 데이터만 검은 배경
 .html-display-bg {
   background-color: black;
-  max-width: 100%;
+  // max-width: 100%;
+  transform: scale(0.7);
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
 
-  :deep(*) {
-    line-height: 1.3;
-  }
+  // :deep(*) {
+  //   line-height: 1.3;
+  // }
 }
 
 // 일반 데이터 표시 영역

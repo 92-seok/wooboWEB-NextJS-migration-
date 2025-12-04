@@ -1,5 +1,3 @@
-// composables/usePermission.js
-
 import { computed, ref, watch } from 'vue'
 
 const forceUpdate = ref(0)

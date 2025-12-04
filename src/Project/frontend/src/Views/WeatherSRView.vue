@@ -281,6 +281,7 @@
       {{ snackbar.message }}
     </v-snackbar>
 
+
     <!-- 지도 다이얼로그 -->
     <v-dialog v-model="dialog" width="70vw" max-width="500px">
       <v-card prepend-icon="mdi-map-marker" title="길안내를 시작할까요?">
@@ -293,7 +294,7 @@
         <template v-slot:actions>
           <v-spacer></v-spacer>
           <v-btn @click="dialog = false">아니오</v-btn>
-          <v-btn color="primary" @click="showSnackbar(selectedItem)">네</v-btn>
+          <v-btn color="primary" @click="openNaverMap(selectedItem)">네</v-btn>
         </template>
       </v-card>
     </v-dialog>
@@ -310,6 +311,10 @@ import { useRoute } from 'vue-router';
 import axios from 'axios'
 import dayjs from 'dayjs';
 import customParseformat from 'dayjs/plugin/customParseFormat';
+import { TIMER_CONFIG } from '@/config/constants';
+import { useNotification } from '@/composables/useNotification';
+
+// 이미지 IMPORT
 import waterImg from '@/assets/water.png'
 import nmapImg from '@/assets/nmap.png'
 dayjs.extend(customParseformat);
@@ -324,7 +329,7 @@ const { theme_color } = inject('theme_color');
 // 프로세스 타이머
 ////////////////////////////////////////
 let refresh_timer = null; // setInterval 핸들러
-const refresh_time = ref(20);
+const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
 const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
 const model = ref(null);
@@ -405,17 +410,7 @@ const filterAndSortArea = (filterTerms) => {
     .toSorted((a, b) => a.title.localeCompare(b.title));
 };
 
-const snackbar = reactive({
-  show: false,
-  message: ''
-})
-
-const snackbar_test = reactive({
-  show: false,
-  message: '',
-  color: 'success',
-})
-
+const { snackbar, showSnackbar } = useNotification();
 
 function openGuideDialog(item) {
   console.log(item);
@@ -429,7 +424,7 @@ function openTestDialog(item) {
   dialog_test.value = true
 }
 
-function showSnackbar(item) {
+function openNaverMap(item) {
   snackbar.message = `${item.NM_DIST_OBSV}`
   snackbar.show = true;
   dialog.value = false;
@@ -451,12 +446,12 @@ function showSnackbar(item) {
   }
 }
 
-function showSnackbar_test(message, color = 'success') {
-  snackbar_test.message = message;
-  snackbar_test.show = true;
-  snackbar_test.color = color;
-  dialog_test.value = false;
-}
+// function showSnackbar_test(message, color = 'success') {
+//   snackbar_test.message = message;
+//   snackbar_test.show = true;
+//   snackbar_test.color = color;
+//   dialog_test.value = false;
+// }
 
 function onExpended(items) {
   console.log("onExpended()", items);

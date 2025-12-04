@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import { signin, verifyToken, initKakaoSDK, startKakaoLogin } from '@/api/auth.api';
 
 export const useAuth = () => {
-  const route = useRouter();
+  const router = useRouter();
 
   // 폼 데이터
   const username = ref('');
@@ -74,7 +74,7 @@ export const useAuth = () => {
           sessionStorage.setItem('userRole', data.user.role || 'user')
 
           // 자동으로 메인 페이지로 이동
-          await router.push('/')
+          await router.push('/weathersi')
         }
       } catch (error) {
         console.error('자동 로그인 실패: ', error)
@@ -169,7 +169,7 @@ export const useAuth = () => {
       visible.value = false
 
       // 메인 페이지로 이동
-      await router.push('/weathersi')
+      await router.push('/')
     } catch (error) {
       console.error('로그인 실패: ', error)
 

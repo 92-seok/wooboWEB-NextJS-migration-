@@ -1,3 +1,5 @@
+// * DB와 주고 받는 API 함수 모음 *
+
 import axios from 'axios';
 import dayjs from 'dayjs';
 
