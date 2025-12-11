@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { signin, verifyToken, initKakaoSDK, startKakaoLogin } from '@/api/auth.api';
+import { signin, verifyToken, initKakaoSDK, startKakaoLogin, kakaoLogin } from '@/api/auth.api';
 
 export const useAuth = () => {
   const router = useRouter();
@@ -106,6 +106,31 @@ export const useAuth = () => {
       errorMessage.value = error.message
     }
   }
+
+  // * 카카오 로그인 처리 *
+  const loginWithKakao = async (code, domain) => {
+    try {
+      const response = await kakaoLogin({ code, domain });
+
+      if (response && response.accessToken) {
+        const { accessToken, refreshToken, user } = response;
+
+        // 세선 스토리지에 토큰 및 사용자 정보 저장
+        sessionStorage.setItem('accessToken', accessToken);
+        sessionStorage.setItem('refreshToken', refreshToken);
+        sessionStorage.setItem('user', JSON.stringify(user));
+        sessionStorage.setItem('userRole', user.role);
+        sessionStorage.setItem('username', user.name || user.username);
+      
+        return response;
+      } else {
+        throw new Error('토큰을 할당 받지 못하였습니다.');
+      }
+    } catch (error) {
+      console.error('카카오 로그인 실패: ', error);
+      throw error;
+    }
+  };
 
   // * 일반 로그인 핸들러 *
   const handleLogin = async () => {
@@ -225,6 +250,7 @@ export const useAuth = () => {
     loadSavedId,
     handleKakaoLogin,
     handleLogin,
-    initKakaoSDK
+    initKakaoSDK,
+    loginWithKakao,
   }
 }

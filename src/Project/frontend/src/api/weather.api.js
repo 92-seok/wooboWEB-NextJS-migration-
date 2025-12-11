@@ -3,6 +3,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 
+// ------------ WeatherSI ------------
 // * 지역 목록 조회 API *
 export const getAreaList = async () => {
   const response = await axios.get('/api/weathersi/areaList');
@@ -55,5 +56,15 @@ export const sendDisplayControl = async (item) => {
   return response
 };
 
+// ------------ WeatherSR ------------
+// * 지역 목록 조회 API *
+export const getAreaListSR = async () => {
+  const response = await axios.get('/api/weathersr/areaList');
+  return response.data;
+}
 
-
+// * 장비 목록 조회 API *
+export const getDevicesSR = async (bdongCd) => {
+  const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${bdongCd}`)
+  return response.data
+};

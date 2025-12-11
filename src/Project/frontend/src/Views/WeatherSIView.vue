@@ -179,7 +179,7 @@
         <template v-slot:[`item.ErrorChk`]="{ item }">
           <div class="text-center">
             <v-chip class="text-uppercase" :color="item.ErrorChk > '0' ? 'green' : 'red'"
-              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="small" label></v-chip>
+              :text="item.ErrorChk == '0' ? '점검필요' : '정상'" size="x-small" label></v-chip>
           </div>
         </template>
 
@@ -406,7 +406,7 @@ import dayjs from 'dayjs'
 import * as libmap from '@/components/KakaoMap.js';
 
 // API IMPORT
-import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api';
+import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weather.api';
 
 // COMPOSABLES IMPORT
 import { useNotification } from '@/composables/useNotification'

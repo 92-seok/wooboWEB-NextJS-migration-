@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api';
+import { sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weather.api';
 import { useNotification } from '@/composables/useNotification';
 
 export const useDeviceControl = (showSnackbar) => {

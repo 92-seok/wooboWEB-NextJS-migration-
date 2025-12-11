@@ -119,7 +119,7 @@
           </span>
         </template>
 
-        <template v-slot:[`item.GB_OBSV`]="{ item }">
+        <template v-slot:[`item.GB_OBSV`]>
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
             <div>
@@ -308,11 +308,22 @@
 ////////////////////////////////////////
 import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
 import { useRoute } from 'vue-router';
-import axios from 'axios'
+// import axios from 'axios'
 import dayjs from 'dayjs';
 import customParseformat from 'dayjs/plugin/customParseFormat';
-import { TIMER_CONFIG } from '@/config/constants';
+
+// Composables IMPORT
 import { useNotification } from '@/composables/useNotification';
+import { useTimer } from '@/composables/useTimer';
+
+// API IMPORT
+import { getAreaListSR, getDevicesSR } from '@/api/weather.api';
+
+// Utils IMPORT
+import { filterAndSortArea as filterArea } from '@/utils/helpers';
+
+// Config IMPORT
+import { TIMER_CONFIG } from '@/config/constants';
 
 // 이미지 IMPORT
 import waterImg from '@/assets/water.png'
@@ -328,9 +339,19 @@ const { theme_color } = inject('theme_color');
 ////////////////////////////////////////
 // 프로세스 타이머
 ////////////////////////////////////////
-let refresh_timer = null; // setInterval 핸들러
+// let refresh_timer = null; // setInterval 핸들러
+// const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
+// const process_time = ref(refresh_time.value);
+
 const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
-const process_time = ref(refresh_time.value);
+const { progress, startTimer, stopTimer } = useTimer({
+  interval: 1000,
+  duration: refresh_time.value,
+  onComplete: () => Process,
+});
+const process_time = progress;
+
+
 ////////////////////////////////////////
 const model = ref(null);
 
@@ -357,23 +378,24 @@ onMounted(async () => {
 
   // console.log("WeatherSRView::onMounted()" + useRoute().params.BDONG_CD);
   console.log(os.value);
+  startTimer()
+  // if (refresh_timer) {
+  //   clearInterval(refresh_timer);
+  // }
 
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-  }
-
-  refresh_timer = setInterval(OnTimer_Refresh, 1000);
+  // refresh_timer = setInterval(OnTimer_Refresh, 1000);
 
   await Process();
 })
 
 onUnmounted(() => {
+  stopTimer()
   // console.log("WeatherSRView::onUnmount()");
 
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-    refresh_timer = null;
-  }
+  // if (refresh_timer) {
+  //   clearInterval(refresh_timer);
+  //   refresh_timer = null;
+  // }
 })
 
 ////////////////////////////////////////
@@ -397,20 +419,24 @@ const headers = [
 ]
 ////////////////////////////////////////
 
-const filterAndSortArea = (filterTerms) => {
-  return areaList.value
-    .filter(area => {
-      // 필터가 배열인 경우 OR 조건으로 처리
-      if (Array.isArray(filterTerms)) {
-        return filterTerms.some(term => area.title.includes(term));
-      }
-      // 단일 필터인 경우
-      return area.title.includes(filterTerms);
-    })
-    .toSorted((a, b) => a.title.localeCompare(b.title));
-};
+// const filterAndSortArea = (filterTerms) => {
+//   return areaList.value
+//     .filter(area => {
+//       // 필터가 배열인 경우 OR 조건으로 처리
+//       if (Array.isArray(filterTerms)) {
+//         return filterTerms.some(term => area.title.includes(term));
+//       }
+//       // 단일 필터인 경우
+//       return area.title.includes(filterTerms);
+//     })
+//     .toSorted((a, b) => a.title.localeCompare(b.title));
+// };
 
 const { snackbar, showSnackbar } = useNotification();
+
+const filterAndSortArea = (filterTerms) => {
+  return filterArea(areaList.value, filterTerms);
+}
 
 function openGuideDialog(item) {
   console.log(item);
@@ -464,29 +490,30 @@ function showTooltip(item) {
   }, 2000) // 2초 후 자동 닫힘
 }
 
-const OnTimer_Refresh = async () => {
-  process_time.value--;
-  if (process_time.value == 0) {
-    await Process();
-  }
-}
+// const OnTimer_Refresh = async () => {
+//   process_time.value--;
+//   if (process_time.value == 0) {
+//     await Process();
+//   }
+// }
 
 const Process = async () => {
   // console.log("Process()");
 
   try {
-    const response_areaList = await axios.get('/api/weathersr/areaList');
-
-    areaList.value = response_areaList.data.data.map(item => ({
+    // const response_areaList = await axios.get('/api/weathersr/areaList');
+    const response = await getAreaListSR();
+    areaList.value = response.data.map(item => ({
       ...item,
       title: item.RM, value: item.ADMCODE
     }));
 
     await OnChange_AreaList();
   }
-  catch (ex) { console.log(ex) }
-
-  process_time.value = refresh_time.value;
+  catch (ex) { 
+    console.error('지역 목록 조회 오류', ex);
+  }
+  // process_time.value = refresh_time.value;
 }
 
 const OnChange_AreaList = async (newArea) => {
@@ -497,16 +524,17 @@ const OnChange_AreaList = async (newArea) => {
   search.value = '';
 
   try {
-    const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${areaList_selected.value}`)
+    // const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${areaList_selected.value}`)
+    const response = await getDevicesSR(areaList_selected.value);
 
-    devices.value = response.data.data.map(item => ({
+    devices.value = response.data.map(item => ({
       ...item,
       SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
     }));
     // console.log(areaList.value);
     // console.log(devices.value);
   } catch (err) {
-    console.log('데이터를 가져오는 중 오류 발생: ', err)
+    console.error('장비 목록 조회 오류: ', err)
   }
 }
 

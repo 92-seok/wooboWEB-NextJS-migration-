@@ -13,15 +13,15 @@ export const isHtmlContent = (data) => {
 // 이메일 검증하기
 export const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.text(email);
+  return emailRegex.test(email);
 };
 
 // 비밀번호 검증하기 (최소 4자리)
 export const isValidPassword = (password) => {
-  return password & password.length >= 4;
+  return password && password.length >= 4;
 };
 
 // 아이디 검증하기 (최소 2자)
 export const isValidUsername = (username) => {
-  return username & username.length >= 2;
+  return username && username.length >= 2;
 };
