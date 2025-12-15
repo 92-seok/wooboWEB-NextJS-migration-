@@ -41,6 +41,12 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
+// composable IMPORT
+import { useKakaoMap } from '@/composable/useKakaoMap';
+
+// config IMPORT
+import { MAP_CONFIG } from '@/config/constants';
+
 // 초기값
 var init_lat = 36.0;
 var init_lon = 128.0;
@@ -73,185 +79,190 @@ var rvCustomOverlay = null;
 onMounted(() => {
   console.log("onMounted()");
 
+  const { loadKakaoMapSDK } = useKakaoMap();
+
+
+
   /* global kakao */
-  const script = document.createElement("script");
-  script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
-  script.onload = async () => {
-    console.log('script.onload()');
-    kakao.maps.load(() => {
+  // const script = document.createElement("script");
+  // script.src = "//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=f4592e97c349ab41d02ff73bd314a201&libraries=services";
+  // script.onload = async () => {
+  //   console.log('script.onload()');
+  //   kakao.maps.load(() => 
+  loadKakaoMapSDK(() => {
 
-      var lat = init_lat;
-      var lon = init_lon;
-      var zoom_level = init_level;
-      var zoom_level_max = init_max_level;
+    var lat = init_lat;
+    var lon = init_lon;
+    var zoom_level = init_level;
+    var zoom_level_max = init_max_level;
 
-      // 내 위치 기반 init 값 초기화
-      if (navigator.geolocation) {
-        // GeoLocation을 이용해서 접속 위치를 얻어옵니다
-        navigator.geolocation.getCurrentPosition(function (position) {
+    // 내 위치 기반 init 값 초기화
+    if (navigator.geolocation) {
+      // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+      navigator.geolocation.getCurrentPosition(function (position) {
 
-          init_lat = position.coords.latitude; // 위도
-          init_lon = position.coords.longitude; // 경도
+        init_lat = position.coords.latitude; // 위도
+        init_lon = position.coords.longitude; // 경도
 
-          var locPosition = new kakao.maps.LatLng(init_lat, init_lon); // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+        var locPosition = new kakao.maps.LatLng(init_lat, init_lon); // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
 
-          // 지도를 클릭한 위치에 표출할 마커입니다
-          var marker = new kakao.maps.Marker({
-            // 지도 중심좌표에 마커를 생성합니다
-            position: locPosition,
-            image: new kakao.maps.MarkerImage("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_drag.png", new kakao.maps.Size(50, 50)),
-          });
-
-          // 지도에 마커를 표시합니다
-          marker.setMap(map);
+        // 지도를 클릭한 위치에 표출할 마커입니다
+        var marker = new kakao.maps.Marker({
+          // 지도 중심좌표에 마커를 생성합니다
+          position: locPosition,
+          image: new kakao.maps.MarkerImage("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_drag.png", new kakao.maps.Size(50, 50)),
         });
-      }
-      else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
-        console.log('GeoLocation(): 사용자 위치 파악 실패');
-      }
 
-      const mapContainer = document.getElementById("map");
-      const mapOption = {
-        center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
-        level: zoom_level, // 지도의 확대 레벨
-        maxLevel: zoom_level_max, // 최대의 최대 레벨
-        mapTypeId: kakao.maps.MapTypeId.ROADMAP,
-        disableDoubleClick: true,
-      };
-
-      // 지도를 생성합니다
-      map = new kakao.maps.Map(mapContainer, mapOption);
-
-      // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
-      var mapTypeControl = new kakao.maps.MapTypeControl();
-
-      // 지도에 컨트롤을 추가해야 지도위에 표시됩니다
-      map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
-
-      // 지도에 지형정보를 표시하도록 지도타입을 추가합니다
-      //map.addOverlayMapTypeId(kakao.maps.MapTypeId.TERRAIN);
-
-      // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다.
-      var zoomControl = new kakao.maps.ZoomControl();
-      map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-
-      // 장소 검색 객체를 생성합니다.
-      place = new kakao.maps.services.Places();
-
-      // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
-      infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
-
-      // 커스텀 오버레이를 생성합니다
-      mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1, zIndex: 1 });
-
-      // 주소-좌표 변환 객체를 생성합니다
-      geocoder = new kakao.maps.services.Geocoder();
-
-      // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
-      searchAddrFromCoords(map.getCenter(), displayCenterInfo);
-
-
-
-      // 지도를 클릭한 위치에 표출할 마커입니다
-      marker = new kakao.maps.Marker();
-      // 지도 중심좌표에 마커를 생성합니다
-      //marker.setPosition(map.getCenter());
-      // 지도에 마커를 표시합니다
-      //marker.setMap(map);
-      // 마커가 드래그 가능하도록 설정합니다
-      //marker.setDraggable(true);
-
-      // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
-      kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
-
-        var latLon = mouseEvent.latLng;
-        var lat = latLon.getLat().toFixed(4);
-        var lon = latLon.getLng().toFixed(4);
-        var detailRoadAddr = '';
-        var detailAddr = '';
-
-        // 마커를 클릭한 위치에 표시합니다
-        marker.setPosition(latLon);
+        // 지도에 마커를 표시합니다
         marker.setMap(map);
-        map.panTo(latLon);
-
-        searchDetailAddrFromCoords(latLon, function (result, status) {
-          if (status === kakao.maps.services.Status.OK) {
-            detailRoadAddr = !!result[0].road_address ? result[0].road_address.address_name : '';
-            detailAddr = result[0].address.address_name;
-          }
-          else {
-            detailRoadAddr = detailAddr = '주소정보 없음';
-          }
-
-          console.log(detailAddr);
-
-          var content = '<div style="backgournd: red;" class="overlay_info">';
-          content += `    <strong>${detailAddr}</strong>`;
-          content += `<div class="desc">`;
-          content += `위경도: ${lat} / ${lon} <button @click="reserve"><U>복사</U></button>`;
-          content += `</div>`;
-          content += `<div id="roadview" style="height:200px"></div>`;
-          content += '</div>';
-          /*
-        `<div><string>${detailAddr}</string></div>` +
-        `<div>${detailRoadAddr ? `(${detailRoadAddr})` : ''}</div>` +
-        `<div class="desc">` +
-        `위도: ${lat} <button @click="reserve">복사</button>` +
-        `<span style="display:inline-block; width:30px"></span>` +
-        `경도: ${lon} <button @click="reserve">복사</button>` +
-        `</div>` +
-        */
-          '</div>'
-            ;
-
-          mapCustomOverlay.setPosition(latLon);
-          mapCustomOverlay.setContent(content);
-          mapCustomOverlay.setMap(map);
-
-          var rvContainer = document.getElementById('roadview'); //로드뷰를 표시할 div
-          var rv = new kakao.maps.Roadview(rvContainer); //로드뷰 객체
-          var rvClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
-          // 커스텀 오버레이를 생성합니다
-          rvCustomOverlay = new kakao.maps.CustomOverlay({
-            xAnchor: 0.5, // 커스텀 오버레이의 x축 위치입니다. 1에 가까울수록 왼쪽에 위치합니다. 기본값은 0.5 입니다
-            yAnchor: 0.5 // 커스텀 오버레이의 y축 위치입니다. 1에 가까울수록 위쪽에 위치합니다. 기본값은 0.5 입니다
-          });
-
-          //지도의 중심좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
-          rvClient.getNearestPanoId(latLon, 100, function (panoId) {
-            rv.setPanoId(panoId, latLon); //panoId와 중심좌표를 통해 로드뷰 실행
-
-            //rvCustomOverlay.setAltitude(2); //커스텀 오버레이의 고도값을 설정합니다.(로드뷰 화면 중앙이 0입니다)
-            rvCustomOverlay.setMap(rv);
-
-            var projection = rv.getProjection(); // viewpoint(화면좌표)값을 추출할 수 있는 projection 객체를 가져옵니다.
-
-            // 커스텀오버레이의 position과 altitude값을 통해 viewpoint값(화면좌표)를 추출합니다.
-            var viewpoint = projection.viewpointFromCoords(rvCustomOverlay.getPosition(), rvCustomOverlay.getAltitude());
-
-            rv.setViewpoint(viewpoint); //커스텀 오버레이를 로드뷰의 가운데에 오도록 로드뷰의 시점을 변화 시킵니다.
-          });
-
-
-          // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
-          //infowindow.setContent(content);
-
-          // 인포윈도우를 클릭한 위치표시합니다
-          //infowindow.open(map, marker);
-        });
       });
+    }
+    else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+      console.log('GeoLocation(): 사용자 위치 파악 실패');
+    }
 
-      // 중심 좌표나 확대 수준이 변경됐을 때 지도 중심 좌표에 대한 주소 정보를 표시하도록 이벤트를 등록합니다
-      kakao.maps.event.addListener(map, 'idle', function () {
-        searchAddrFromCoords(map.getCenter(), displayCenterInfo);
-        g_lat.value = map.getCenter().getLat();
-        g_lon.value = map.getCenter().getLng();
+    const mapContainer = document.getElementById("map");
+    const mapOption = {
+      center: new kakao.maps.LatLng(lat, lon), // 지도의 중심좌표
+      level: zoom_level, // 지도의 확대 레벨
+      maxLevel: zoom_level_max, // 최대의 최대 레벨
+      mapTypeId: kakao.maps.MapTypeId.ROADMAP,
+      disableDoubleClick: true,
+    };
+
+    // 지도를 생성합니다
+    map = new kakao.maps.Map(mapContainer, mapOption);
+
+    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다
+    var mapTypeControl = new kakao.maps.MapTypeControl();
+
+    // 지도에 컨트롤을 추가해야 지도위에 표시됩니다
+    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+
+    // 지도에 지형정보를 표시하도록 지도타입을 추가합니다
+    //map.addOverlayMapTypeId(kakao.maps.MapTypeId.TERRAIN);
+
+    // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다.
+    var zoomControl = new kakao.maps.ZoomControl();
+    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+    // 장소 검색 객체를 생성합니다.
+    place = new kakao.maps.services.Places();
+
+    // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
+    infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+
+    // 커스텀 오버레이를 생성합니다
+    mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1, zIndex: 1 });
+
+    // 주소-좌표 변환 객체를 생성합니다
+    geocoder = new kakao.maps.services.Geocoder();
+
+    // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
+    searchAddrFromCoords(map.getCenter(), displayCenterInfo);
+
+
+
+    // 지도를 클릭한 위치에 표출할 마커입니다
+    marker = new kakao.maps.Marker();
+    // 지도 중심좌표에 마커를 생성합니다
+    //marker.setPosition(map.getCenter());
+    // 지도에 마커를 표시합니다
+    //marker.setMap(map);
+    // 마커가 드래그 가능하도록 설정합니다
+    //marker.setDraggable(true);
+
+    // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
+    kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+
+      var latLon = mouseEvent.latLng;
+      var lat = latLon.getLat().toFixed(4);
+      var lon = latLon.getLng().toFixed(4);
+      var detailRoadAddr = '';
+      var detailAddr = '';
+
+      // 마커를 클릭한 위치에 표시합니다
+      marker.setPosition(latLon);
+      marker.setMap(map);
+      map.panTo(latLon);
+
+      searchDetailAddrFromCoords(latLon, function (result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          detailRoadAddr = !!result[0].road_address ? result[0].road_address.address_name : '';
+          detailAddr = result[0].address.address_name;
+        }
+        else {
+          detailRoadAddr = detailAddr = '주소정보 없음';
+        }
+
+        console.log(detailAddr);
+
+        var content = '<div style="backgournd: red;" class="overlay_info">';
+        content += `    <strong>${detailAddr}</strong>`;
+        content += `<div class="desc">`;
+        content += `위경도: ${lat} / ${lon} <button @click="reserve"><U>복사</U></button>`;
+        content += `</div>`;
+        content += `<div id="roadview" style="height:200px"></div>`;
+        content += '</div>';
+        /*
+      `<div><string>${detailAddr}</string></div>` +
+      `<div>${detailRoadAddr ? `(${detailRoadAddr})` : ''}</div>` +
+      `<div class="desc">` +
+      `위도: ${lat} <button @click="reserve">복사</button>` +
+      `<span style="display:inline-block; width:30px"></span>` +
+      `경도: ${lon} <button @click="reserve">복사</button>` +
+      `</div>` +
+      */
+        '</div>'
+          ;
+
+        mapCustomOverlay.setPosition(latLon);
+        mapCustomOverlay.setContent(content);
+        mapCustomOverlay.setMap(map);
+
+        var rvContainer = document.getElementById('roadview'); //로드뷰를 표시할 div
+        var rv = new kakao.maps.Roadview(rvContainer); //로드뷰 객체
+        var rvClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+        // 커스텀 오버레이를 생성합니다
+        rvCustomOverlay = new kakao.maps.CustomOverlay({
+          xAnchor: 0.5, // 커스텀 오버레이의 x축 위치입니다. 1에 가까울수록 왼쪽에 위치합니다. 기본값은 0.5 입니다
+          yAnchor: 0.5 // 커스텀 오버레이의 y축 위치입니다. 1에 가까울수록 위쪽에 위치합니다. 기본값은 0.5 입니다
+        });
+
+        //지도의 중심좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
+        rvClient.getNearestPanoId(latLon, 100, function (panoId) {
+          rv.setPanoId(panoId, latLon); //panoId와 중심좌표를 통해 로드뷰 실행
+
+          //rvCustomOverlay.setAltitude(2); //커스텀 오버레이의 고도값을 설정합니다.(로드뷰 화면 중앙이 0입니다)
+          rvCustomOverlay.setMap(rv);
+
+          var projection = rv.getProjection(); // viewpoint(화면좌표)값을 추출할 수 있는 projection 객체를 가져옵니다.
+
+          // 커스텀오버레이의 position과 altitude값을 통해 viewpoint값(화면좌표)를 추출합니다.
+          var viewpoint = projection.viewpointFromCoords(rvCustomOverlay.getPosition(), rvCustomOverlay.getAltitude());
+
+          rv.setViewpoint(viewpoint); //커스텀 오버레이를 로드뷰의 가운데에 오도록 로드뷰의 시점을 변화 시킵니다.
+        });
+
+
+        // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
+        //infowindow.setContent(content);
+
+        // 인포윈도우를 클릭한 위치표시합니다
+        //infowindow.open(map, marker);
       });
     });
-  }
 
-  document.head.appendChild(script);
+    // 중심 좌표나 확대 수준이 변경됐을 때 지도 중심 좌표에 대한 주소 정보를 표시하도록 이벤트를 등록합니다
+    kakao.maps.event.addListener(map, 'idle', function () {
+      searchAddrFromCoords(map.getCenter(), displayCenterInfo);
+      g_lat.value = map.getCenter().getLat();
+      g_lon.value = map.getCenter().getLng();
+    });
+  });
+  // }
+
+  // document.head.appendChild(script);
 
 });
 

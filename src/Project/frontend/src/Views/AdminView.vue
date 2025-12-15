@@ -293,15 +293,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
 import { adminApi } from '@/api/admin.api';
+
+// composable IMPORT
+import { usePermission } from '@/composables/usePermission';
+import { useNotification } from '@/composables/useNotification'
+
+// config IMPORT
+import { ROLE_LABELS, ROLE_COLORS, ROLE_FILTER_OPTIONS, STATUS_FILTER_OPTIONS } from '@/config/constants';
+
+// utils IMPORT
+import { formatDateKorean } from '@/utils/format';
 
 const router = useRouter();
 
 // 사용자 정보 sessionStorage에서 가져오기
 const currentUser = ref(JSON.parse(sessionStorage.getItem('user') || '{}'));
-const isAdmin = computed(() => currentUser.value.role === 'admin');
+const { isAdmin } = usePermission();
+// const isAdmin = computed(() => currentUser.value.role === 'admin');
 
 // 데이터 처리
 const users = ref([]);
@@ -325,7 +336,8 @@ const editForm = ref({ role: '', isActive: true });
 const passwordForm = ref({ newPassword: '' });
 
 // 스낵바
-const snackbar = ref({ show: false, message: '', color: 'success' });
+const { snackbar, showSnackbar } = useNotification();
+// const snackbar = ref({ show: false, message: '', color: 'success' });
 
 // 사용자 테이블 헤더 부분
 const headers = [
@@ -337,19 +349,23 @@ const headers = [
 ];
 
 // 필터 옵션 확인
-const roleOptions = [
-  { title: '전체', value: null },
-  { title: '사용자', value: 'user' },
-  { title: '관리자', value: 'admin' },
-  { title: '일반', value: 'operator' },
-  { title: '게스트', value: 'guest' },
-];
+const roleOptions = ROLE_FILTER_OPTIONS;
+const statusOptions = STATUS_FILTER_OPTIONS;
 
-const statusOptions = [
-  { title: '전체', value: null },
-  { title: '사용가능', value: true },
-  { title: '사용불가', value: false },
-];
+
+// const roleOptions = [
+//   { title: '전체', value: null },
+//   { title: '사용자', value: 'user' },
+//   { title: '관리자', value: 'admin' },
+//   { title: '일반', value: 'operator' },
+//   { title: '게스트', value: 'guest' },
+// ];
+
+// const statusOptions = [
+//   { title: '전체', value: null },
+//   { title: '사용가능', value: true },
+//   { title: '사용불가', value: false },
+// ];
 
 // 사용자 목록 조회하기
 const fetchUsers = async () => {
@@ -407,31 +423,31 @@ const handleUpdate = async () => {
     await adminApi.updateUserStatus(selectedUser.value.id, editForm.value.isActive);
 
     // 현재 로그인된 사용자가 본인의 권한이 변경된 경우
-    const currentUserId = currentUser.value.id;
-    if (selectedUser.value.id === currentUserId) {
-      // sessionStorage 업데이트
-      const updateUser = {
-        ...currentUser.value,
-        role: editForm.value.role,
-        isActive: editForm.value.isAction
-      };
+    // const currentUserId = currentUser.value.id;
+    // if (selectedUser.value.id === currentUserId) {
+    //   // sessionStorage 업데이트
+    //   const updateUser = {
+    //     ...currentUser.value,
+    //     role: editForm.value.role,
+    //     isActive: editForm.value.isAction
+    //   };
 
-      sessionStorage.setItem('user', JSON.stringify(updatedUser));
-      sessionStorage.setItem('userRole', editForm.value.role);
+    //   sessionStorage.setItem('user', JSON.stringify(updatedUser));
+    //   sessionStorage.setItem('userRole', editForm.value.role);
 
-      // 현재 페이지의 currentUser도 업데이트
-      currentUser.value = updateUser;
+    //   // 현재 페이지의 currentUser도 업데이트
+    //   currentUser.value = updateUser;
 
-      // 권한 변경됨 알림
-      showSnackbar('권한이 변경되었습니다. 장비 테스트 기능이 활성화 됩니다.', 'info');
+    //   // 권한 변경됨 알림
+    //   showSnackbar('권한이 변경되었습니다. 장비 테스트 기능이 활성화 됩니다.', 'info');
 
-      // 즉시 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } else {
-      showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
-    }
+    //   // 즉시 새로고침
+    //   setTimeout(() => {
+    //     window.location.reload();
+    //   }, 1500);
+    // } else {
+    showSnackbar('사용자 정보가 업데이트 되었습니다.', 'success');
+    // }
 
     editDialog.value = false;
     fetchUsers();
@@ -492,43 +508,42 @@ const handleDelete = async () => {
   }
 };
 
-// 스낵바 표시하기
-const showSnackbar = (message, color = 'success') => {
-  snackbar.value = { show: true, message, color };
-};
-
 // 날짜 포맷
-const formatDate = (date) => {
-  if (!date) return '-';
-  return new Date(date).toLocaleString('ko-KR');
-}
+const formatDate = formatDateKorean;
+
+// const formatDate = (date) => {
+//   if (!date) return '-';
+//   return new Date(date).toLocaleString('ko-KR');
+// }
 
 // 홈으로 보내기
 const goToHome = () => {
   router.push('/');
 };
 
-// 권한 색 매핑하기
-const getRoleColor = (role) => {
-  const colorMap = {
-    'admin': 'error',
-    'user': 'primary',
-    'operator': 'green',
-    'guest': 'grey',
-  };
-  return colorMap[role] || 'grey';
-};
+// 권한 색, 권한 라벨 매핑
+const getRoleColor = (role) => ROLE_COLORS[role] || 'grey';
+const getRoleLabel = (role) => ROLE_LABELS[role] || role;
 
-// 권한 라벨 매핑하기
-const getRoleLabel = (role) => {
-  const labelMap = {
-    'admin': '관리자',
-    'user': '사용자',
-    'operator': '일반',
-    'guest': '게스트',
-  };
-  return labelMap[role] || role;
-};
+// const getRoleColor = (role) => {
+//   const colorMap = {
+//     'admin': 'error',
+//     'user': 'primary',
+//     'operator': 'green',
+//     'guest': 'grey',
+//   };
+//   return colorMap[role] || 'grey';
+// };
+
+// const getRoleLabel = (role) => {
+//   const labelMap = {
+//     'admin': '관리자',
+//     'user': '사용자',
+//     'operator': '일반',
+//     'guest': '게스트',
+//   };
+//   return labelMap[role] || role;
+// };
 
 // 초기 로드 시도
 onMounted(() => {

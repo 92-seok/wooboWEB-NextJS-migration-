@@ -32,7 +32,7 @@ export const REGION_MENU = [
   { name: '충청도', filter: ['충청', '대전', '세종'], },
   { name: '강원도', filter: ['강원'], },
   { name: '경기도', filter: ['경기', '서울'], },
-  { name: '인천/제주', filter: ['인천', '제주'], },
+  { name: '인천/제주도', filter: ['인천', '제주'], },
 ];
 
 // 데이터 테이블 설정
@@ -44,3 +44,45 @@ export const TABLE_CONFIG = {
     { value: 100, title: '100' },
   ]
 }
+
+// ------------------------- 사용자 권환 관련 함수 ------------------------- 
+
+// 사용자 권한 설정
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  USER: 'user',
+  operator: 'operator',
+  guest: 'guest',
+};
+
+// 권한 라벨 매핑
+export const ROLE_LABELS = {
+  ADMIN: '관리자',
+  USER: '사용자',
+  operator: '일반',
+  guest: '게스트',
+};
+
+// 권한 색상 매핑 
+export const ROLE_COLORS = {
+  ADMIN: 'error',
+  USER: 'primary',
+  operator: 'green',
+  guest: 'grey',
+};
+
+// 권한 필터 옵션
+export const ROLE_FILTER_OPTIONS = [
+  { title: '전체', value: null },
+  { title: '사용자', value: 'user' },
+  { title: '관리자', value: 'admin' },
+  { title: '일반', value: 'operator' },
+  { title: '게스트', value: 'guest' },
+];
+
+// 상태 필터 옵션
+export const STATUS_FILTER_OPTIONS = [
+  { title: '전체', value: null },
+  { title: '사용가능', value: true },
+  { title: '사용불가', value: false },
+];

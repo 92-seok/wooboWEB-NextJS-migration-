@@ -399,20 +399,19 @@
 ////////////////////////////////////////
 // Import
 ////////////////////////////////////////
-import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
-import { useRoute } from 'vue-router';
-import axios from 'axios'
+import { onMounted, onUnmounted, inject, ref } from 'vue'
 import dayjs from 'dayjs'
 import * as libmap from '@/components/KakaoMap.js';
 
 // API IMPORT
-import { getAreaList, getDevices, sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weathersi.api';
+import { sendBroadcast, sendGateControl, sendDisplayControl } from '@/api/weather.api';
 
 // COMPOSABLES IMPORT
 import { useNotification } from '@/composables/useNotification'
 import { useDeviceControl } from '@/composables/useDeviceControl';
 import { useTimer } from '@/composables/useTimer';
 import { usePermission } from '@/composables/usePermission'; // 권한 체크
+import { useWeather } from '@/composables/useWeather';
 
 // CONFIG IMPORT
 import { MAP_CONFIG, TIMER_CONFIG, REGION_MENU, TABLE_CONFIG } from '@/config/constants';
@@ -420,7 +419,6 @@ import { MAP_CONFIG, TIMER_CONFIG, REGION_MENU, TABLE_CONFIG } from '@/config/co
 // UTILS IMPORT
 import { formatCoordinate } from '@/utils/format';
 import { isImageUrl, isHtmlContent } from '@/utils/validators';
-import { filterAndSortArea as filterArea } from '@/utils/helpers';
 
 // 이미지 imports
 import rainImg from '@/assets/rain.png'
@@ -471,20 +469,27 @@ const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
 // const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
 const model = ref(null);
-
-const areaList = ref([]);
-const areaList_selected = ref('%');
-const search = ref('');
-const devices = ref([]);
-const selectedItem = ref(null);
-const page = ref(1);
-const itemsPerPage = ref('50');
+const selecteditem = ref(null);
 const os = ref(navigator.userAgent);
-
 const dialog = ref(false);
 const dialog_test = ref(false);
-
 const broadTestMessage = ref("");
+
+const {
+  areaList,
+  areaList_selected,
+  devices,
+  search,
+  page,
+  itemsPerPage,
+  fetchData,
+  fetchDevices,
+  filterAndSortArea,
+  openNaverMap: openNaverMapUtil
+} = useWeather('SI');
+
+
+
 // const loading = ref(false);
 
 
@@ -562,20 +567,6 @@ const headers = [
 ]
 ////////////////////////////////////////
 
-const filterAndSortArea = (filterTerms) => {
-  return filterArea(areaList.value, filterTerms);
-  // return areaList.value
-  //   .filter(area => {
-  //     // 필터가 배열인 경우 OR 조건으로 처리
-  //     if (Array.isArray(filterTerms)) {
-  //       return filterTerms.some(term => area.title.includes(term));
-  //     }
-  //     // 단일 필터인 경우
-  //     return area.title.includes(filterTerms);
-  //   })
-  //   .toSorted((a, b) => a.title.localeCompare(b.title));
-};
-
 function openGuideDialog(item) {
   // console.log(item);
   selectedItem.value = item
@@ -589,38 +580,36 @@ function openTestDialog(item) {
 }
 
 function openNaverMap(item) {
-  snackbar.message = `${item.NM_DIST_OBSV}`
-  snackbar.show = true;
+  showSnackbar(`${item.NM_DIST_OBSV}`)
   dialog.value = false;
+  openNaverMapUtil(item, os.value);
+  // snackbar.message = `${item.NM_DIST_OBSV}`
+  // snackbar.show = true;
 
-  let url = "";
+  // let url = "";
 
-  if (os.value.indexOf("Android") > 0) {
-    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-    window.location.href = url;
-  }
-  else if (os.value.indexOf("iPhone") > 0) {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    window.open(url, '_blank')
-  }
-  else {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LON}`;
-    url = `http://map.naver.com/index.nhn?elng=${item.LON}&elat=${item.LAT}&pathType=0&showMap=true&etext=${item.NM_DIST_OBSV}&menu=route`
-    window.open(url, '_blank')
-  }
+  // if (os.value.indexOf("Android") > 0) {
+  //   url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+  //   window.location.href = url;
+  // }
+  // else if (os.value.indexOf("iPhone") > 0) {
+  //   url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+  //   window.open(url, '_blank')
+  // }
+  // else {
+  //   url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
+  //   url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LON}`;
+  //   url = `http://map.naver.com/index.nhn?elng=${item.LON}&elat=${item.LAT}&pathType=0&showMap=true&etext=${item.NM_DIST_OBSV}&menu=route`
+  //   window.open(url, '_blank')
+  // }
 }
 
-function onExpended(items) {
-  // console.log("onExpended()", items);
-}
-
-function showTooltip(item) {
-  item.tooltip = true
-  setTimeout(() => {
-    item.tooltip = false
-  }, 2000) // 2초 후 자동 닫힘
-}
+// function showTooltip(item) {
+//   item.tooltip = true
+//   setTimeout(() => {
+//     item.tooltip = false
+//   }, 2000) // 2초 후 자동 닫힘
+// }
 
 // 장비 새로고침 시간 관련 함수
 const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTimer(
@@ -633,16 +622,23 @@ const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTime
 const Process = async () => {
   // console.log("Process()");
 
-  try {
-    const response_areaList = await getAreaList()
+  // try {
+  //   const response_areaList = await getAreaList()
 
-    areaList.value = response_areaList.data.map(item => ({
-      title: item.RM, value: item.ADMCODE
-    }));
+  //   areaList.value = response_areaList.data.map(item => ({
+  //     title: item.RM, value: item.ADMCODE
+  //   }));
 
-    await OnChange_AreaList();
+  //   await OnChange_AreaList();
+  // }
+  // catch (ex) { console.log(ex) }
+
+  await fetchData();
+
+  // 지도가 로드된 경우에만 마커 업데이트
+  if (map) {
+    await getMarker();
   }
-  catch (ex) { console.log(ex) }
 
   resetTimer();
 };
@@ -660,19 +656,25 @@ const OnChange_AreaList = async (newArea) => {
     isBound = true;
   }
 
-  try {
-    const response = await getDevices(areaList_selected.value);
+  await fetchDevices(newArea);
 
-    devices.value = response.data.map(item => ({
-      ...item,
-      SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
-    }));
-
+  // 지도가 로드된 경우에만 마커 업데이트
+  if (map) {
     await getMarker();
+  };
+  // try {
+  //   const response = await getDevices(areaList_selected.value);
 
-  } catch (err) {
-    console.log('데이터를 가져오는 중 오류 발생: ', err)
-  }
+  //   devices.value = response.data.map(item => ({
+  //     ...item,
+  //     SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
+  //   }));
+
+  //   await getMarker();
+
+  // } catch (err) {
+  //   console.log('데이터를 가져오는 중 오류 발생: ', err)
+  // }
 
   // console.log(isBound);
   if (isBound == true) {
@@ -737,8 +739,8 @@ function loadMap() {
 async function getMarker() {
   // console.log("getMarker()");
   const positions = devices.value
-    .filter(row => row.LAT && row.LON)   // 값 없는 데이터 제외
-    ;
+    .filter(row => row.LAT && row.LON);   // 값 없는 데이터 제외
+
 
   markers.forEach(marker => marker.setMap(null));
 

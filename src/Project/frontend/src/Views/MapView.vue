@@ -18,8 +18,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import axios from "axios";
 
+// composable IMPORT
+import { useKakaoMap } from '@/composables/useKakaoMap';
+
+// config IMPORT
+import { MAP_CONFIG } from '@/config/constants';
 
 // 초기값
 var init_key = 'f4592e97c349ab41d02ff73bd314a201';
@@ -31,24 +35,26 @@ const g_lat = ref(init_lat);
 const g_lon = ref(init_lon);
 
 // 지도
+const { loadKakaoMapSDK } = useKakaoMap();
 let map = null;
 let mapWalker = null;
 
 onMounted(() => {
-  console.log(`MapView.vue::onMounted() / ${window.kakao}`);
+  // console.log(`MapView.vue::onMounted() / ${window.kakao}`);
 
-  if (window.kakao === undefined) {
-    console.log(`MapView.vue::scrip() / kakao = ${window.kakao}`);
-    const script = document.createElement("script");
-    /* global kakao */
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${init_key}&autoload=false&libraries=services`;
-    script.onload = () => window.kakao.maps.load(loadMap);
-    document.head.appendChild(script);
-  }
-  else {
-    console.log("MapView.vue::loadMap()");
-    loadMap();
-  }
+  // if (window.kakao === undefined) {
+  //   console.log(`MapView.vue::scrip() / kakao = ${window.kakao}`);
+  //   const script = document.createElement("script");
+  //   /* global kakao */
+  //   script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${init_key}&autoload=false&libraries=services`;
+  //   script.onload = () => window.kakao.maps.load(loadMap);
+  //   document.head.appendChild(script);
+  // }
+  // else {
+  //   console.log("MapView.vue::loadMap()");
+  //   loadMap();
+  // }
+  loadKakaoMapSDK(loadMap);
 
   window.onresize = function () {
     console.log("MapView.vue::window.onresize()");

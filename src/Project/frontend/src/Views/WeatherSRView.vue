@@ -306,15 +306,20 @@
 ////////////////////////////////////////
 // Import
 ////////////////////////////////////////
-import { onMounted, onUnmounted, inject, ref, reactive } from 'vue'
-import { useRoute } from 'vue-router';
-import axios from 'axios'
+import { onMounted, inject, ref } from 'vue'
 import dayjs from 'dayjs';
 import customParseformat from 'dayjs/plugin/customParseFormat';
-import { TIMER_CONFIG } from '@/config/constants';
-import { useNotification } from '@/composables/useNotification';
 
-// 이미지 IMPORT
+
+// composable IMPORT
+import { useNotification } from '@/composables/useNotification';
+import { useTimer } from '@/composables/useTimer';
+import { useWeather } from '@/composables/useWeather';
+
+// config IMPORT
+import { TIMER_CONFIG, REGION_MENU } from '@/config/constants';
+
+// image IMPORT
 import waterImg from '@/assets/water.png'
 import nmapImg from '@/assets/nmap.png'
 dayjs.extend(customParseformat);
@@ -328,26 +333,29 @@ const { theme_color } = inject('theme_color');
 ////////////////////////////////////////
 // 프로세스 타이머
 ////////////////////////////////////////
-let refresh_timer = null; // setInterval 핸들러
+// let refresh_timer = null; // setInterval 핸들러
+// const process_time = ref(refresh_time.value);
+
 const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
-const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
 const model = ref(null);
-
-const areaList = ref([]);
-const areaList_selected = ref('%');
-const search = ref('');
-const devices = ref([]);
-const selectedItem = ref(null);
-const page = ref(1);
-const itemsPerPage = ref('50');
-const os = ref(navigator.userAgent);
-
 const dialog = ref(false);
 const dialog_test = ref(false);
+const selecteditem = ref(null);
+const os = ref(navigator.userAgent);
 
-const broadTestMessage = ref("");
-const loading = ref(false);
+const {
+  areaList,
+  areaList_selected,
+  devices,
+  search,
+  page,
+  itemsPerPage,
+  fetchData,
+  fetchDevices,
+  filterAndSortArea,
+  openNaverMap: openNaverMapUtil
+} = useWeather('SR');
 
 
 ////////////////////////////////////////
@@ -356,36 +364,30 @@ const loading = ref(false);
 onMounted(async () => {
 
   // console.log("WeatherSRView::onMounted()" + useRoute().params.BDONG_CD);
-  console.log(os.value);
+  // console.log(os.value);
 
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-  }
+  // if (refresh_timer) {
+  //   clearInterval(refresh_timer);
+  // }
 
-  refresh_timer = setInterval(OnTimer_Refresh, 1000);
+  // refresh_timer = setInterval(OnTimer_Refresh, 1000);
 
+  startTimer();
   await Process();
 })
 
-onUnmounted(() => {
-  // console.log("WeatherSRView::onUnmount()");
-
-  if (refresh_timer) {
-    clearInterval(refresh_timer);
-    refresh_timer = null;
-  }
-})
-
 ////////////////////////////////////////
-const menuList = [
-  { name: '전국', filter: ['전국'] },
-  { name: '전라도', filter: ['전라', '광주'] },
-  { name: '경상도', filter: ['경상', '부산', '울산', '대구'] },
-  { name: '충청도', filter: ['충청', '대전', '세종'] },
-  { name: '강원도', filter: ['강원'] },
-  { name: '경기도', filter: ['경기', '서울'] },
-  { name: '인천/제주도', filter: ['인천', '제주'] },
-];
+const menuList = REGION_MENU;
+
+// const menuList = [
+//   { name: '전국', filter: ['전국'] },
+//   { name: '전라도', filter: ['전라', '광주'] },
+//   { name: '경상도', filter: ['경상', '부산', '울산', '대구'] },
+//   { name: '충청도', filter: ['충청', '대전', '세종'] },
+//   { name: '강원도', filter: ['강원'] },
+//   { name: '경기도', filter: ['경기', '서울'] },
+//   { name: '인천/제주도', filter: ['인천', '제주'] },
+// ];
 
 const headers = [
   { key: 'data-table-expand', width: '35px', sortable: false },
@@ -396,19 +398,6 @@ const headers = [
   { key: 'LOGGER_GL', title: '데이터' },
 ]
 ////////////////////////////////////////
-
-const filterAndSortArea = (filterTerms) => {
-  return areaList.value
-    .filter(area => {
-      // 필터가 배열인 경우 OR 조건으로 처리
-      if (Array.isArray(filterTerms)) {
-        return filterTerms.some(term => area.title.includes(term));
-      }
-      // 단일 필터인 경우
-      return area.title.includes(filterTerms);
-    })
-    .toSorted((a, b) => a.title.localeCompare(b.title));
-};
 
 const { snackbar, showSnackbar } = useNotification();
 
@@ -425,25 +414,9 @@ function openTestDialog(item) {
 }
 
 function openNaverMap(item) {
-  snackbar.message = `${item.NM_DIST_OBSV}`
-  snackbar.show = true;
+  showSnackbar(`${item.NM_DIST_OBSV}`);
   dialog.value = false;
-
-  let url = "";
-
-  if (os.value.indexOf("Android") > 0) {
-    url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-    window.location.href = url;
-  }
-  else if (os.value.indexOf("iPhone") > 0) {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    window.open(url, '_blank')
-  }
-  else {
-    url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
-    url = `https://map.naver.com/directions?lat=${item.LAT}&lng=${item.LNG}`;
-    window.open(url, '_blank')
-  }
+  openNaverMapUtil(item, os.value);
 }
 
 // function showSnackbar_test(message, color = 'success') {
@@ -453,65 +426,81 @@ function openNaverMap(item) {
 //   dialog_test.value = false;
 // }
 
-function onExpended(items) {
-  console.log("onExpended()", items);
-}
+// function onExpended(items) {
+//   console.log("onExpended()", items);
+// }
 
-function showTooltip(item) {
-  item.tooltip = true
-  setTimeout(() => {
-    item.tooltip = false
-  }, 2000) // 2초 후 자동 닫힘
-}
+// function showTooltip(item) {
+//   item.tooltip = true
+//   setTimeout(() => {
+//     item.tooltip = false
+//   }, 2000) // 2초 후 자동 닫힘
+// }
 
-const OnTimer_Refresh = async () => {
-  process_time.value--;
-  if (process_time.value == 0) {
+// const OnTimer_Refresh = async () => {
+//   process_time.value--;
+//   if (process_time.value == 0) {
+//     await Process();
+//   }
+// }
+
+const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTimer(
+  refresh_time.value,
+  async () => {
     await Process();
-  }
-}
+  },
+);
 
 const Process = async () => {
+  fetchData();
+  resetTimer();
   // console.log("Process()");
 
-  try {
-    const response_areaList = await axios.get('/api/weathersr/areaList');
+  // try {
+  //   const response_areaList = await getAreaListSR();
+  //   // const response_areaList = await axios.get('/api/weathersr/areaList');
 
-    areaList.value = response_areaList.data.data.map(item => ({
-      ...item,
-      title: item.RM, value: item.ADMCODE
-    }));
+  //   areaList.value = response_areaList.data.data.map(item => ({
+  //     ...item,
+  //     title: item.RM, value: item.ADMCODE
+  //   }));
 
-    await OnChange_AreaList();
-  }
-  catch (ex) { console.log(ex) }
+  //   await OnChange_AreaList();
+  // }
+  // catch (ex) { console.log('지역 목록 조회 오류: ', ex) };
 
-  process_time.value = refresh_time.value;
+  // process_time.value = refresh_time.value;
 }
 
 const OnChange_AreaList = async (newArea) => {
-  if (newArea != null) {
-    areaList_selected.value = newArea;
-  }
-
   search.value = '';
+  await fetchDevices(newArea);
 
-  try {
-    const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${areaList_selected.value}`)
+  // if (newArea != null) {
+  //   areaList_selected.value = newArea;
+  // }
 
-    devices.value = response.data.data.map(item => ({
-      ...item,
-      SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
-    }));
-    // console.log(areaList.value);
-    // console.log(devices.value);
-  } catch (err) {
-    console.log('데이터를 가져오는 중 오류 발생: ', err)
-  }
+  // try {
+  //   const response = await getDevicesSR(areaList_selected.value);
+  //   // const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${areaList_selected.value}`)
+
+  //   devices.value = response.data.map(item => ({
+  //     ...item,
+  //     SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
+  //   }));
+  //   // devices.value = response.data.data.map(item => ({
+  //   //   ...item,
+  //   //   SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
+  //   // }));
+  //   // console.log(areaList.value);
+  //   // console.log(devices.value);
+  // } catch (err) {
+  //   console.log('장비 데이터를 가져오는 중 오류 발생: ', err)
+  // }
 }
 
-</script>
 
+</script>
 <style lang="scss" scoped>
 // scss를 이용하여 커스터마이징
 // scss 문법으로 :deep을 주어 해당 태그에 직접 접근하여 css 덮어쓰기

@@ -17,3 +17,9 @@ export const formatNumber = (num) => {
   if (num === null || num === undefined) return '-';
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 };
+
+// 한국어 형식 날짜 포맷팅
+export const formatDateKorean = (date) => {
+  if (!date) return '-';
+  return new Date(date).toLocaleString('ko-KR');
+};
