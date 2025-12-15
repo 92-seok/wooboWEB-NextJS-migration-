@@ -119,7 +119,7 @@
           </span>
         </template>
 
-        <template v-slot:[`item.GB_OBSV`]="{ item }">
+        <template v-slot:[`item.GB_OBSV`]>
           <th style="width:10px" />
           <v-card class="my-2" elevation="0">
             <div>
@@ -311,17 +311,18 @@ import dayjs from 'dayjs';
 import customParseformat from 'dayjs/plugin/customParseFormat';
 
 
-// composable IMPORT
+// Composables IMPORT
 import { useNotification } from '@/composables/useNotification';
 import { useTimer } from '@/composables/useTimer';
 import { useWeather } from '@/composables/useWeather';
 
-// config IMPORT
+// Config IMPORT
 import { TIMER_CONFIG, REGION_MENU } from '@/config/constants';
 
-// image IMPORT
+// Image IMPORT
 import waterImg from '@/assets/water.png'
 import nmapImg from '@/assets/nmap.png'
+
 dayjs.extend(customParseformat);
 
 ////////////////////////////////////////
@@ -333,9 +334,6 @@ const { theme_color } = inject('theme_color');
 ////////////////////////////////////////
 // 프로세스 타이머
 ////////////////////////////////////////
-// let refresh_timer = null; // setInterval 핸들러
-// const process_time = ref(refresh_time.value);
-
 const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
 ////////////////////////////////////////
 const model = ref(null);
@@ -362,20 +360,9 @@ const {
 // EVENT 생명주기
 ////////////////////////////////////////
 onMounted(async () => {
-
-  // console.log("WeatherSRView::onMounted()" + useRoute().params.BDONG_CD);
-  // console.log(os.value);
-
-  // if (refresh_timer) {
-  //   clearInterval(refresh_timer);
-  // }
-
-  // refresh_timer = setInterval(OnTimer_Refresh, 1000);
-
   startTimer();
   await Process();
 })
-
 ////////////////////////////////////////
 const menuList = REGION_MENU;
 
@@ -430,20 +417,6 @@ function openNaverMap(item) {
 //   console.log("onExpended()", items);
 // }
 
-// function showTooltip(item) {
-//   item.tooltip = true
-//   setTimeout(() => {
-//     item.tooltip = false
-//   }, 2000) // 2초 후 자동 닫힘
-// }
-
-// const OnTimer_Refresh = async () => {
-//   process_time.value--;
-//   if (process_time.value == 0) {
-//     await Process();
-//   }
-// }
-
 const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTimer(
   refresh_time.value,
   async () => {
@@ -452,51 +425,13 @@ const { processTime: process_time, startTimer, stopTimer, resetTimer } = useTime
 );
 
 const Process = async () => {
-  fetchData();
+  await fetchData();
   resetTimer();
-  // console.log("Process()");
-
-  // try {
-  //   const response_areaList = await getAreaListSR();
-  //   // const response_areaList = await axios.get('/api/weathersr/areaList');
-
-  //   areaList.value = response_areaList.data.data.map(item => ({
-  //     ...item,
-  //     title: item.RM, value: item.ADMCODE
-  //   }));
-
-  //   await OnChange_AreaList();
-  // }
-  // catch (ex) { console.log('지역 목록 조회 오류: ', ex) };
-
-  // process_time.value = refresh_time.value;
 }
 
 const OnChange_AreaList = async (newArea) => {
   search.value = '';
   await fetchDevices(newArea);
-
-  // if (newArea != null) {
-  //   areaList_selected.value = newArea;
-  // }
-
-  // try {
-  //   const response = await getDevicesSR(areaList_selected.value);
-  //   // const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${areaList_selected.value}`)
-
-  //   devices.value = response.data.map(item => ({
-  //     ...item,
-  //     SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
-  //   }));
-  //   // devices.value = response.data.data.map(item => ({
-  //   //   ...item,
-  //   //   SIDO_CD: areaList.value.find(area => area.value.slice(0, 4) === item.SIDO_CD)?.title.split(' ').slice(-1)[0]
-  //   // }));
-  //   // console.log(areaList.value);
-  //   // console.log(devices.value);
-  // } catch (err) {
-  //   console.log('장비 데이터를 가져오는 중 오류 발생: ', err)
-  // }
 }
 
 

@@ -72,6 +72,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { signup } from '@/api/auth.api';
+import { isValidUsername, isValidPassword } from '@/utils/validators';
 import axios from 'axios';
 
 const router = useRouter()
@@ -109,9 +111,9 @@ const validateForm = () => {
 
   // 이름 검증하기
   if (!name.value) {
-    nameError.value = '아이디를 입력해주세요.';
+    nameError.value = '이름을 입력해주세요.';
     isValid = false;
-  } else if (name.value.length < 2) {
+  } else if (!isValidUsername(username.value)) {
     nameError.value = '이름은 최소 2자 이상이어야 합니다.';
     isValid = false;
   }
@@ -138,7 +140,7 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = '비밀번호를 입력해주세요.';
     isValid = false;
-  } else if (password.value.length < 4) {
+  } else if (!isValidPassword(password.value)) {
     passwordError.value = '비밀번호는 최소 4자 이상이어야 합니다.';
     isValid = false;
   }
@@ -165,7 +167,7 @@ const handleSignup = async () => {
   loading.value = true;
 
   try {
-    const response = await axios.post('/api/auth/signup', {
+    const response = await signup({
       name: name.value,
       // email: email.value,
       username: username.value,
