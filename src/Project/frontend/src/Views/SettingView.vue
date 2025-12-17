@@ -146,7 +146,7 @@
               <div class="d-flex align-start mb-4">
                 <div class="flex-grow-1">
                   <div class="text-h6 font-weight-bold">{{ getTypeLabel(history.type) }}</div>
-                  <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>\
+                  <div class="text-body-2 text-grey">{{ history.Auth || '알 수 없음' }}</div>
                 </div>
               </div>
 
@@ -154,11 +154,11 @@
 
               <div class="user-info-grid">
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">제어 시간</span>
+                  <span class="text-body-2 text-grey-darken-1">시간</span>
                   <span class="text-body-2">{{ formatDate(history.dtmCreate) }}</span>
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">장비명</span>
+                  <span class="text-body-2 text-grey-darken-1">위치</span>
                   <span class="text-body-2">{{ history.NM_DIST_OBSV || '-' }}</span>
                 </div>
                 <div class="d-flex justify-space-between align-center mb-3">
@@ -240,11 +240,11 @@ const snackbar = ref({ show: false, message: '', color: 'success' });
 
 // 제어 이력 테이블 헤어 부분
 const historyHeaders = [
-  { title: '장비 유형', key: 'type', sortable: false, align: 'center' },
-  { title: '장비명', key: 'NM_DIST_OBSV', sortable: false, align: 'center' },
+  { title: '유형', key: 'type', sortable: false, align: 'center' },
+  { title: '위치', key: 'NM_DIST_OBSV', sortable: false, align: 'center' },
   // { title: '제어 아이디', key: 'Auth', sortable: false, align: 'center' },
-  { title: '장비 사용자', key: 'userName', sortable: false, align: 'center' },
-  { title: '제어 시간', key: 'dtmCreate', sortable: false, align: 'center' },
+  { title: '사용자', key: 'userName', sortable: false, align: 'center' },
+  { title: '시간', key: 'dtmCreate', sortable: false, align: 'center' },
   { title: '상태', key: 'status', sortable: false, align: 'center' },
 ];
 

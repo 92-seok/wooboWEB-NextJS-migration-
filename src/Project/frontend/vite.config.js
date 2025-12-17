@@ -18,6 +18,14 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+          silenceDeprecations: ['legacy-js-api', 'import']
+        }
+      }
+    },
     server: {
       port: Number(env.SERVICE_PORT || 80),
       host: '0.0.0.0',
@@ -33,13 +41,6 @@ export default defineConfig(({ mode }) => {
       },
       pwa: {
         workboxPluginMode: "disabled", // 또는 'GenerateSW' 대신 'InjectManifest' 사용 시
-      },
-      css: {
-        loaderOptions: {
-          sass: {
-            additionalData: `@import "@/styles/footer.scss";`,
-          },
-        },
       },
     },
     build: {

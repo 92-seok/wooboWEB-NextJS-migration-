@@ -73,6 +73,9 @@ export const useAuth = () => {
           sessionStorage.setItem('userId', data.user.id)
           sessionStorage.setItem('userRole', data.user.role || 'user')
 
+          // Header에 로그인 상태 변경 알림
+          window.dispatchEvent(new Event('auth-changed'))
+
           // 자동으로 메인 페이지로 이동
           await router.push('/weathersi')
         }
@@ -120,8 +123,11 @@ export const useAuth = () => {
         sessionStorage.setItem('refreshToken', refreshToken);
         sessionStorage.setItem('user', JSON.stringify(user));
         sessionStorage.setItem('userRole', user.role);
-        sessionStorage.setItem('username', user.name || user.username);
-      
+        sessionStorage.setItem('userName', user.name || user.username);  // ✅ userName으로 통일
+
+        // Header에 로그인 상태 변경 알림
+        window.dispatchEvent(new Event('auth-changed'));
+
         return response;
       } else {
         throw new Error('토큰을 할당 받지 못하였습니다.');
@@ -192,6 +198,9 @@ export const useAuth = () => {
       username.value = ''
       password.value = ''
       visible.value = false
+
+      // Header에 로그인 상태 변경 알림
+      window.dispatchEvent(new Event('auth-changed'))
 
       // 메인 페이지로 이동
       await router.push('/')

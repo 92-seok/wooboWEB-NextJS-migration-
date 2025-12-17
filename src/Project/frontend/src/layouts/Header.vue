@@ -13,27 +13,40 @@
 
     <!-- 앱 바 타이틀 -->
     <v-app-bar-title>
-      <v-btn class="text-subtitle-1" @click="router.replace('/')" text="우보 온라인 - 운영지원시스템"></v-btn>
+      <!-- 모바일: 로고 이미지 -->
+      <v-btn class="d-sm-none px-2" @click="router.replace('/')" variant="text">
+        <v-img :src="ciWooboLogo" height="32" width="auto" contain class="header-logo" />
+      </v-btn>
+      <!-- 태블릿 이상: 전체 텍스트 -->
+      <v-btn class="text-subtitle-1 d-none d-sm-inline" @click="router.replace('/')" text="우보 온라인 - 운영지원시스템"></v-btn>
     </v-app-bar-title>
 
     <!-- 테마 버튼 -->
-    <v-btn :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click=OnClick_theme />
+    <v-btn :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click="OnClick_theme" size="small" />
 
     <!-- 사용자 정보(로그인 상태일 때만 표시) -->
-    <div v-if="isLoggedIn" class="d-flex align-center mr-3">
-      <v-icon class="mr-2" size="small">mdi-account-circle</v-icon>
-      <span class="text-body-2">{{ userName }}</span>
+    <div v-if="isLoggedIn" class="d-flex align-center mr-2">
+      <!-- 모바일: 아이콘만 -->
+      <v-icon class="d-sm-none" size="small">mdi-account-circle</v-icon>
+      <!-- 데스크탑: 아이콘 + 이름 -->
+      <v-icon class="mr-2 d-none d-sm-inline" size="small">mdi-account-circle</v-icon>
+      <span class="text-body-2 d-none d-sm-inline">{{ userName }}</span>
     </div>
 
 
     <!-- 로그아웃 버튼 (로그인 상태일 때만 표시) -->
-    <v-btn v-if="isLoggedIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" class="ml-2">
-      로그아웃
+    <v-btn v-if="isLoggedIn" :icon="$vuetify.display.xs ? 'mdi-logout' : undefined"
+      :prepend-icon="!$vuetify.display.xs ? 'mdi-logout' : undefined" @click="handleLogout" :loading="loading"
+      class="ml-1">
+      <!-- 데스크탑: 텍스트 표시 -->
+      <span class="d-none d-sm-inline">로그아웃</span>
     </v-btn>
 
     <!-- 로그인 버튼 (비로그인 상태일 때만 표시) -->
-    <v-btn v-else prepend-icon="mdi-login" @click="router.push('/login')" class="ml-2">
-      로그인
+    <v-btn v-else :icon="$vuetify.display.xs ? 'mdi-login' : undefined"
+      :prepend-icon="!$vuetify.display.xs ? 'mdi-login' : undefined" @click="router.push('/login')" class="ml-1">
+      <!-- 데스크탑: 텍스트 표시 -->
+      <span class="d-none d-sm-inline">로그인</span>
     </v-btn>
   </v-app-bar>
 
@@ -78,6 +91,7 @@ import { onMounted, onUnmounted, inject, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import dayjs from 'dayjs'
+import ciWooboLogo from '@/assets/ci_woobosys.png'
 
 const router = useRouter();
 
@@ -198,4 +212,14 @@ setInterval(() => {
 
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.header-logo {
+  filter: drop-shadow(0 0 8px rgba(103, 58, 183, 0.4));
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: drop-shadow(0 0 12px rgba(103, 58, 183, 0.6));
+    transform: scale(1.1);
+  }
+}
+</style>

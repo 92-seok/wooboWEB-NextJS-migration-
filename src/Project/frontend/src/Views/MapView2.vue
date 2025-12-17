@@ -39,10 +39,10 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+// import axios from "axios";
 
 // composable IMPORT
-import { useKakaoMap } from '@/composable/useKakaoMap';
+import { useKakaoMap } from '@/composables/useKakaoMap';
 
 // config IMPORT
 import { MAP_CONFIG } from '@/config/constants';

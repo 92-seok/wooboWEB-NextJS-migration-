@@ -39,9 +39,9 @@
   </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
@@ -81,6 +81,9 @@ onMounted(async () => {
 
       // axios 기본 헤더에 토큰 설정
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+      // Header에 로그인 상태 변경 알림
+      window.dispatchEvent(new Event('auth-changed'));
 
       // 홈으로 리다이렉트 보내기
       router.push('/');

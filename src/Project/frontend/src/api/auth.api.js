@@ -41,12 +41,12 @@ export const startKakaoLogin = () => {
 
 // 회원가입
 export const signup = async (userData) => {
-  const response = await apiClient.post('/api/auth/signup', userData);
+  const response = await apiClient.post('/auth/signup', userData);
   return response.data;
 };
 
 // 카카오 로그인
 export const kakaoLogin = async (params) => {
-  const response = await apiClient.post('/api/auth/kakao', params);
+  const response = await apiClient.post('/auth/kakao', params);
   return response.data;
 };

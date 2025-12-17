@@ -146,14 +146,14 @@
                 </div>
 
                 <div class="d-flex justify-space-between align-center mb-3">
-                  <span class="text-body-2 text-grey-darken-1">로그인 제어</span>
+                  <span class="text-body-2 text-grey-darken-1">제어</span>
                   <v-chip :color="user.isActive ? 'success' : 'error'" size="small" variant="flat">
                     {{ user.isActive ? '사용가능' : '사용불가' }}
                   </v-chip>
                 </div>
 
                 <div class="d-flex justify-space-between align-center mb-4">
-                  <span class="text-body-2 text-grey-darken-1">마지막 로그인</span>
+                  <span class="text-body-2 text-grey-darken-1">로그인시간</span>
                   <span class="text-body-2">{{ formatDate(user.lastLoginAt) }}</span>
                 </div>
               </div>
@@ -345,13 +345,12 @@ const headers = [
   { title: '권한', key: 'role', sortable: false, align: 'center', },
   { title: '로그인 제어', key: 'isActive', sortable: false, align: 'center', },
   { title: '마지막 로그인', key: 'lastLoginAt', sortable: false, align: 'center', },
-  { title: '수정/변경/삭제', key: 'actions', sortable: false, align: 'center' },
+  { title: '관리', key: 'actions', sortable: false, align: 'center' },
 ];
 
 // 필터 옵션 확인
 const roleOptions = ROLE_FILTER_OPTIONS;
 const statusOptions = STATUS_FILTER_OPTIONS;
-
 
 // const roleOptions = [
 //   { title: '전체', value: null },
