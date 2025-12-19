@@ -28,20 +28,20 @@
     <!-- 사용자 정보(로그인 상태일 때만 표시) -->
     <div v-if="isLoggedIn" class="d-flex align-center user-info-container">
       <!-- 데스크탑: 아이콘 + 이름 -->
-      <v-icon class="mr-1" size="small">mdi-account-circle</v-icon>
+      <v-icon class="mr-2" size="small">mdi-account-circle</v-icon>
       <span class="text-body-2 d-none d-sm-inline">{{ userName }}</span>
     </div>
 
 
     <!-- 로그아웃 버튼 (로그인 상태일 때만 표시) -->
-    <v-btn v-if="isLoggedIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" variant="tonal"
-      size="small" class="logout-btn">
+    <v-btn v-if="isLoggedIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" size="small"
+      class="logout-btn">
       <!-- 데스크탑: 텍스트 표시 -->
       <span class="logout-text">로그아웃</span>
     </v-btn>
 
     <!-- 로그인 버튼 (비로그인 상태일 때만 표시) -->
-    <v-btn v-else prepend-icon=" mdi-login" color="white" size="small" @click="router.push('/login')" class="login-btn">
+    <v-btn v-else prepend-icon=" mdi-login" size="small" @click="router.push('/login')" class="login-btn">
       <!-- 데스크탑: 텍스트 표시 -->
       <span class="login-text">로그인</span>
     </v-btn>
@@ -236,7 +236,6 @@ setInterval(() => {
 
 // 사용자 정보
 .user-info-container {
-  background: rgba(var(--v-theme-surface-variant), 0.5);
   padding: 4px 12px;
   border-radius: 20px;
   margin-right: 8px;
@@ -296,7 +295,7 @@ setInterval(() => {
 
     .logout-text,
     .login-text {
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
   }
 }

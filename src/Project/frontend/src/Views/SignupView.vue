@@ -55,7 +55,7 @@
       </v-card>
 
       <!-- 회원가입 버튼 -->
-      <v-btn block color="primary" variant="elevated" @click="handleSignup" :loading="loading" :disabled="loading"
+      <v-btn block color="primary" variant="tonal" @click="handleSignup" :loading="loading" :disabled="loading"
         class="signup-btn">
         회원가입
       </v-btn>

@@ -10,14 +10,14 @@ import HomeView from '../views/HomeView.vue'
 import MapView from '../views/MapView.vue'
 import WeatherSIView from '../views/WeatherSIView.vue'
 import WeatherSRView from '../views/WeatherSRView.vue'
-import ControlView from '../views/ControlView.vue'
+// import ControlView from '../views/ControlView.vue'
 import SettingView from '../views/SettingView.vue'
 import AdminView from '../views/AdminView.vue'
 import LoginView from '../views/LoginView.vue'
 import SignupView from '../views/SignupView.vue'
 import KakaoCallback from '../views/KakaoCallback.vue'
-import AboutView from '../views/AboutView.vue'
-import TestView from '../views/TestView.vue'
+// import AboutView from '../views/AboutView.vue'
+// import TestView from '../views/TestView.vue'
 
 const routes = [
   { path: "/", component: HomeView },
@@ -25,12 +25,12 @@ const routes = [
   { path: "/map", component: MapView },
   { path: "/weathersi", component: WeatherSIView },
   { path: "/weathersr", component: WeatherSRView },
-  {
-    path: "/control",
-    component: ControlView,
-    computed: () => import('@/views/ControlView.vue'),
-    meta: { requiresAuth: true } // 로그인 필수로하기
-  },
+  // {
+  //   path: "/control",
+  //   component: ControlView,
+  //   computed: () => import('@/views/ControlView.vue'),
+  //   meta: { requiresAuth: true } // 로그인 필수로하기
+  // },
   {
     path: "/setting",
     component: SettingView,
@@ -41,10 +41,10 @@ const routes = [
     component: AdminView,
 
   },
-  { path: "/about", component: AboutView },
+  // { path: "/about", component: AboutView },
   { path: "/login", component: LoginView, meta: { requiresGuest: true } },
   { path: "/kakao-callback", component: KakaoCallback },
-  { path: "/test", component: TestView },
+  // { path: "/test", component: TestView },
   { path: "/signup", component: SignupView, meta: { requiresGuest: true } },
 ];
 

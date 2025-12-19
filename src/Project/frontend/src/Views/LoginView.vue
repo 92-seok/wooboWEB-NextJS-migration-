@@ -203,7 +203,6 @@ const goToSignup = () => {
 .kakao-login-btn {
   min-height: 44px;
   color: #000000 !important;
-  font-weight: 600;
   text-transform: none;
   letter-spacing: -0.5px;
   padding: 12px 16px;
