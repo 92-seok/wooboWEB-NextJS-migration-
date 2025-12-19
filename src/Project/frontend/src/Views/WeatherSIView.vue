@@ -1,5 +1,5 @@
 <template>
-  <v-container max-width="1400px" fluid>
+  <v-container max-width="1200px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
@@ -53,7 +53,7 @@
       <v-divider />
 
       <!-- 장비 현황 카드 -->
-      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center" style="justify-content: center;">
+      <!-- <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center" style="justify-content: center;">
         <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
@@ -87,7 +87,7 @@
             </v-card-text>
           </v-card>
         </v-col>
-      </v-row>
+      </v-row> -->
 
       <v-divider />
 
@@ -898,7 +898,7 @@ const sendDisplay = async (item) => {
 
 @media (max-width: 480px) {
   .table-fit {
-    font-size: 0.8rem;
+    font-size: 0.6rem;
   }
 
   .table-fit th,
@@ -923,25 +923,6 @@ const sendDisplay = async (item) => {
 .v-field__field input {
   cursor: pointer;
 }
-
-// .data-display {
-//   min-height: 50px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   white-space: normal !important; // 줄바꿈 허용
-//   word-break: break-word; // 긴 단어도 줄바꿈
-//   overflow-wrap: break-word;
-
-//   :deep(p) {
-//     margin: 0;
-//     white-space: normal;
-//   }
-
-//   :deep(span) {
-//     display: inline;
-//   }
-// }
 
 .wrap {
   position: absolute;

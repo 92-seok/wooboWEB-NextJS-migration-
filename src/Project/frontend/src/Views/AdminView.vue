@@ -81,7 +81,7 @@
 
             <!-- 상태(status) -->
             <template v-slot:[`item.isActive`]="{ item }">
-              <v-chip :color="item.isActive ? 'success' : 'error'" size="small" variant="flat">
+              <v-chip :color="item.isActive ? 'success' : 'error'" density="compact" variant="flat">
                 {{ item.isActive ? '사용가능' : '사용불가' }}
               </v-chip>
             </template>
@@ -96,19 +96,19 @@
               <div class="d-flex justify-center">
                 <v-tooltip text="수정" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-pencil" size="large" variant="text" color="primary" @click="openEditDialog(item)"
+                    <v-btn icon="mdi-pencil" size="small" variant="text" color="primary" @click="openEditDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="비밀번호 변경" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-key" size="large" variant="text" color="warning" @click="openPasswordDialog(item)"
+                    <v-btn icon="mdi-key" size="small" variant="text" color="warning" @click="openPasswordDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
                 <v-tooltip text="삭제" location="top">
                   <template v-slot:activator="{ props }">
-                    <v-btn icon="mdi-delete" size="large" variant="text" color="error" @click="openDeleteDialog(item)"
+                    <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="openDeleteDialog(item)"
                       v-bind="props"></v-btn>
                   </template>
                 </v-tooltip>
@@ -162,17 +162,17 @@
 
               <v-row dense>
                 <v-col cols="4">
-                  <v-btn color="primary" variant="tonal" size="small" @click="openEditDialog(user)" block>
+                  <v-btn color="primary" variant="tonal" density="compact" @click="openEditDialog(user)" block>
                     수정
                   </v-btn>
                 </v-col>
                 <v-col cols="4">
-                  <v-btn color="warning" variant="tonal" size="small" @click="openPasswordDialog(user)" block>
+                  <v-btn color="warning" variant="tonal" density="compact" @click="openPasswordDialog(user)" block>
                     비밀번호
                   </v-btn>
                 </v-col>
                 <v-col cols="4">
-                  <v-btn color="error" variant="tonal" size="small" @click="openDeleteDialog(user)" block>
+                  <v-btn color="error" variant="tonal" density="compact" @click="openDeleteDialog(user)" block>
                     삭제
                   </v-btn>
                 </v-col>
@@ -204,12 +204,12 @@
             { title: '게스트', value: 'guest' },
           ]" label="권한" variant="outlined" class="mb-4" hide-details>
           </v-select>
-          <v-switch v-model="editForm.isActive" size="small" color="primary" :false-value="false" :true-value="true"
-            hide-details inset>
+          <v-switch v-model="editForm.isActive" density="compact" color="primary" :false-value="false"
+            :true-value="true" hide-details inset>
             <template v-slot:label>
               <div class="d-flex align-center">
                 <span class="mr-2">로그인 제어: </span>
-                <v-chip :color="editForm.isActive ? 'success' : 'error'" size="small" variant="flat">
+                <v-chip :color="editForm.isActive ? 'success' : 'error'" density="compact" variant="flat">
                   {{ editForm.isActive ? 'ON' : 'OFF' }}
                 </v-chip>
               </div>
@@ -310,8 +310,8 @@ import { formatDateKorean } from '@/utils/format';
 const router = useRouter();
 
 // 사용자 정보 sessionStorage에서 가져오기
-const currentUser = ref(JSON.parse(sessionStorage.getItem('user') || '{}'));
 const { isAdmin } = usePermission();
+// const currentUser = ref(JSON.parse(sessionStorage.getItem('user') || '{}'));
 // const isAdmin = computed(() => currentUser.value.role === 'admin');
 
 // 데이터 처리

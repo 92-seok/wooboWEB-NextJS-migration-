@@ -14,39 +14,36 @@
     <!-- 앱 바 타이틀 -->
     <v-app-bar-title>
       <!-- 모바일: 로고 이미지 -->
-      <v-btn class="d-sm-none px-2" @click="router.replace('/')" variant="text">
-        <v-img :src="ciWooboLogo" height="32" width="auto" contain class="header-logo" />
+      <v-btn class="d-sm-none px-2 mobile-logo-btn" @click="router.replace('/')" variant="flat">
+        <v-img :src="ciWooboLogo" height="32" width="auto" contain class="mobile-logo" />
       </v-btn>
       <!-- 태블릿 이상: 전체 텍스트 -->
       <v-btn class="text-subtitle-1 d-none d-sm-inline" @click="router.replace('/')" text="우보 온라인 - 운영지원시스템"></v-btn>
     </v-app-bar-title>
 
     <!-- 테마 버튼 -->
-    <v-btn :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click="OnClick_theme" size="small" />
+    <v-btn :icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'" @click="OnClick_theme" size="small"
+      class="theme-btn" />
 
     <!-- 사용자 정보(로그인 상태일 때만 표시) -->
-    <div v-if="isLoggedIn" class="d-flex align-center mr-2">
-      <!-- 모바일: 아이콘만 -->
-      <v-icon class="d-sm-none" size="small">mdi-account-circle</v-icon>
+    <div v-if="isLoggedIn" class="d-flex align-center user-info-container">
       <!-- 데스크탑: 아이콘 + 이름 -->
-      <v-icon class="mr-2 d-none d-sm-inline" size="small">mdi-account-circle</v-icon>
+      <v-icon class="mr-1" size="small">mdi-account-circle</v-icon>
       <span class="text-body-2 d-none d-sm-inline">{{ userName }}</span>
     </div>
 
 
     <!-- 로그아웃 버튼 (로그인 상태일 때만 표시) -->
-    <v-btn v-if="isLoggedIn" :icon="$vuetify.display.xs ? 'mdi-logout' : undefined"
-      :prepend-icon="!$vuetify.display.xs ? 'mdi-logout' : undefined" @click="handleLogout" :loading="loading"
-      class="ml-1">
+    <v-btn v-if="isLoggedIn" prepend-icon="mdi-logout" @click="handleLogout" :loading="loading" variant="tonal"
+      size="small" class="logout-btn">
       <!-- 데스크탑: 텍스트 표시 -->
-      <span class="d-none d-sm-inline">로그아웃</span>
+      <span class="logout-text">로그아웃</span>
     </v-btn>
 
     <!-- 로그인 버튼 (비로그인 상태일 때만 표시) -->
-    <v-btn v-else :icon="$vuetify.display.xs ? 'mdi-login' : undefined"
-      :prepend-icon="!$vuetify.display.xs ? 'mdi-login' : undefined" @click="router.push('/login')" class="ml-1">
+    <v-btn v-else prepend-icon=" mdi-login" color="white" size="small" @click="router.push('/login')" class="login-btn">
       <!-- 데스크탑: 텍스트 표시 -->
-      <span class="d-none d-sm-inline">로그인</span>
+      <span class="login-text">로그인</span>
     </v-btn>
   </v-app-bar>
 
@@ -213,6 +210,97 @@ setInterval(() => {
 </script>
 
 <style lang="scss" scoped>
+.theme-btn {
+  margin-right: 4px;
+}
+
+.header-logo {
+  filter: drop-shadow(0 0 8px rgba(103, 58, 183, 0.4));
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: drop-shadow(0 0 12px rgba(103, 58, 183, 0.6));
+    transform: scale(1.1);
+  }
+}
+
+.mobile-logo {
+  filter: drop-shadow(0 0 8px rgba(103, 58, 183, 0.4));
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: drop-shadow(0 0 12px rgba(103, 58, 183, 0.6));
+    transform: scale(1.1);
+  }
+}
+
+// 사용자 정보
+.user-info-container {
+  background: rgba(var(--v-theme-surface-variant), 0.5);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-right: 8px;
+}
+
+.user-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+// 로그인/로그아웃 버튼
+.logout-btn,
+.login-btn {
+  font-weight: 500;
+
+  .logout-text,
+  .login-text {
+    font-size: 0.75rem;
+  }
+
+  :deep(.v-btn__prepend) {
+    margin-inline-end: 4px;
+  }
+}
+
+// 태블릿 이상
+@media (min-width: 600px) {
+  .user-name {
+    max-width: 150px;
+  }
+
+  .logout-btn,
+  .login-btn {
+
+    .logout-text,
+    .login-text {
+      font-size: 0.875rem;
+    }
+
+    :deep(.v-btn__prepend) {
+      margin-inline-end: 8px;
+    }
+  }
+}
+
+// 데스크탑
+@media (min-width: 960px) {
+  .user-name {
+    max-width: none;
+  }
+
+  .logout-btn,
+  .login-btn {
+
+    .logout-text,
+    .login-text {
+      font-size: 1rem;
+    }
+  }
+}
+
 .header-logo {
   filter: drop-shadow(0 0 8px rgba(103, 58, 183, 0.4));
   transition: all 0.3s ease;

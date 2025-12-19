@@ -1,16 +1,17 @@
 // 데이터 공통로직 관리
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { getAreaList, getDevices, getAreaListSR, getDevicesSR } from '@/api/weather.api';
 import { filterAndSortArea as filterAreaHelper } from '@/utils/helpers';
 
 export const useWeather = (type = 'SI') => {
   // 상태 관리
+  const storageKey = `weather_${type}`;
   const areaList = ref([]);
-  const areaList_selected = ref('%');
+  const areaList_selected = ref(localStorage.getItem(`${storageKey}_area`) || '%');
   const devices = ref([]);
-  const search = ref('');
-  const page = ref(1);
-  const itemsPerPage = ref(50);
+  const search = ref(localStorage.getItem(`${storageKey}_search`) || '');
+  const page = ref(Number(localStorage.getItem(`${storageKey}_page`)) || 1);
+  const itemsPerPage = ref(Number(localStorage.getItem(`${storageKey}_itemsPerPage`)) || 50);
 
   // API 함수 선택 (SI or SR)
   const getAreaListAPI = type === 'SR' ? getAreaListSR : getAreaList;
@@ -74,6 +75,14 @@ export const useWeather = (type = 'SI') => {
       window.open(url, '_blank');
     }
   };
+
+
+  // localStorage 자동 저장
+  watch(areaList_selected, (val) => localStorage.setItem(`${storageKey}_area`, val));
+  watch(search, (val) => localStorage.setItem(`${storageKey}_search`, val));
+  watch(page, (val) => localStorage.setItem(`${storageKey}page`, val));
+  watch(itemsPerPage, (val) => localStorage.setItem(`${storageKey}itemsPerPage`, val));
+
 
   return {
     // 상태

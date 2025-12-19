@@ -49,16 +49,16 @@ export const TABLE_CONFIG = {
 
 // 사용자 권한 설정
 export const USER_ROLES = {
-  ADMIN: 'admin',
-  USER: 'user',
+  admin: 'admin',
+  user: 'user',
   operator: 'operator',
   guest: 'guest',
 };
 
 // 권한 라벨 매핑
 export const ROLE_LABELS = {
-  ADMIN: '관리자',
-  USER: '사용자',
+  admin: '관리자',
+  user: '사용자',
   operator: '일반',
   guest: '게스트',
 };

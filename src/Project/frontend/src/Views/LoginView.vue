@@ -201,7 +201,7 @@ const goToSignup = () => {
 }
 
 .kakao-login-btn {
-  min-height: 56px;
+  min-height: 44px;
   color: #000000 !important;
   font-weight: 600;
   text-transform: none;
@@ -276,9 +276,17 @@ const goToSignup = () => {
   }
 
   .login-btn {
-    font-size: 16px;
-    height: 48px;
+    font-size: 17px;
+    height: 52px;
     margin-bottom: 16px;
+  }
+
+  .kakao-login-btn {
+    min-height: 52px;
+
+    .kakao-text {
+      font-size: 17px;
+    }
   }
 
   .signup-link {
@@ -395,6 +403,14 @@ const goToSignup = () => {
   .login-btn {
     height: 56px;
     font-size: 18px;
+  }
+
+  .kakao-login-btn {
+    min-height: 56px;
+
+    .kakao-text {
+      font-size: 18px;
+    }
   }
 }
 </style>
