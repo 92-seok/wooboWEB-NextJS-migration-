@@ -10,7 +10,7 @@ import HomeView from '../views/HomeView.vue'
 import MapView from '../views/MapView.vue'
 import WeatherSIView from '../views/WeatherSIView.vue'
 import WeatherSRView from '../views/WeatherSRView.vue'
-// import ControlView from '../views/ControlView.vue'
+import ControlView from '../views/ControlView.vue'
 import SettingView from '../views/SettingView.vue'
 import AdminView from '../views/AdminView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -25,12 +25,12 @@ const routes = [
   { path: "/map", component: MapView },
   { path: "/weathersi", component: WeatherSIView },
   { path: "/weathersr", component: WeatherSRView },
-  // {
-  //   path: "/control",
-  //   component: ControlView,
-  //   computed: () => import('@/views/ControlView.vue'),
-  //   meta: { requiresAuth: true } // 로그인 필수로하기
-  // },
+  {
+    path: "/control",
+    component: ControlView,
+    computed: () => import('@/views/ControlView.vue'),
+    meta: { requiresAuth: true } // 로그인 필수로하기
+  },
   {
     path: "/setting",
     component: SettingView,

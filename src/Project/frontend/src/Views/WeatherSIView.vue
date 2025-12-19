@@ -365,7 +365,7 @@
                 :style="{ background: 'linear-gradient(to bottom, #E57373, #E53935, #D32F2F, #C62828)', color: '#fff' }"
                 @click="sendGate(selectedItem, 'close')">
                 <v-img :src="gateCloseImg" width="50px" height="40px" />
-                <strong>닫기</strong>ㄴ
+                <strong>닫기</strong>
               </v-btn>
             </v-col>
           </v-row>
@@ -469,7 +469,7 @@ const refresh_time = ref(TIMER_CONFIG.REFRESH_TIME);
 // const process_time = ref(refresh_time.value);
 ////////////////////////////////////////
 const model = ref(null);
-const selecteditem = ref(null);
+const selectedItem = ref(null);
 const os = ref(navigator.userAgent);
 const dialog = ref(false);
 const dialog_test = ref(false);
