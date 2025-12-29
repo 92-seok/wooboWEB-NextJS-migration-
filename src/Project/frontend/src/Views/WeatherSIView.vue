@@ -1,4 +1,4 @@
-<template>
+d<template>
   <v-container max-width="1200px" fluid>
     <!-- 지역 메뉴 (전국, 전라도, 경상도, 충청도, 강원도, 경기도, 인천/제주도) -->
     <v-sheet class="mx-auto">
@@ -183,13 +183,27 @@
           </div>
         </template>
 
+        <!-- <template v-slot:[`item.DATA`]="{ item }">
+          <div class="data-display">
+            <v-btn size="small" variant="outlined" @click="openDataDialog(item)">
+              데이터보기
+            </v-btn>
+          </div>
+        </template> -->
         <template v-slot:[`item.DATA`]="{ item }">
           <div class="data-display">
-            <!-- URL 패턴 체크 -->
-            <v-img v-if="isImageUrl(item.DATA)" :src="item.DATA" max-width="200" max-height="100" contain />
-            <!-- HTML 렌더링 -->
-            <div v-else-if="isHtmlContent(item.DATA)" v-html="item.DATA" class="html-display-bg"></div>
-            <div v-else>{{ item.DATA }}</div>
+            <!-- 예경보 장비 데이터 값 표시 모바일 : 버튼으로 표시 -->
+            <template v-if="['17'].includes(item.GB_OBSV)">
+              <v-btn size="small" variant="outlined" color="primary" @click="openDataDialog(item)">
+                데이터보기
+              </v-btn>
+            </template>
+            <!-- 데스크탑 -> 바로 표시 -->
+            <template v-else>
+              <v-img v-if="isImageUrl(item.DATA)" :src="item.DATA" max-width="200" max-height="100" contain />
+              <div v-else-if="isHtmlContent(item.DATA)" v-html="item.DATA" class="html-display-bg"></div>
+              <div v-else>{{ item.DATA }}</div>
+            </template>
           </div>
         </template>
 
@@ -392,6 +406,38 @@
         </v-card>
       </div>
     </v-dialog>
+
+    <!-- 데이터 모달 다이얼로그 -->
+    <v-dialog v-model="dialog_data" width="80vw" max-width="800px">
+      <v-card v-if="selectedItem">
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>{{ selectedItem.NM_DIST_OBSV }} - 데이터</span>
+          <v-btn icon="mid-close" variant="text" @click="dialog_data = false"></v-btn>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="pa-4 text-center ">
+          <!-- 이미지 URL인 경우 -->
+          <v-img v-if="isImageUrl(selectedItem.DATA)" :src="selectedItem.DATA" max-width="100%" contain />
+
+          <!-- HTML 컨텐츠인 경우 -->
+          <div v-else-if="isHtmlContent(selectedItem.DATA)" v-html="selectedItem.DATA" class="html-display-bg"></div>
+
+          <!-- 일반 텍스트인 경우 -->
+          <div v-else class="text-pre-wrap">{{ selectedItem.DATA }}</div>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="elevated" @click="dialog_data = false">
+            닫기
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -401,6 +447,7 @@
 ////////////////////////////////////////
 import { onMounted, onUnmounted, inject, ref } from 'vue'
 import dayjs from 'dayjs'
+import { useDisplay } from 'vuetify';
 import * as libmap from '@/components/KakaoMap.js';
 
 // API IMPORT
@@ -474,6 +521,9 @@ const os = ref(navigator.userAgent);
 const dialog = ref(false);
 const dialog_test = ref(false);
 const broadTestMessage = ref("");
+const dialog_data = ref(false);
+
+const { mobile } = useDisplay();
 
 const {
   areaList,
@@ -566,6 +616,11 @@ const headers = [
   { key: 'DATA', title: '데이터', align: 'center' },
 ]
 ////////////////////////////////////////
+
+function openDataDialog(item) {
+  selectedItem.value = item;
+  dialog_data.value = true;
+}
 
 function openGuideDialog(item) {
   // console.log(item);
@@ -1050,5 +1105,10 @@ const sendDisplay = async (item) => {
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
+}
+
+.text-pre-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>
