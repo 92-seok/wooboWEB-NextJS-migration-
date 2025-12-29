@@ -193,12 +193,13 @@
         <template v-slot:[`item.DATA`]="{ item }">
           <div class="data-display">
             <!-- 예경보 장비 데이터 값 표시 모바일 : 버튼으로 표시 -->
-            <template v-if="['17'].includes(item.GB_OBSV)">
+            <template v-if="['17'].includes(item.GB_OBSV) && mobile">
               <v-btn size="small" variant="outlined" color="primary" @click="openDataDialog(item)">
                 데이터보기
               </v-btn>
             </template>
-            <!-- 데스크탑 -> 바로 표시 -->
+
+            <!-- 일반 장비 : 항상 데이터 보기 -->
             <template v-else>
               <v-img v-if="isImageUrl(item.DATA)" :src="item.DATA" max-width="200" max-height="100" contain />
               <div v-else-if="isHtmlContent(item.DATA)" v-html="item.DATA" class="html-display-bg"></div>
