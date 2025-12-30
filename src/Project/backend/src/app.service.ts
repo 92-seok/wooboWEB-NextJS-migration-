@@ -60,7 +60,7 @@ export class AppService {
         )
         .andWhere(where)
         .orderBy('GB_OBSV', 'ASC')
-        .addOrderBy('BDONG_CD', 'ASC')
+        // .addOrderBy('BDONG_CD', 'ASC')
         .addOrderBy('CD_DIST_OBSV', 'ASC')
         .getMany();
 
