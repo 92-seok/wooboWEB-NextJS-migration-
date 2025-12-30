@@ -10,6 +10,7 @@
 	"settings": {
 		"editor.fontFamily": "Jetbrains Mono NL",
 		"editor.tabSize": 2,
-		"editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "editor.wordWrap": "on"
 	}
 }

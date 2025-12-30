@@ -63,9 +63,7 @@ export const useWeather = (type = 'SI') => {
     let url = "";
 
     if (os.indexOf("Android") > 0) {
-      url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appna    
-  me=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;pac    
-  kage=com.nhn.android.nmap;end`;
+      url = `intent://place?lat=${item.LAT}&lng=${item.LON}&zoom=12&name=${encodeURIComponent(item.NM_DIST_OBSV)}&appname=com.woobo.online#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
       window.location.href = url;
     } else if (os.indexOf("iPhone") > 0) {
       url = `https://map.naver.com/p/search/${item.DTL_ADRES}?c=11.00,0,0,0,dh`;
