@@ -1,5 +1,5 @@
 <template>
-  <v-container max-width="1200px" fluid>
+  <v-container max-width="1200px" fluid class="pa-mobile">
     <!-- ========== 지역 메뉴 (WeatherSIView 동일) ========== -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
@@ -71,7 +71,7 @@
       <v-divider />
 
       <!--  데이터 테이블 (ErrorView 내용)  -->
-      <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="comfortable" :search="search"
+      <v-data-table class="table-fit pa-0" :mobile-breakpoint="0" density="compact" :search="search"
         :filter-keys="['NM_DIST_OBSV']" :headers="headers"
         :header-props="{ align: 'center', style: 'font-weight: bold;' }" :items="devicesWithDays"
         :cell-props="{ align: 'start' }" item-value="IDX" show-expand v-model:page="page"
@@ -109,9 +109,39 @@
 
         <!-- 장비 구분 -->
         <template v-slot:[`item.GB_OBSV`]="{ item }">
-          <v-chip size="small" variant="outlined">
-            {{ getDeviceTypeName(item.GB_OBSV) }}
-          </v-chip>
+          <th style="width:px" />
+          <v-card class="my-2" elevation="0">
+            <div v-if="item.GB_OBSV === '01'">
+              <v-img :src="rainImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '02'">
+              <v-img :src="waterImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '03'">
+              <v-img :src="dplaceImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '06'">
+              <v-img :src="snowImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '08'">
+              <v-img :src="tiltImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '15'">
+              <v-img :src="dplaceImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '17'">
+              <v-img :src="broadImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '18'">
+              <v-img :src="displayImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '20'">
+              <v-img :src="gateImg" height="25" />
+            </div>
+            <div v-else-if="item.GB_OBSV === '21'">
+              <v-img :src="floodImg" height="25" />
+            </div>
+          </v-card>
         </template>
 
         <!-- 상태 -->
@@ -206,7 +236,16 @@ import { useTimer } from '@/composables/useTimer';
 import { REGION_MENU, TIMER_CONFIG } from '@/config/constants';
 
 // 이미지 import
-import nmapImg from '@/assets/nmap.png';
+import rainImg from '@/assets/rain.png'
+import waterImg from '@/assets/water.png'
+import dplaceImg from '@/assets/dplace.png'
+import snowImg from '@/assets/snow.png'
+import tiltImg from '@/assets/tilt.png'
+import broadImg from '@/assets/broad.png'
+import displayImg from '@/assets/display.png'
+import gateImg from '@/assets/gate.png'
+import floodImg from '@/assets/flood.png'
+import nmapImg from '@/assets/nmap.png'
 
 // Composable 불러오기
 const {
@@ -235,14 +274,13 @@ const refreshTime = ref(TIMER_CONFIG.REFRESH_TIME);
 
 // 테이블 헤더
 const headers = [
-  { key: 'data-table-expand', width: '15px', sortable: false },
+  { key: 'data-table-expand', width: '35px', sortable: false },
   { key: 'index', width: '15px', sortable: false },
-  { key: 'SIDO_CD', title: '지역', width: '15px' },
-  { key: 'NM_DIST_OBSV', title: '장비명', width: '75px' },
+  { key: 'SIDO_CD', title: '지역', width: '50px' },
   { key: 'GB_OBSV', title: '종류', width: '50px' },
-  { key: 'LastStatus', title: '상태', width: '75px' },
-  { key: 'LastDate', title: '마지막 통신', width: '120px' },
-  { key: 'daysSince', title: '경과일', width: '75px' },
+  { key: 'NM_DIST_OBSV', title: '장비명', width: '50px' },
+  { key: 'LastDate', title: '마지막 통신', width: '100px' },
+  { key: 'daysSince', title: '경과일', width: '50px' },
 ];
 
 // 장비 구분 이름
@@ -269,6 +307,7 @@ const getDaysColor = (days) => {
   if (days === null) return 'grey';
   if (days === 0) return 'warning';
   if (days <= 7) return 'orange';
+  if (days <= 31) return 'red';
   return 'error';
 };
 
@@ -332,6 +371,7 @@ onUnmounted(() => {
   :deep(.v-table__wrapper) {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    overflow-x: auto !important; // 가로 스크롤 추가
   }
 
   :deep(.v-data-table__th),
@@ -353,22 +393,45 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .table-fit {
     font-size: 1rem;
+
+    :deep(.v-table__wrapper) {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch; // iOS 부드러운 스크롤
+    }
   }
 
   .table-fit th,
   .table-fit td {
-    padding: 4px 6px;
+    padding: 2px 4px; // 패딩 조정
   }
 }
 
 @media (max-width: 480px) {
   .table-fit {
     font-size: 0.6rem;
+
+    :deep(.v-table__wrapper) {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 
   .table-fit th,
   .table-fit td {
-    padding: 0px 0px;
+    padding: 0px 2px; // 패딩 최소화
+  }
+}
+
+// 컨테이너 여백 조정 (선택사항)
+:deep(.v-container) {
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 4px;
   }
 }
 </style>
