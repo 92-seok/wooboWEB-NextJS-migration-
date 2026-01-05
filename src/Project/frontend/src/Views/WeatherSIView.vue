@@ -608,7 +608,7 @@ onUnmounted(() => {
 const menuList = REGION_MENU;
 
 const headers = [
-  { key: 'data-table-expand', width: '25px', sortable: false },
+  { key: 'data-table-expand', width: '35px', sortable: false },
   { key: 'index', width: '15px', sortable: false },
   { key: 'SIDO_CD', title: '지역', width: '50px' },
   { key: 'GB_OBSV', title: '종류', width: '50px' },

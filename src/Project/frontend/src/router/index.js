@@ -16,8 +16,7 @@ import AdminView from '../views/AdminView.vue'
 import LoginView from '../views/LoginView.vue'
 import SignupView from '../views/SignupView.vue'
 import KakaoCallback from '../views/KakaoCallback.vue'
-// import AboutView from '../views/AboutView.vue'
-// import TestView from '../views/TestView.vue'
+import ErrorView from '../views/ErrorView.vue'
 
 const routes = [
   { path: "/", component: HomeView },
@@ -36,16 +35,11 @@ const routes = [
     component: SettingView,
     // meta: { requiresAuth: true, requiresAdmin: true } // 로그인 필수로하기 
   },
-  {
-    path: "/admin",
-    component: AdminView,
-
-  },
-  // { path: "/about", component: AboutView },
+  { path: "/admin", component: AdminView },
   { path: "/login", component: LoginView, meta: { requiresGuest: true } },
   { path: "/kakao-callback", component: KakaoCallback },
-  // { path: "/test", component: TestView },
   { path: "/signup", component: SignupView, meta: { requiresGuest: true } },
+  { path: "/error", component: ErrorView, meta: { requiresGuest: true } },
 ];
 
 const router = createRouter({

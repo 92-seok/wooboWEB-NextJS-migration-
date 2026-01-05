@@ -15,6 +15,11 @@
       <span class="text-subtitle-2">소하천</span>
     </v-btn>
 
+    <v-btn @click="router.push('/error')">
+      <v-icon>mdi-alert-outline</v-icon>
+      <span class="text-subtitle-2">점검요망</span>
+    </v-btn>
+
     <!-- 관리자 전용: 사용자 관리 페이지 -->
     <!-- <v-btn v-if="isAdmin" @click="router.push('/admin')">
       <v-icon>mdi-account-cog</v-icon>

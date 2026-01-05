@@ -100,6 +100,21 @@ export class WeatherSiService {
     }
   }
 
+  // 점검 필요 장비 조회하기 (ErrorChk = 0)
+  async getErrorDevices(where: string): Promise<NmsDevice[]> {
+    try {
+      return await this.nmsDeviceRepository
+        .createQueryBuilder()
+        .where(`ErrorChk = 0`)
+        .andWhere(where)
+        .orderBy('LastDate', 'DESC')
+        .addOrderBy('CD_DIST_OBSV', 'DESC')
+        .getMany();
+    } catch (error) {
+      throw new Error(`에러 장비 조회 중 오류 발생 : ${error.message}`);
+    }
+  }
+
   async insertBrdSend(body): Promise<any> {
     try {
       const obj = new NmsBrdSend();
@@ -156,4 +171,7 @@ export class WeatherSiService {
       throw new Error(`지역 조회 중 오류 발생: ${error.message}`);
     }
   }
+
+
 }
+

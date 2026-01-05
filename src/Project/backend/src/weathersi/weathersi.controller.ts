@@ -148,6 +148,58 @@ export class WeatherSiController {
     }
   }
 
+  @Get('errorDevices')
+  async getErrorDevices(@Query('BDONG_CD') bdong_cd: string): Promise<any> {
+    let where: string;
+
+    if (bdong_cd === undefined) where = '1=1';
+    else where = `BDONG_CD like '${bdong_cd.substring(0, 4)}%'`;
+
+    try {
+      const devices = await this.service.getErrorDevices(where);
+      return {
+        success: true,
+        message: '점검 필요 장비 목록을 성공적으로 조회했습니다.',
+        count: devices.length,
+        data: devices.map((item) => ({
+          IDX: `${item.BDONG_CD}_${item.CD_DIST_OBSV} `,
+          SIDO_CD: item.BDONG_CD.slice(0, 4),
+          BDONG_CD: item.BDONG_CD,
+          CD_DIST_OBSV: item.CD_DIST_OBSV,
+          GB_OBSV: item.GB_OBSV,
+          NM_DIST_OBSV: item.NM_DIST_OBSV.replace('', '')
+            .replace('_강우', '')
+            .replace('_수위', '')
+            .replace('_변위', '')
+            .replace('_함수비', '')
+            .replace('_적설', '')
+            .replace('_경사', '')
+            .replace('_침수', '')
+            .replace('_예경보', '')
+            .replace('_전광판', '')
+            .replace('_차단기', ''),
+          ErrorChk: item.ErrorChk,
+          LastDate: item.LastDate,
+          LastStatus: item.LastStatus,
+          DTL_ADRES: item.DTL_ADRES,
+          LAT: item.LAT,
+          LON: item.LON,
+          PHONE: item.ConnPhone,
+          IP: item.ConnIP,
+          PORT: item.ConnPort,
+          DATA: item.DATA,
+        })),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        count: 0,
+        data: null,
+      }
+    }
+  }
+
   @Get('control')
   async getControl(@Query('BDONG_CD') bdong_cd: string): Promise<any> {
     let where: string;
@@ -206,8 +258,8 @@ export class WeatherSiController {
     @Req() req: any,
   ): Promise<any> {
     const username = req.user?.username || 'unknown';
-    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
-    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+    console.log(`방송 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message} `);
+    // console.log(`Body: ${ BDONG_CD } ${ CD_DIST_OBSV } ${ Message } ${ Auth } `);
 
     try {
       const bodyWithAuth = {
@@ -244,8 +296,8 @@ export class WeatherSiController {
     @Req() req: any,
   ): Promise<any> {
     const username = req.user?.username || 'unknown';
-    console.log(`전광판 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message}`);
-    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+    console.log(`전광판 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Message} `);
+    // console.log(`Body: ${ BDONG_CD } ${ CD_DIST_OBSV } ${ Message } ${ Auth } `);
 
     try {
       const bodyWithAuth = {
@@ -280,8 +332,8 @@ export class WeatherSiController {
     @Req() req: any,
   ): Promise<any> {
     const username = req.user?.username || 'unknown';
-    console.log(`차단기 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Gate}`);
-    // console.log(`Body: ${BDONG_CD} ${CD_DIST_OBSV} ${Message} ${Auth}`);
+    console.log(`차단기 제어 - 사용자 ${username}, ${BDONG_CD} ${CD_DIST_OBSV} ${Gate} `);
+    // console.log(`Body: ${ BDONG_CD } ${ CD_DIST_OBSV } ${ Message } ${ Auth } `);
 
     try {
       const bodyWithAuth = {

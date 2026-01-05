@@ -43,6 +43,8 @@ function SetThemeColor(path) {
       break;
     case '/weathersr': color = 'indigo'
       break;
+    case '/error': color = 'deep-orange-accent-3'
+      break;
     case '/setting': color = 'brown'
       break;
     case '/login': color = 'yellow'

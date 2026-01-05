@@ -68,3 +68,18 @@ export const getDevicesSR = async (bdongCd) => {
   const response = await axios.get(`/api/weathersr/devices?BDONG_CD=${bdongCd}`)
   return response.data
 };
+
+// ------------ WeatherSI 에러 장비 ------------
+// * 점검 필요 장비 목록 조회 API *
+export const getErrorDevices = async (bdongCd) => {
+  const response = await axios.get(`/api/weathersi/errorDevices?BDONG_CD=${bdongCd}`)
+  return response.data
+};
+
+// ------------ WeatherSR 에러 장비 ------------
+// * 점검 필요 장비 목록 조회 API *
+export const getErrorDevicesSR = async (bdongCd) => {
+  const response = await axios.get(`/api/weathersr/errorDevices?BDONG_CD=${bdongCd}`)
+  return response.data
+};
+
