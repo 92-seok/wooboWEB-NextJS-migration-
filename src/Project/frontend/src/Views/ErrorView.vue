@@ -155,7 +155,7 @@
         <!-- 최종 수신 시간 -->
         <template v-slot:[`item.LastDate`]="{ item }">
           <div style="font-size: small;">
-            {{ formatDate(item.LastDate, 'YYYY-MM-DD HH:mm') }}
+            {{ formatDate(item.LastDate, 'YY-MM-DD HH시') }}
           </div>
         </template>
 
@@ -276,11 +276,11 @@ const refreshTime = ref(TIMER_CONFIG.REFRESH_TIME);
 const headers = [
   { key: 'data-table-expand', width: '35px', sortable: false },
   { key: 'index', width: '15px', sortable: false },
-  { key: 'SIDO_CD', title: '지역', width: '70px' },
+  { key: 'SIDO_CD', title: '지역', width: '50px' },
   { key: 'GB_OBSV', title: '종류', width: '65px' },
   { key: 'NM_DIST_OBSV', title: '장비명', align: 'center' },
-  { key: 'LastDate', title: '마지막 통신', },
-  { key: 'daysSince', title: '경과일', width: '80px' },
+  { key: 'LastDate', title: '마지막 통신' },
+  { key: 'daysSince', title: '경과일', width: '60px' },
 ];
 
 // 장비 구분 이름
