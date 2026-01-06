@@ -6,12 +6,27 @@
         <div class="login-title font-weight-bold mt-2 text-center">운영지원 시스템 로그인</div>
       </div>
 
+
+      <!-- 카카오 로그인 -->
+      <v-btn block color="#FEE500" variant="elevated" @click="handleKakaoLogin" :disabled="loading"
+        class="kakao-login-btn mb-4" prepend-icon="mdi-comment">
+        <template v-slot:prepend>
+          <v-icon color="#000000">mdi-comment</v-icon>
+        </template>
+        <span class="kakao-text">카카오 계정으로 로그인</span>
+      </v-btn>
+
+      <!-- 버튼 구분하기 -->
+      <v-divider class="mr-4">
+        <span class="text-medium-emphasis px-2">또는</span>
+      </v-divider>
+
       <!-- 아이디 입력부분 -->
       <div class="field-label text-medium-emphasis">
         아이디
       </div>
       <v-text-field v-model="username" density="compact" placeholder="아이디를 입력해주세요"
-        prepend-inner-icon="mdi-account-outline" variant="outlined" class="placeholder-small input-field"
+        prepend-inner-icon="mdi-account-outline" variant="outlined" class="placeholder-small input-field ma-0"
         :error-messages="usernameError" @keyup.enter="handleLogin" :disabled="loading"></v-text-field>
 
       <!-- password 입력부분 -->
@@ -21,11 +36,11 @@
       <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
         :type="visible ? 'text' : 'password'" density="compact" placeholder="비밀번호를 입력해주세요."
         prepend-inner-icon="mdi-lock-outline" variant="outlined" @click:append-inner="visible = !visible"
-        class="placeholder-small input-field" :error-messages="passwordError" @keyup.enter="handleLogin"
+        class="placeholder-small input-field ma-0" :error-messages="passwordError" @keyup.enter="handleLogin"
         :disabled="loading"></v-text-field>
 
       <!-- 체크박스 영역 추가하기 -->
-      <div class="checkbox-wrapper mb-4">
+      <div class="checkbox-wrapper ma-0">
         <v-checkbox v-model="saveId" label="아이디 저장" density="compact" hide-details :disabled="loading"
           class="mr-4"></v-checkbox>
         <v-checkbox v-model="autoLogin" label="자동 로그인" density="compact" hide-details :disabled="loading"></v-checkbox>
@@ -50,19 +65,6 @@
       <v-btn block color="primary" variant="elevated" @click="handleLogin" :loading="loading" :disabled="loading"
         class="login-btn">로그인</v-btn>
 
-      <!-- 버튼 구분하기 -->
-      <v-divider class="mr-4">
-        <span class="text-medium-emphasis px-2">또는</span>
-      </v-divider>
-
-      <!-- 카카오 로그인 -->
-      <v-btn block color="#FEE500" variant="elevated" @click="handleKakaoLogin" :disabled="loading"
-        class="kakao-login-btn mt-4" prepend-icon="mdi-comment">
-        <template v-slot:prepend>
-          <v-icon color="#000000">mdi-comment</v-icon>
-        </template>
-        <span class="kakao-text">카카오 계정으로 로그인</span>
-      </v-btn>
 
       <!-- 회원가입 페이지 이동 버튼 -->
       <div class="text-center signup-link">
@@ -121,7 +123,7 @@ const goToSignup = () => {
 <style lang="scss" scoped>
 .login-stage {
   display: flex;
-  justify-content: cnetr;
+  justify-content: center;
   align-items: center;
   min-height: 100vh;
   // 헤더 80px, 푸터 64px 제외하기
@@ -168,7 +170,7 @@ const goToSignup = () => {
 }
 
 .info-card {
-  margin-bottom: 20px;
+  margin: 10px 0 10px 0;
 }
 
 .info-text {
