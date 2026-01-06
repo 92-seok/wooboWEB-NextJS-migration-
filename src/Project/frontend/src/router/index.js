@@ -39,7 +39,7 @@ const routes = [
   { path: "/login", component: LoginView, meta: { requiresGuest: true } },
   { path: "/kakao-callback", component: KakaoCallback },
   { path: "/signup", component: SignupView, meta: { requiresGuest: true } },
-  { path: "/error", component: ErrorView, meta: { requiresGuest: true } },
+  { path: "/error", component: ErrorView },
 ];
 
 const router = createRouter({

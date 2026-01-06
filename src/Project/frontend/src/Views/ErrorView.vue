@@ -1,6 +1,6 @@
 <template>
   <v-container max-width="1200px" fluid class="pa-mobile">
-    <!-- ========== 지역 메뉴 (WeatherSIView 동일) ========== -->
+    <!-- 지역 메뉴 (WeatherSIView 동일) -->
     <v-sheet class="mx-auto">
       <v-slide-group v-model="model" center-active>
         <v-menu v-for="(menu, index) in menuList" :key="index" transition="scale-transition">
