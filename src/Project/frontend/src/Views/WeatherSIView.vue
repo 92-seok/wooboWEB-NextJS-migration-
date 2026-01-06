@@ -53,7 +53,7 @@
       <v-divider />
 
       <!-- 장비 현황 카드 -->
-      <!-- <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center" style="justify-content: center;">
+      <v-row v-if="areaList_selected != '%'" class="d-flex mt-2 mb-2 ma-1 text-center" style="justify-content: center;">
         <v-col cols="4" class="pa-1">
           <v-card density="compact"
             :style="{ background: 'linear-gradient(to bottom, #7986CB, #5C6BC0, #3949AB, #303F9F)', color: '#fff' }">
@@ -87,7 +87,7 @@
             </v-card-text>
           </v-card>
         </v-col>
-      </v-row> -->
+      </v-row>
 
       <v-divider />
 
