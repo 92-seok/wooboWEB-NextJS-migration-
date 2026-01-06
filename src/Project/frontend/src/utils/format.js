@@ -27,8 +27,8 @@ export const formatDateKorean = (date) => {
 // 마지막 통신 날짜로부터 몇일 지났는지 확인
 export const calculateDaysSince = (dateString) => {
   if (!dateString) return null;
-  const targetDate = dayjs(dateString);
-  const today = dayjs();
+  const targetDate = dayjs(dateString).startOf('day');
+  const today = dayjs().startOf('day');
   const days = today.diff(targetDate, 'day');
   return days;
 };
