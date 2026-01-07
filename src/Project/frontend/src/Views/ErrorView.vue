@@ -37,7 +37,7 @@
       <v-card-title class="d-flex align-center pe-2">
         <v-icon icon="mdi-alert-circle"></v-icon> &nbsp;
         <v-btn @click="handleRefresh">
-          <span>점검 필요 장비</span>
+          <span>점검 필요 장비 <strong class="text-red">{{ devicesWithDays.length }}</strong> 개소</span>
           <v-icon icon="mdi-refresh"></v-icon>
         </v-btn>
 
@@ -304,12 +304,16 @@ const getDeviceTypeName = (code) => {
 
 // 경과일에 따른 색상
 const getDaysColor = (days) => {
-  if (days === null) return 'grey';
-  if (days === 0) return 'warning';
-  if (days <= 7) return 'orange';
-  if (days <= 31) return 'red';
-  return 'error';
+  let color = 'gray';
+
+  if (days === 0) color = 'primary';
+  else if (days <= 7) color = 'orange';
+  else if (days <= 31) color = 'red';
+  else if (days <= 365) color = 'gray';
+
+  return color;
 };
+
 
 // 지역 변경
 const OnChange_AreaList = async (newArea) => {
