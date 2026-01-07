@@ -309,7 +309,8 @@ const getDaysColor = (days) => {
   if (days === 0) color = 'primary';
   else if (days <= 7) color = 'orange';
   else if (days <= 31) color = 'red';
-  else if (days <= 365) color = 'gray';
+  else if (days <= 365) color = 'error';
+  else color = 'gray';
 
   return color;
 };
