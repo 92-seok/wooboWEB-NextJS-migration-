@@ -284,23 +284,23 @@ const headers = [
 ];
 
 // 장비 구분 이름
-const getDeviceTypeName = (code) => {
-  const devicesTypes = {
-    '01': '강우',
-    '02': '수위',
-    '03': '변위',
-    '04': '함수비',
-    '06': '적설',
-    '08': '경사',
-    '15': '침수',
-    '17': '예경보',
-    '18': '방송',
-    '19': '전광판',
-    '20': '차단기',
-    '21': '통합',
-  };
-  return devicesTypes[code] || code;
-};
+// const getDeviceTypeName = (code) => {
+//   const devicesTypes = {
+//     '01': '강우',
+//     '02': '수위',
+//     '03': '변위',
+//     '04': '함수비',
+//     '06': '적설',
+//     '08': '경사',
+//     '15': '침수',
+//     '17': '예경보',
+//     '18': '방송',
+//     '19': '전광판',
+//     '20': '차단기',
+//     '21': '통합',
+//   };
+//   return devicesTypes[code] || code;
+// };
 
 // 경과일에 따른 색상
 const getDaysColor = (days) => {
