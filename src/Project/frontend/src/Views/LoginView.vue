@@ -69,7 +69,7 @@
       <!-- 로그인 버튼 -->
       <v-btn block color="primary" variant="flat" size="x-large" @click="handleLoginClick" :loading="loading"
         :disabled="loading" class="login-btn">
-        아이디로 로그인
+        <span v-if="!formExpanded">아이디로</span> 로그인
       </v-btn>
 
       <!-- 안내 카드 -->
