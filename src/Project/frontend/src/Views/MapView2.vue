@@ -150,10 +150,12 @@ onMounted(() => {
     place = new kakao.maps.services.Places();
 
     // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
-    infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+    //infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+    infowindow = new kakao.maps.InfoWindow({}); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
 
     // 커스텀 오버레이를 생성합니다
-    mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1, zIndex: 1 });
+    //mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1, zIndex: 1 });
+    mapCustomOverlay = new kakao.maps.CustomOverlay({ xAnchor: 0.5, yAnchor: 1.1 });
 
     // 주소-좌표 변환 객체를 생성합니다
     geocoder = new kakao.maps.services.Geocoder();
@@ -203,6 +205,7 @@ onMounted(() => {
         content += `위경도: ${lat} / ${lon} <button @click="reserve"><U>복사</U></button>`;
         content += `</div>`;
         content += `<div id="roadview" style="height:200px"></div>`;
+        content += `<div>로드뷰 방향전환: 마우스 우클릭</div>`;
         content += '</div>';
         /*
       `<div><string>${detailAddr}</string></div>` +
@@ -287,6 +290,10 @@ function setCenter(lat, lon) {
 
   // 지도 중심을 이동 시킵니다
   map.setCenter(moveLatLon);
+}
+
+function reserve() {
+  console.writeline("reserve()");
 }
 
 function panTo(lat, lon) {
