@@ -16,52 +16,60 @@
       </v-btn>
 
       <!-- 구분선 -->
-      <div class="divider-wrapper">
-        <v-divider></v-divider>
-        <span class="divider-text">또는</span>
-        <v-divider></v-divider>
-      </div>
+      <v-expand-transition>
+        <div v-show="formExpanded" class="divider-wrapper">
+          <v-divider></v-divider>
+          <span class="divider-text">또는</span>
+
+          <v-divider></v-divider>
+        </div>
+      </v-expand-transition>
 
       <!-- 입력 폼 -->
-      <div class="form-section">
-        <!-- 아이디 -->
-        <div class="input-group">
-          <label class="input-label">아이디</label>
-          <v-text-field v-model="username" density="comfortable" placeholder="아이디를 입력해주세요"
-            prepend-inner-icon="mdi-account-outline" variant="outlined" :error-messages="usernameError"
-            @keyup.enter="handleLogin" :disabled="loading" hide-details="auto"></v-text-field>
-        </div>
+      <v-expand-transition>
+        <div v-show="formExpanded" class="form-section">
+          <!-- 아이디 -->
 
-        <!-- 비밀번호 -->
-        <div class="input-group">
-          <label class="input-label">비밀번호</label>
-          <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-            :type="visible ? 'text' : 'password'" density="comfortable" placeholder="비밀번호를 입력해주세요"
-            prepend-inner-icon="mdi-lock-outline" variant="outlined" @click:append-inner="visible = !visible"
-            :error-messages="passwordError" @keyup.enter="handleLogin" :disabled="loading"
-            hide-details="auto"></v-text-field>
-        </div>
+          <div class="input-group">
+            <label class="input-label">아이디</label>
+            <v-text-field v-model="username" density="comfortable" placeholder="아이디를 입력해주세요"
+              prepend-inner-icon="mdi-account-outline" variant="outlined" :error-messages="usernameError"
+              @keyup.enter="handleLogin" :disabled="loading" hide-details="auto"></v-text-field>
+          </div>
 
-        <!-- 체크박스 -->
-        <div class="checkbox-section">
-          <v-checkbox v-model="saveId" label="아이디 저장" density="compact" hide-details :disabled="loading"></v-checkbox>
-          <v-checkbox v-model="autoLogin" label="자동 로그인" density="compact" hide-details
-            :disabled="loading"></v-checkbox>
-        </div>
 
-        <!-- 에러 메시지 -->
-        <v-expand-transition>
-          <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" closable
-            @click:close="errorMessage = ''" class="error-alert">
-            {{ errorMessage }}
-          </v-alert>
-        </v-expand-transition>
-      </div>
+          <!-- 비밀번호 -->
+          <div class="input-group">
+            <label class="input-label">비밀번호</label>
+            <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+              :type="visible ? 'text' : 'password'" density="comfortable" placeholder="비밀번호를 입력해주세요"
+              prepend-inner-icon="mdi-lock-outline" variant="outlined" @click:append-inner="visible = !visible"
+              :error-messages="passwordError" @keyup.enter="handleLogin" :disabled="loading"
+              hide-details="auto"></v-text-field>
+          </div>
+
+          <!-- 체크박스 -->
+          <div class="checkbox-section">
+            <v-checkbox v-model="saveId" label="아이디 저장" density="compact" hide-details :disabled="loading"></v-checkbox>
+            <v-checkbox v-model="autoLogin" label="자동 로그인" density="compact" hide-details
+              :disabled="loading"></v-checkbox>
+          </div>
+
+          <!-- 에러 메시지 -->
+          <v-expand-transition>
+            <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" closable
+              @click:close="errorMessage = ''" class="error-alert">
+              {{ errorMessage }}
+            </v-alert>
+          </v-expand-transition>
+
+        </div>
+      </v-expand-transition>
 
       <!-- 로그인 버튼 -->
-      <v-btn block color="primary" variant="flat" size="x-large" @click="handleLogin" :loading="loading"
+      <v-btn block color="primary" variant="flat" size="x-large" @click="handleLoginClick" :loading="loading"
         :disabled="loading" class="login-btn">
-        로그인
+        <span v-if="!formExpanded">아이디로</span> 로그인
       </v-btn>
 
       <!-- 안내 카드 -->
@@ -84,7 +92,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 
@@ -106,6 +114,18 @@ const {
   handleLogin,
   initKakaoSDK
 } = useAuth()
+
+const formExpanded = ref(false);
+
+const handleLoginClick = async () => {
+  if (!formExpanded.value) {
+    // 폼 접혀 있으면 펼치기
+    formExpanded.value = true
+  } else {
+    // 폼이 펼쳐져 있으면 로그인 시도
+    await handleLogin()
+  }
+}
 
 onMounted(async () => {
   initKakaoSDK(import.meta.env.VITE_KAKAO_JS_KEY)
