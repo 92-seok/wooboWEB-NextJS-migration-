@@ -1,3 +1,84 @@
-/install/*
-*/node_modules
-doc/3.소하천/샘플이미지/*
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.md
+
+# compiled output
+node_modules/
+dist/
+build/
+src/mobile/
+
+# dotenv environment variable files
+#.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.*.local
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.agent
+.workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Temporary and database files
+*.meta
+*.sst
+*.ldb
+*.log
+
+# Next.js build output (매우 중요)
+**/.next/
+**/out/
+**/node_modules/
+**/*.meta
+**/*.sst
