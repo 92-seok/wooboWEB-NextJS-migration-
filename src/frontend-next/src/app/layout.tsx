@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "./responsive-globals.css"; // 글로벌 반응형 토크 임포트
 
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -19,16 +20,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
-        {/* 상단 헤더 : 시스템 바 + 앱 바 {Vuetify = v-app-bar} */}
+      <body className={`${inter.className} h-screen flex flex-col bg-background text-foreground antialiased overflow-hidden`}>
+        {/* 상단 헤더 */}
         <Header />
-        {/* 메인 컨텐츠 {Vuetify = v-main} */}
-        <main className="flex-1 pb-16">
-          <div className="container mx-auto px-4 py-8">
-            {children}
-          </div>
+
+        {/* 메인 컨텐츠 영역: 스크롤 가능하도록 설정 */}
+        <main className="flex-1 overflow-auto relative">
+          {children}
         </main>
-        {/* 하단 푸터 {Vuetify = v-bottom-navigation} */}
+
+        {/* 하단 푸터 */}
         <Footer />
       </body>
     </html>

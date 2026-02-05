@@ -1,0 +1,59 @@
+/* 
+  Global Responsive Design Tokens
+  Standardized breakpoints for Woobo Support System
+*/
+
+:root {
+  /* Breakpoints Definition */
+  --mobile-end: 639px;
+  --tablet-start: 640px;
+  --tablet-end: 1023px;
+  --laptop-start: 1024px;
+  --desktop-start: 1440px;
+  --qhd-start: 2560px;
+
+  /* Global Layout Variables */
+  --header-h-mobile: 48px;
+  --header-h-desktop: 64px;
+  --footer-h-mobile: 64px;
+  --system-bar-h: 24px;
+
+  /* Safe Area for Mobile (iOS/Android) */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+/* Common Utility Classes for Responsiveness */
+.hide-on-mobile {
+  display: none !important;
+}
+
+@media (min-width: 640px) {
+  .hide-on-mobile {
+    display: initial !important;
+  }
+}
+
+.show-only-mobile {
+  display: flex !important;
+}
+
+@media (min-width: 1024px) {
+  .show-only-mobile {
+    display: none !important;
+  }
+}
+
+.responsive-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 1440px) {
+  .responsive-container {
+    max-width: 1400px;
+  }
+}

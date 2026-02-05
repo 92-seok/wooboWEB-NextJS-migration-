@@ -1,0 +1,68 @@
+/* 
+  Header Responsive Styling
+  Mobile-First approach for System Bar and App Bar
+*/
+
+.header-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: white;
+  z-index: 50;
+  position: relative;
+}
+
+/* System Bar: Smaller on mobile */
+.system-bar {
+  background-color: #0f172a;
+  color: white;
+  font-size: 9px;
+  height: 24px;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* App Bar: Compact on mobile */
+.app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  height: 48px;
+}
+
+.logo-text {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+}
+
+/* Tablet & Desktop Overrides */
+@media (min-width: 640px) {
+  .system-bar {
+    font-size: 11px;
+    height: 28px;
+  }
+  
+  .app-bar {
+    padding: 0 1.5rem;
+    height: 64px;
+  }
+
+  .logo-text {
+    font-size: 1.25rem;
+  }
+}
+
+/* QHD Scaling */
+@media (min-width: 2560px) {
+  .app-bar {
+    height: 80px;
+    padding: 0 3rem;
+  }
+}

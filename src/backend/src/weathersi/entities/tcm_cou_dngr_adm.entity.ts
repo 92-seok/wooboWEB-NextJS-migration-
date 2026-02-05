@@ -16,6 +16,22 @@ export class TcmCouDngrAdm {
   ADMCODE: string;
 
   @Column({
+    name: 'NM_ADM',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
+  NM_ADM: string;
+
+  @Column({
+    name: 'ADM_NM',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
+  ADM_NM: string;
+
+  @Column({
     name: 'CHPSNNM',
     type: 'varchar',
     length: 100,

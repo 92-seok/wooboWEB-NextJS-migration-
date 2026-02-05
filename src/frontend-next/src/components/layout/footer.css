@@ -1,0 +1,52 @@
+/* 
+  Footer Responsive Styling
+  Optimized for Mobile bottom navigation (Tab bar style)
+*/
+
+.footer-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + env(safe-area-inset-bottom));
+  background-color: #1d4ed8;
+  display: flex;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dbeafe;
+  transition: all 0.2s ease;
+}
+
+.nav-item.active {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.nav-label {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* Hide or modify on larger screens if needed */
+@media (min-width: 1024px) {
+  .footer-nav {
+    height: 64px;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .nav-item {
+    flex: initial;
+    width: 80px;
+    border-radius: 8px;
+    margin: 4px 0;
+  }
+}

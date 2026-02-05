@@ -105,7 +105,7 @@ export class WeatherSiService {
     try {
       return await this.nmsDeviceRepository
         .createQueryBuilder()
-        .where(`ErrorChk = 0`)
+        .where(`ErrorChk <> 5`)
         .andWhere(where)
         .orderBy('LastDate', 'DESC')
         .addOrderBy('CD_DIST_OBSV', 'DESC')

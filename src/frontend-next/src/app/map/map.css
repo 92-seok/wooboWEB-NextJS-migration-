@@ -1,0 +1,435 @@
+:root {
+  --footer-h-mobile: 60px;
+  --footer-h-desktop: 80px;
+}
+
+/*
+  Woobo Support System - Map Page Styling
+  Mobile-First Architecture (Base -> Tablet -> Laptop -> Desktop)
+*/
+
+/* [1] Base: 지도 전체 컨테이너 */
+.map-page-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+/* [2] 상단 우측 컨트롤 (줌, 위치복귀) */
+.map-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50; /* 사이드바보다 위에 */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.map-controls > * {
+  pointer-events: auto;
+}
+
+/* [3] 하단 영역 (상태 바 & 레이어 메뉴) */
+.map-bottom-container {
+  position: absolute;
+  bottom: calc(var(--footer-h-mobile) + 20px); /* 아이폰 16 Pro 기준 여유 공간 */
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.map-bottom-container > * {
+  pointer-events: auto;
+}
+
+/* 상태 표시 카드 (Live Connect) - 높이 축소 */
+.status-card {
+  width: 100%;
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  color: white;
+  padding: 0.625rem 0.875rem;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-value {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.status-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+/* 레이어 팝업 선택창 */
+.layer-popup {
+  position: absolute;
+  bottom: 4rem;
+  right: 0;
+  left: 0;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: 1.25rem;
+  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.3);
+  z-index: 70;
+  border: 1px solid #f1f5f9;
+}
+
+.layer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+/* [4] 사이드바 (관측소 목록) */
+.station-sidebar {
+  position: absolute;
+  top: 4.5rem;
+  left: 1rem;
+  width: 15rem;
+  height: 400px;
+  /* 최대 5개 항목만 표시 (화면 높이의 50%로 제한) */
+  /* max-height: 50vh; */
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  transform: translateX(-120%);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.station-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.station-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.375rem;
+  /* 스크롤바 스타일링 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+.station-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.station-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.station-list::-webkit-scrollbar-thumb {
+  background-color: rgba(99, 102, 241, 0.3);
+  border-radius: 10px;
+}
+
+.station-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(99, 102, 241, 0.5);
+}
+
+.station-item {
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* [5] 반응형 수치 조정 (Tablet/Laptop) */
+@media (min-width: 640px) {
+  .map-bottom-container {
+    bottom: calc(var(--footer-h-mobile) + 1.5rem);
+    left: 1.5rem;
+    right: 1.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .status-card {
+    width: auto;
+    padding: 0.875rem 1.25rem;
+    gap: 1.5rem;
+  }
+
+  /* 태블릿 이상에서 상태 값 크기 복원 */
+  .status-value {
+    font-size: 1.25rem;
+  }
+
+  .layer-popup {
+    bottom: 4.5rem;
+    left: auto;
+    width: 15rem;
+  }
+
+  .layer-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* 태블릿 이상에서 사이드바 높이 조정: vh 단위로 안전하게 제한 */
+  /* .station-sidebar {
+    max-height: 50vh;
+  } */
+}
+
+@media (min-width: 1024px) {
+  .map-bottom-container {
+    bottom: calc(var(--footer-h-desktop) + 2rem);
+    left: 2rem;
+    right: 2rem;
+  }
+
+  /* 데스크탑에서 사이드바 높이 추가 조정 */
+  /* .station-sidebar {
+    max-height: 50vh;
+  } */
+}
+
+/* [6] 커스텀 오버레이 (디자인된 팝업) ✨ */
+.custom-overlay {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 0.875rem 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 160px;
+  pointer-events: auto;
+}
+
+/* 말꼬리 부분 */
+.custom-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid rgba(255, 255, 255, 0.95);
+}
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.overlay-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.overlay-close {
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.overlay-close:hover {
+  color: #ef4444;
+}
+
+.overlay-body {
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overlay-status-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+
+.badge-normal { background-color: #f0fdf4; color: #166534; }
+.badge-error { background-color: #fef2f2; color: #991b1b; }
+
+
+/* =========================================
+   [7] Legacy Vue Styles (Migration)
+   기존 Vue 프로젝트의 오버레이 및 맵워커 스타일 이식
+   ========================================= */
+
+/* 커스텀 오버레이 (Kakao Map Default Style Adaptation) */
+.overlay_info {
+  border-radius: 6px;
+  margin-bottom: 12px;
+  float: left;
+  position: relative;
+  border: 1px solid #ccc;
+  border-bottom: 2px solid #ddd;
+  background-color: #fff;
+}
+
+.overlay_info:nth-of-type(n) {
+  border: 0;
+  box-shadow: 0px 1px 2px #888;
+}
+
+.overlay_info a {
+  display: block;
+  background: #d95050;
+  background: #d95050 url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/arrow_white.png) no-repeat right 14px center;
+  text-decoration: none;
+  color: #fff;
+  padding: 12px 36px 12px 14px;
+  font-size: 14px;
+  border-radius: 6px 6px 0 0;
+}
+
+.overlay_info a strong {
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/place_icon.png) no-repeat;
+  padding-left: 27px;
+}
+
+.overlay_info .desc {
+  padding: 14px;
+  position: relative;
+  min-width: 190px;
+  height: 56px;
+}
+
+.overlay_info img {
+  vertical-align: top;
+}
+
+.overlay_info .address {
+  font-size: 12px;
+  color: #333;
+  position: absolute;
+  left: 80px;
+  right: 14px;
+  top: 24px;
+  white-space: normal;
+}
+
+.overlay_info:after {
+  content: '';
+  position: absolute;
+  margin-left: -11px;
+  left: 50%;
+  bottom: -12px;
+  width: 22px;
+  height: 12px;
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png) no-repeat 0 bottom;
+}
+
+/* MapWalker (로드뷰 아이콘) 스타일 */
+.MapWalker {
+  position: absolute;
+  margin: -26px 0 0 -51px;
+}
+
+.MapWalker .figure {
+  position: absolute;
+  width: 25px;
+  left: 38px;
+  top: -2px;
+  height: 39px;
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png) -298px -114px no-repeat;
+}
+
+.MapWalker .angleBack {
+  width: 102px;
+  height: 52px;
+  background: url(https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png) -834px -2px no-repeat;
+}
+
+.MapWalker.m0 .figure { background-position: -298px -114px; }
+.MapWalker.m1 .figure { background-position: -335px -114px; }
+.MapWalker.m2 .figure { background-position: -372px -114px; }
+.MapWalker.m3 .figure { background-position: -409px -114px; }
+.MapWalker.m4 .figure { background-position: -446px -114px; }
+.MapWalker.m5 .figure { background-position: -483px -114px; }
+.MapWalker.m6 .figure { background-position: -520px -114px; }
+.MapWalker.m7 .figure { background-position: -557px -114px; }
+.MapWalker.m8 .figure { background-position: -2px -114px; }
+.MapWalker.m9 .figure { background-position: -39px -114px; }
+.MapWalker.m10 .figure { background-position: -76px -114px; }
+.MapWalker.m11 .figure { background-position: -113px -114px; }
+.MapWalker.m12 .figure { background-position: -150px -114px; }
+.MapWalker.m13 .figure { background-position: -187px -114px; }
+.MapWalker.m14 .figure { background-position: -224px -114px; }
+.MapWalker.m15 .figure { background-position: -261px -114px; }
+
+.MapWalker.m0 .angleBack { background-position: -834px -2px; }
+.MapWalker.m1 .angleBack { background-position: -938px -2px; }
+.MapWalker.m2 .angleBack { background-position: -1042px -2px; }
+.MapWalker.m3 .angleBack { background-position: -1146px -2px; }
+.MapWalker.m4 .angleBack { background-position: -1250px -2px; }
+.MapWalker.m5 .angleBack { background-position: -1354px -2px; }
+.MapWalker.m6 .angleBack { background-position: -1458px -2px; }
+.MapWalker.m7 .angleBack { background-position: -1562px -2px; }
+.MapWalker.m8 .angleBack { background-position: -2px -2px; }
+.MapWalker.m9 .angleBack { background-position: -106px -2px; }
+.MapWalker.m10 .angleBack { background-position: -210px -2px; }
+.MapWalker.m11 .angleBack { background-position: -314px -2px; }
+.MapWalker.m12 .angleBack { background-position: -418px -2px; }
+.MapWalker.m13 .angleBack { background-position: -522px -2px; }
+.MapWalker.m14 .angleBack { background-position: -626px -2px; }
+.MapWalker.m15 .angleBack { background-position: -730px -2px; }

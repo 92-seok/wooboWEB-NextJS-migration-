@@ -1,26 +1,51 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // 현재 경로 확인용
 import { Map, Tv2, Waves, AlertTriangle, Settings, User } from 'lucide-react';
+import './footer.css'; // 분리한 반응형 CSS 임포트
 
 const Footer = () => {
   const pathname = usePathname();
 
-  // 버튼 정보를 배열로 만들어서 관리하면 코드가 훨씬 깔끔해짐 (DRY 원칙)
+  // 로그인 상태 및 관리자 권한
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [userName, setUserName] = useState("관리자");
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('accessToken');
+    const userStr = sessionStorage.getItem('user');
+
+    setIsLoggedIn(!!token);
+
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setIsAdmin(user.role === 'admin');
+        setUserName(sessionStorage.getItem('userName') || "관리자")
+      } catch (e) {
+        console.error('User data parse error: ', e);
+      }
+    };
+  }, [pathname]);
+
   const menuItems = [
     { label: "지도", icon: Map, href: "/map" },
     { label: "통합관측", icon: Tv2, href: "/weathersi" },
     { label: "소하천", icon: Waves, href: "/weathersr" },
     { label: "점검요망", icon: AlertTriangle, href: "/error" },
-    { label: "관리", icon: Settings, href: "/setting", adminOnly: true },
+    { label: "관리", icon: Settings, href: "/setting", hidden: !(isLoggedIn && isAdmin) },
+    { label: isLoggedIn ? `${userName}님` : "로그인", icon: User, href: isLoggedIn ? "/admin" : "/login" },
   ];
 
+  const visibleMenuItems = menuItems.filter(item => !item.hidden);
+
   return (
-    <footer className="fixed bottom-0 left-0 z-50 w-full h-16 bg-blue-700 border-t border-blue-800">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-        {menuItems.map((item) => {
+    <footer className="footer-nav">
+      <div className="flex w-full items-stretch justify-around max-w-screen-xl mx-auto">
+        {visibleMenuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 
@@ -28,11 +53,10 @@ const Footer = () => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center px-5 hover:bg-blue-800 group ${isActive ? 'bg-blue-900 text-white' : 'text-blue-100'
-                }`}
+              className={`nav-item ${isActive ? 'active' : ''}`}
             >
-              <Icon className={`w-5 h-5 mb-1 ${isActive ? 'text-white' : 'text-blue-200'}`} />
-              <span className="text-[10px]">{item.label}</span>
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'scale-110 transition-transform' : 'opacity-80'}`} />
+              <span className="nav-label">{item.label}</span>
             </Link>
           );
         })}
