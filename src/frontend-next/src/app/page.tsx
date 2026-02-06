@@ -44,7 +44,9 @@ export default function Home() {
         {/* 로고 영역 (Vue의 v-img) */}
         <div className="w-full max-w-[200px]">
           <h1 className="text-3xl font-black text-blue-700 italic text-center">WOOBO</h1>
-          <p className="text-center text-sm text-slate-500 font-medium mt-1 uppercase tracking-widest">Support System</p>
+          <p className="text-center text-sm text-slate-500 font-medium mt-1 uppercase tracking-widest">
+            Support System
+          </p>
         </div>
 
         <div className="w-full max-w-2xl">
@@ -56,9 +58,11 @@ export default function Home() {
                 key={item.title}
                 href={item.disabled ? "#" : item.href}
                 target={item.external ? "_blank" : "_self"}
-                className={`${item.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`${item.disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
               >
-                <Card className={`group transition-all hover:shadow-md ${item.disabled ? 'opacity-60 grayscale' : 'hover:border-blue-300'}`}>
+                <Card
+                  className={`group transition-all hover:shadow-md ${item.disabled ? "opacity-60 grayscale" : "hover:border-blue-300"}`}
+                >
                   <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                     <div className={`p-2 rounded-lg bg-slate-50 mr-3 ${item.color}`}>
                       <item.icon className="h-5 w-5" />

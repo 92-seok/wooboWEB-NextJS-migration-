@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
+import React, { useEffect, useRef, useState } from "react";
+import Script from "next/script";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Layers, Plus, Minus, LocateFixed, Search, Menu, X, Activity } from "lucide-react";
-import { weathersiApi } from '@/lib/api';
-import './map.css';
+import { weathersiApi } from "@/lib/api";
+import "./map.css";
 
 declare global {
   interface Window {
@@ -14,7 +15,7 @@ declare global {
   }
 }
 
-const KAKAO_KEY = '78043f0e0163452bfd6915fc3ef926a6';
+const KAKAO_KEY = "78043f0e0163452bfd6915fc3ef926a6";
 const KAKAO_SDK_URL = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&autoload=false`;
 
 const MapPage = () => {
@@ -31,7 +32,6 @@ const MapPage = () => {
   const [showStatusCard, setShowStatusCard] = useState(false); // 모바일 상태창 토글
   const [isMobile, setIsMobile] = useState(false);
 
-
   // 현재 열려있는 단일 커스텀 오버레이와 마커들을 관리하기 위한 Ref
   const activeOverlay = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -44,18 +44,37 @@ const MapPage = () => {
       if (response && response.success && Array.isArray(response.data)) {
         const mappedData = response.data.map((item: any) => {
           // GB_OBSV 코드 매핑 (숫자/문자 모두 대응)
-          const gbCode = String(item.GB_OBSV || "").padStart(2, '0');
-          let type = 'rain';
+          const gbCode = String(item.GB_OBSV || "").padStart(2, "0");
+          let type = "rain";
           switch (gbCode) {
-            case '01': type = 'rain'; break;
-            case '02': type = 'water'; break;
-            case '03': case '04': type = 'tilt'; break;
-            case '06': type = 'flood'; break;
-            case '08': type = 'snow'; break;
-            case '17': type = 'display'; break;
-            case '18': case '21': type = 'broad'; break;
-            case '20': type = 'gate'; break;
-            default: type = 'rain';
+            case "01":
+              type = "rain";
+              break;
+            case "02":
+              type = "water";
+              break;
+            case "03":
+            case "04":
+              type = "tilt";
+              break;
+            case "06":
+              type = "flood";
+              break;
+            case "08":
+              type = "snow";
+              break;
+            case "17":
+              type = "display";
+              break;
+            case "18":
+            case "21":
+              type = "broad";
+              break;
+            case "20":
+              type = "gate";
+              break;
+            default:
+              type = "rain";
           }
 
           return {
@@ -64,7 +83,7 @@ const MapPage = () => {
             lat: parseFloat(item.LAT) || 37.4341,
             lng: parseFloat(item.LON) || 127.174,
             type: type,
-            status: Number(item.ErrorChk) === 5 ? 'normal' : 'error'
+            status: Number(item.ErrorChk) === 5 ? "normal" : "error",
           };
         });
         setStations(mappedData);
@@ -72,7 +91,7 @@ const MapPage = () => {
         console.warn("⚠️ API 성공했으나 데이터가 비어있거나 실패함:", response);
       }
     } catch (error) {
-      console.error('❌ 관측소 데이터 로드 실패:', error);
+      console.error("❌ 관측소 데이터 로드 실패:", error);
     } finally {
       setLoading(false);
     }
@@ -102,12 +121,12 @@ const MapPage = () => {
     if (!map || stations.length === 0) return;
 
     // 기존 마커 제거
-    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
     stations.forEach((station) => {
-      const isError = station.status !== 'normal';
-      const imageSrc = `/markers/${station.type}_marker${isError ? '_error' : ''}.png`;
+      const isError = station.status !== "normal";
+      const imageSrc = `/markers/${station.type}_marker${isError ? "_error" : ""}.png`;
       const imageSize = new window.kakao.maps.Size(36, 51);
       const imageOption = { offset: new window.kakao.maps.Point(18, 51) };
       const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
@@ -116,21 +135,21 @@ const MapPage = () => {
         map: map,
         position: new window.kakao.maps.LatLng(station.lat, station.lng),
         title: station.name,
-        image: markerImage
+        image: markerImage,
       });
 
       markersRef.current.push(marker);
 
-      const content = document.createElement('div');
-      content.className = 'custom-overlay animate-slide-up';
+      const content = document.createElement("div");
+      content.className = "custom-overlay animate-slide-up";
       content.innerHTML = `
         <div class="overlay-header">
           <span class="overlay-title text-[13px] font-black">${station.name}</span>
           <span class="overlay-close text-slate-400 hover:text-red-500 transition-colors cursor-pointer text-lg">×</span>
         </div>
         <div class="overlay-body mt-1">
-          <span class="overlay-status-badge ${station.status === 'normal' ? 'badge-normal' : 'badge-error'}">
-            ${station.status === 'normal' ? '정상' : '점검요망'}
+          <span class="overlay-status-badge ${station.status === "normal" ? "badge-normal" : "badge-error"}">
+            ${station.status === "normal" ? "정상" : "점검요망"}
           </span>
           <span class="text-[10px] text-slate-400 font-mono ml-2">${station.id}</span>
         </div>
@@ -139,13 +158,13 @@ const MapPage = () => {
       const overlay = new window.kakao.maps.CustomOverlay({
         position: marker.getPosition(),
         content: content,
-        yAnchor: 1.3
+        yAnchor: 1.3,
       });
 
-      const closeBtn = content.querySelector('.overlay-close');
-      closeBtn?.addEventListener('click', () => overlay.setMap(null));
+      const closeBtn = content.querySelector(".overlay-close");
+      closeBtn?.addEventListener("click", () => overlay.setMap(null));
 
-      window.kakao.maps.event.addListener(marker, 'click', () => {
+      window.kakao.maps.event.addListener(marker, "click", () => {
         if (activeOverlay.current) activeOverlay.current.setMap(null);
         overlay.setMap(map);
         activeOverlay.current = overlay;
@@ -185,9 +204,9 @@ const MapPage = () => {
     const MapTypeId = window.kakao.maps.MapTypeId;
     let targetMapTypeId;
 
-    if (type === 'ROADMAP') {
+    if (type === "ROADMAP") {
       targetMapTypeId = MapTypeId.ROADMAP;
-    } else if (type === 'HYBRID') {
+    } else if (type === "HYBRID") {
       targetMapTypeId = MapTypeId.HYBRID;
     } else {
       // 기본값 (일반 지도)
@@ -207,11 +226,11 @@ const MapPage = () => {
     };
 
     handleResize(); // 초기 실행
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const filteredStations = stations.filter(s => s.name?.includes(searchQuery));
+  const filteredStations = stations.filter((s) => s.name?.includes(searchQuery));
 
   return (
     <div className="absolute inset-0 w-full h-full bg-slate-100 overflow-hidden">
@@ -228,15 +247,16 @@ const MapPage = () => {
       <div className="absolute top-4 left-4 z-50">
         <Button
           onClick={() => setShowSidebar(!showSidebar)}
-          className={`h-10 px-4 gap-2 rounded-xl shadow-2xl border-none transition-all ${showSidebar ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-slate-50 text-slate-800'
-            }`}
+          className={`h-10 px-4 gap-2 rounded-xl shadow-2xl border-none transition-all ${
+            showSidebar ? "bg-indigo-600 text-white" : "bg-white hover:bg-slate-50 text-slate-800"
+          }`}
         >
           {showSidebar ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           <span className="text-xs font-black">장비 목록</span>
         </Button>
       </div>
 
-      <aside className={`station-sidebar ${showSidebar ? 'open' : ''} h-[400px]`}>
+      <aside className={`station-sidebar ${showSidebar ? "open" : ""} h-[400px]`}>
         <div className="sidebar-header">
           <div className="flex items-center mb-2.5">
             <h2 className="text-[13px] font-black text-slate-800 flex items-center gap-1.5">
@@ -262,10 +282,18 @@ const MapPage = () => {
           ) : (
             <>
               {filteredStations.map((station) => (
-                <button key={station.id} className="station-item group" onClick={() => moveToStation(station.lat, station.lng)}>
-                  <div className={`status-dot ${station.status === 'normal' ? 'bg-green-500' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]'}`} />
+                <button
+                  key={station.id}
+                  className="station-item group"
+                  onClick={() => moveToStation(station.lat, station.lng)}
+                >
+                  <div
+                    className={`status-dot ${station.status === "normal" ? "bg-green-500" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]"}`}
+                  />
                   <div className="flex flex-col text-left">
-                    <span className="text-[12px] font-bold text-slate-700 group-hover:text-indigo-600 truncate max-w-[110px]">{station.name}</span>
+                    <span className="text-[12px] font-bold text-slate-700 group-hover:text-indigo-600 truncate max-w-[110px]">
+                      {station.name}
+                    </span>
                     <span className="text-[9px] text-slate-400 mt-0.5">{station.id}</span>
                   </div>
                 </button>
@@ -290,11 +318,21 @@ const MapPage = () => {
 
       <div className="map-controls">
         <Card className="flex flex-col p-1 bg-white/95 backdrop-blur border-none shadow-2xl pointer-events-auto rounded-xl">
-          <Button variant="ghost" size="icon" onClick={() => map?.setLevel(map.getLevel() - 1)} className="h-10 w-10 sm:h-11 sm:w-11">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => map?.setLevel(map.getLevel() - 1)}
+            className="h-10 w-10 sm:h-11 sm:w-11"
+          >
             <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 font-bold" />
           </Button>
           <div className="h-px bg-slate-200 mx-1.5" />
-          <Button variant="ghost" size="icon" onClick={() => map?.setLevel(map.getLevel() + 1)} className="h-10 w-10 sm:h-11 sm:w-11">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => map?.setLevel(map.getLevel() + 1)}
+            className="h-10 w-10 sm:h-11 sm:w-11"
+          >
             <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 font-bold" />
           </Button>
         </Card>
@@ -310,13 +348,19 @@ const MapPage = () => {
 
       {/* 1. Live Connection 상태 박스 (모바일: 토글됨 / 데스크탑: 항상 표시) */}
       {(showStatusCard || !isMobile) && (
-        <div className={`absolute z-[999] ${isMobile ? 'left-3 right-3 bottom-[calc(var(--footer-h-mobile)+240px)] animate-slide-up origin-bottom' : 'left-6 bottom-[calc(var(--footer-h-desktop)+20px)] w-auto'}`}>
+        <div
+          className={`absolute z-[999] ${isMobile ? "left-3 right-3 bottom-[calc(var(--footer-h-mobile)+240px)] animate-slide-up origin-bottom" : "left-6 bottom-[calc(var(--footer-h-desktop)+20px)] w-auto"}`}
+        >
           <div className="status-card bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-6">
             <div className="flex flex-col gap-0.5 pr-5 border-r border-slate-600">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-green-400 uppercase tracking-wider">Live</span>
+                <span className="text-[10px] font-black text-green-400 uppercase tracking-wider">
+                  Live
+                </span>
               </div>
-              <span className="text-[9px] text-slate-400 font-mono tracking-tight hidden sm:block">{mountTime}</span>
+              <span className="text-[9px] text-slate-400 font-mono tracking-tight hidden sm:block">
+                {mountTime}
+              </span>
             </div>
             <div className="flex gap-6">
               <div className="flex flex-col items-center">
@@ -325,16 +369,23 @@ const MapPage = () => {
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-[9px] uppercase text-green-500/70 font-bold">Normal</span>
-                <span className="text-sm font-black text-green-400">{stations.filter(s => s.status === 'normal').length}</span>
+                <span className="text-sm font-black text-green-400">
+                  {stations.filter((s) => s.status === "normal").length}
+                </span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-[9px] uppercase text-red-500/70 font-bold">Error</span>
-                <span className="text-sm font-black text-red-500 animate-pulse">{stations.filter(s => s.status === 'error').length}</span>
+                <span className="text-sm font-black text-red-500 animate-pulse">
+                  {stations.filter((s) => s.status === "error").length}
+                </span>
               </div>
             </div>
             {/* 데스크탑 닫기 버튼 (옵션) */}
             {isMobile && (
-              <button onClick={() => setShowStatusCard(false)} className="absolute -top-2 -right-2 bg-slate-800 rounded-full p-1 border border-slate-600 shadow-lg">
+              <button
+                onClick={() => setShowStatusCard(false)}
+                className="absolute -top-2 -right-2 bg-slate-800 rounded-full p-1 border border-slate-600 shadow-lg"
+              >
                 <X size={12} className="text-slate-300" />
               </button>
             )}
@@ -344,12 +395,14 @@ const MapPage = () => {
 
       {/* 2. 모바일 하단 버튼 그룹 (Layer: 우측, Status: 좌측) */}
       <div className="absolute z-[999] left-3 right-3 bottom-[calc(var(--footer-h-mobile)+180px)] flex justify-between items-end pointer-events-none sm:hidden">
-
         {/* 좌측: 상태 토글 버튼 */}
         <Button
           onClick={() => setShowStatusCard(!showStatusCard)}
-          className={`pointer-events-auto h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${showStatusCard ? 'bg-green-500 text-white ring-4 ring-green-500/30' : 'bg-white text-slate-900'
-            }`}
+          className={`pointer-events-auto h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${
+            showStatusCard
+              ? "bg-green-500 text-white ring-4 ring-green-500/30"
+              : "bg-white text-slate-900"
+          }`}
         >
           <Activity className="h-5 w-5" />
         </Button>
@@ -359,14 +412,17 @@ const MapPage = () => {
           {showLayerMenu && (
             <div className="absolute bottom-14 right-0 w-32 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-slide-up p-1 flex flex-col gap-1">
               {[
-                { id: 'ROADMAP', name: '일반 지도' },
-                { id: 'HYBRID', name: '하이브리드' },
+                { id: "ROADMAP", name: "일반 지도" },
+                { id: "HYBRID", name: "하이브리드" },
               ].map((layer) => (
                 <button
                   key={layer.id}
                   onClick={() => changeMapType(layer.id)}
-                  className={`text-[11px] font-bold py-2 px-3 rounded-xl text-left w-full transition-colors ${currentLayer === layer.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'
-                    }`}
+                  className={`text-[11px] font-bold py-2 px-3 rounded-xl text-left w-full transition-colors ${
+                    currentLayer === layer.id
+                      ? "bg-indigo-50 text-indigo-600"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
                 >
                   {layer.name}
                 </button>
@@ -375,8 +431,9 @@ const MapPage = () => {
           )}
           <Button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className={`h-12 w-12 rounded-2xl shadow-xl border-none transition-all ${showLayerMenu ? 'bg-indigo-600 text-white' : 'bg-white text-slate-900'
-              }`}
+            className={`h-12 w-12 rounded-2xl shadow-xl border-none transition-all ${
+              showLayerMenu ? "bg-indigo-600 text-white" : "bg-white text-slate-900"
+            }`}
           >
             <Layers className="h-5 w-5" />
           </Button>
@@ -390,14 +447,17 @@ const MapPage = () => {
             <div className="absolute bottom-16 right-0 w-40 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-slide-up p-1.5 flex flex-col gap-1">
               {/* 데스크탑 레이어 메뉴 내용 동일 */}
               {[
-                { id: 'ROADMAP', name: '일반 지도', desc: '표준 벡터' },
-                { id: 'HYBRID', name: '하이브리드', desc: '위성+도로' },
+                { id: "ROADMAP", name: "일반 지도", desc: "표준 벡터" },
+                { id: "HYBRID", name: "하이브리드", desc: "위성+도로" },
               ].map((layer) => (
                 <button
                   key={layer.id}
                   onClick={() => changeMapType(layer.id)}
-                  className={`text-xs font-bold py-2.5 px-3 rounded-xl text-left w-full transition-colors flex flex-col ${currentLayer === layer.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'
-                    }`}
+                  className={`text-xs font-bold py-2.5 px-3 rounded-xl text-left w-full transition-colors flex flex-col ${
+                    currentLayer === layer.id
+                      ? "bg-indigo-50 text-indigo-600"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
                 >
                   <span>{layer.name}</span>
                   <span className="text-[9px] opacity-50 font-normal">{layer.desc}</span>

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindOptionsWhere, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -12,7 +16,6 @@ import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UserListQueryDto } from './dto/user-list-query.dto';
 import { UserRole } from '../common/enums/user-role.enum';
-
 
 @Injectable()
 export class AdminService {
@@ -29,7 +32,7 @@ export class AdminService {
     private disSendRepository: Repository<NmsDisSend>,
     @InjectRepository(NmsGateControl, 'weathersi')
     private gateControlRepository: Repository<NmsGateControl>,
-  ) { }
+  ) {}
 
   // 전체 사용자 목록 조회하기 (페이징 + 필터링)
   async getAllUsers(query: UserListQueryDto) {
@@ -46,10 +49,13 @@ export class AdminService {
     }
 
     // 검색어가 있으면 이메일 또는 이름으로 검색
-    const searchConditions: FindOptionsWhere<NmsUser> | FindOptionsWhere<NmsUser>[] = search ? [
-      { ...where, username: Like(`%${search}%`) },
-      { ...where, name: Like(`%${search}%`) },
-    ]
+    const searchConditions:
+      | FindOptionsWhere<NmsUser>
+      | FindOptionsWhere<NmsUser>[] = search
+      ? [
+          { ...where, username: Like(`%${search}%`) },
+          { ...where, name: Like(`%${search}%`) },
+        ]
       : where;
 
     // 사용자 목록 조회
@@ -58,11 +64,19 @@ export class AdminService {
       skip,
       take: limit,
       order: { createdAt: 'DESC' },
-      select: ['id', 'username', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt']
+      select: [
+        'id',
+        'username',
+        'name',
+        'role',
+        'is_active',
+        'lastLoginAt',
+        'createdAt',
+      ],
     });
 
     // 응답 형식을 is_active -> isActive로 변환
-    const formattedUsers = users.map(user => ({
+    const formattedUsers = users.map((user) => ({
       id: user.id,
       username: user.username,
       name: user.name,
@@ -87,13 +101,20 @@ export class AdminService {
   async getUserById(id: number) {
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'username', 'name', 'role', 'is_active', 'lastLoginAt', 'createdAt'],
+      select: [
+        'id',
+        'username',
+        'name',
+        'role',
+        'is_active',
+        'lastLoginAt',
+        'createdAt',
+      ],
     });
 
     if (!user) {
       throw new NotFoundException(`ID ${id}인 사용자를 찾을 수 없습니다.`);
     }
-
 
     return {
       id: user.id,
@@ -137,9 +158,9 @@ export class AdminService {
         authorityName = 'ROLE_GUEST';
         break;
       default:
-        authorityName = 'ROLE_OPERATOR'
+        authorityName = 'ROLE_OPERATOR';
     }
-    const authority = this.userAuthRepo.create({ user, authorityName, });
+    const authority = this.userAuthRepo.create({ user, authorityName });
     await this.userAuthRepo.save(authority);
 
     return {
@@ -154,7 +175,10 @@ export class AdminService {
   }
 
   // 사용자 비밀번호 강제로 변경
-  async updateUserPassword(id: number, updateUserPasswordDto: UpdateUserPasswordDto) {
+  async updateUserPassword(
+    id: number,
+    updateUserPasswordDto: UpdateUserPasswordDto,
+  ) {
     const user = await this.userRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -162,7 +186,10 @@ export class AdminService {
     }
 
     // 새 비밀번호 해싱하기
-    const hashedPassword = await bcrypt.hash(updateUserPasswordDto.newPassword, 10);
+    const hashedPassword = await bcrypt.hash(
+      updateUserPasswordDto.newPassword,
+      10,
+    );
     user.password = hashedPassword;
     await this.userRepository.save(user);
 
@@ -207,7 +234,7 @@ export class AdminService {
 
     if (user.role === UserRole.ADMIN && adminCount === 1) {
       throw new BadRequestException('마지막 관리자는 삭제할 수 없습니다.');
-    };
+    }
 
     await this.userRepository.remove(user);
 
@@ -224,13 +251,16 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     // 전체 개수 조회하기
-    const totalQueryBuilder = this.brdSendRepository.createQueryBuilder('brdsend');
+    const totalQueryBuilder =
+      this.brdSendRepository.createQueryBuilder('brdsend');
 
     if (BDONG_CD) {
       totalQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      totalQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const total = await totalQueryBuilder.getCount();
@@ -268,28 +298,32 @@ export class AdminService {
       queryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      queryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      queryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const history = await queryBuilder.getRawMany();
 
     // Auth 값들을 수집
-    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
+    const authIds = [
+      ...new Set(history.map((item) => item.Auth).filter(Boolean)),
+    ];
 
     // 사용자 정보 조회
     const users = await this.userRepository.find({
-      where: authIds.map(username => ({ username })),
+      where: authIds.map((username) => ({ username })),
       select: ['username', 'name'],
     });
 
     // username을 key로 하는 Map 생성
-    const userMap = new Map(users.map(user => [user.username, user.name]));
+    const userMap = new Map(users.map((user) => [user.username, user.name]));
 
     // history에 userName 매핑
-    const historyWithUserNames = history.map(item => ({
+    const historyWithUserNames = history.map((item) => ({
       ...item,
       userName: userMap.get(item.Auth) || null,
-      type: 'broadcast'
+      type: 'broadcast',
     }));
 
     return {
@@ -311,13 +345,16 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     // 전체 개수 조회하기
-    const totalQueryBuilder = this.disSendRepository.createQueryBuilder('dissend');
+    const totalQueryBuilder =
+      this.disSendRepository.createQueryBuilder('dissend');
 
     if (BDONG_CD) {
       totalQueryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      totalQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      totalQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const total = await totalQueryBuilder.getCount();
@@ -352,19 +389,26 @@ export class AdminService {
       queryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      queryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      queryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const history = await queryBuilder.getRawMany();
 
     // Auth 값들을 수집
-    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
+    const authIds = [
+      ...new Set(history.map((item) => item.Auth).filter(Boolean)),
+    ];
 
     // 사용자 정보 조회
-    const users = authIds.length > 0 ? await this.userRepository.find({
-      where: { username: In(authIds) },
-      select: ['username', 'name'],
-    }) : [];
+    const users =
+      authIds.length > 0
+        ? await this.userRepository.find({
+            where: { username: In(authIds) },
+            select: ['username', 'name'],
+          })
+        : [];
 
     // const users = await this.userRepository.find({
     //   where: authIds.map(username => ({ username })),
@@ -372,13 +416,13 @@ export class AdminService {
     // });
 
     // username을 key로 하는 Map 생성
-    const userMap = new Map(users.map(user => [user.username, user.name]));
+    const userMap = new Map(users.map((user) => [user.username, user.name]));
 
     // history에 userName 매핑
-    const historyWithUserNames = history.map(item => ({
+    const historyWithUserNames = history.map((item) => ({
       ...item,
       userName: userMap.get(item.Auth) || null,
-      type: 'display'
+      type: 'display',
     }));
 
     return {
@@ -396,17 +440,22 @@ export class AdminService {
 
   // 차단기 제어 이력 조회하기
   async getGateHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1, } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1 } = query;
     const skip = (page - 1) * limit;
 
     // 전체 개수 조회하기
-    const totalQueryBuilder = this.gateControlRepository.createQueryBuilder('gatecontrol');
+    const totalQueryBuilder =
+      this.gateControlRepository.createQueryBuilder('gatecontrol');
 
     if (BDONG_CD) {
-      totalQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      totalQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
     }
     if (CD_DIST_OBSV) {
-      totalQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      totalQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const total = await totalQueryBuilder.getCount();
@@ -440,28 +489,32 @@ export class AdminService {
       queryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
     }
     if (CD_DIST_OBSV) {
-      queryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      queryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const history = await queryBuilder.getRawMany();
 
     // Auth 값들을 수집
-    const authIds = [...new Set(history.map(item => item.Auth).filter(Boolean))];
+    const authIds = [
+      ...new Set(history.map((item) => item.Auth).filter(Boolean)),
+    ];
 
     // 사용자 정보 조회
     const users = await this.userRepository.find({
-      where: authIds.map(username => ({ username })),
+      where: authIds.map((username) => ({ username })),
       select: ['username', 'name'],
     });
 
     // username을 key로 하는 Map 생성
-    const userMap = new Map(users.map(user => [user.username, user.name]));
+    const userMap = new Map(users.map((user) => [user.username, user.name]));
 
     // history에 userName 매핑
-    const historyWithUserNames = history.map(item => ({
+    const historyWithUserNames = history.map((item) => ({
       ...item,
       userName: userMap.get(item.Auth) || null,
-      type: 'gate'
+      type: 'gate',
     }));
 
     return {
@@ -479,23 +532,38 @@ export class AdminService {
 
   // 모든 장비 제어 이력 통합 조회
   async getAllControlHistory(query: any) {
-    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1, } = query;
+    const { BDONG_CD, CD_DIST_OBSV, limit = 100, page = 1 } = query;
     const skip = (page - 1) * limit;
 
     // ========== 1. Total 개수 계산 (3개 테이블 합산하기) ==========
-    const broadcastTotalBuilder = this.brdSendRepository.createQueryBuilder('brdsend');
-    const displayTotalBuilder = this.disSendRepository.createQueryBuilder('dissend');
-    const gateTotalBuilder = this.gateControlRepository.createQueryBuilder('gatecontrol');
+    const broadcastTotalBuilder =
+      this.brdSendRepository.createQueryBuilder('brdsend');
+    const displayTotalBuilder =
+      this.disSendRepository.createQueryBuilder('dissend');
+    const gateTotalBuilder =
+      this.gateControlRepository.createQueryBuilder('gatecontrol');
 
     if (BDONG_CD) {
-      broadcastTotalBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
-      displayTotalBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
-      gateTotalBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      broadcastTotalBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
+      displayTotalBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
+      gateTotalBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
     }
     if (CD_DIST_OBSV) {
-      broadcastTotalBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
-      displayTotalBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
-      gateTotalBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      broadcastTotalBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
+      displayTotalBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
+      gateTotalBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     const [broadcastTotal, displayTotal, gateTotal] = await Promise.all([
@@ -539,10 +607,14 @@ export class AdminService {
       .limit(fetchLimit);
 
     if (BDONG_CD) {
-      broadcastQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      broadcastQueryBuilder.andWhere('brdsend.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
     }
     if (CD_DIST_OBSV) {
-      broadcastQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      broadcastQueryBuilder.andWhere('brdsend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     // 전광판 제어 이력
@@ -572,10 +644,14 @@ export class AdminService {
       .limit(fetchLimit);
 
     if (BDONG_CD) {
-      displayQueryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      displayQueryBuilder.andWhere('dissend.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
     }
     if (CD_DIST_OBSV) {
-      displayQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      displayQueryBuilder.andWhere('dissend.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
 
     // 차단기 제어 이력
@@ -604,10 +680,14 @@ export class AdminService {
       .limit(fetchLimit);
 
     if (BDONG_CD) {
-      gateQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', { BDONG_CD });
+      gateQueryBuilder.andWhere('gatecontrol.BDONG_CD = :BDONG_CD', {
+        BDONG_CD,
+      });
     }
     if (CD_DIST_OBSV) {
-      gateQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', { CD_DIST_OBSV });
+      gateQueryBuilder.andWhere('gatecontrol.CD_DIST_OBSV = :CD_DIST_OBSV', {
+        CD_DIST_OBSV,
+      });
     }
     // const where: any = {};
     // if (BDONG_CD) where.BDONG_CD = BDONG_CD;
@@ -622,36 +702,39 @@ export class AdminService {
 
     // Auth 값들을 수집
     const allAuthIds = [
-      ...broadcastHistory.map(item => item.Auth),
-      ...displayHistory.map(item => item.Auth),
-      ...gateHistory.map(item => item.Auth),
+      ...broadcastHistory.map((item) => item.Auth),
+      ...displayHistory.map((item) => item.Auth),
+      ...gateHistory.map((item) => item.Auth),
     ].filter(Boolean);
     const authIds = [...new Set(allAuthIds)];
 
     // 5. 사용자 정보 조회
     const users = await this.userRepository.find({
-      where: authIds.map(username => ({ username })),
+      where: authIds.map((username) => ({ username })),
       select: ['username', 'name'],
     });
 
     // username을 key로 하는 Map 생성
-    const userMap = new Map(users.map(user => [user.username, user.name]));
+    const userMap = new Map(users.map((user) => [user.username, user.name]));
 
     // 타입 구분 및 userName 매핑
-    const broadcast = broadcastHistory.map(item => ({
+    const broadcast = broadcastHistory.map((item) => ({
       ...item,
+      uniqueId: `broadcast-${item.IDX}`,
       userName: userMap.get(item.Auth) || null,
-      type: 'broadcast'
+      type: 'broadcast',
     }));
-    const display = displayHistory.map(item => ({
+    const display = displayHistory.map((item) => ({
       ...item,
+      uniqueId: `display-${item.IDX}`,
       userName: userMap.get(item.Auth) || null,
-      type: 'display'
+      type: 'display',
     }));
-    const gate = gateHistory.map(item => ({
+    const gate = gateHistory.map((item) => ({
       ...item,
+      uniqueId: `gate-${item.IDX}`,
       userName: userMap.get(item.Auth) || null,
-      type: 'gate'
+      type: 'gate',
     }));
 
     // 모든 이력을 합치고 시간순으로 정렬
@@ -660,7 +743,8 @@ export class AdminService {
         const dateA = new Date(a.dtmCreate).getTime();
         const dateB = new Date(b.dtmCreate).getTime();
         return dateB - dateA; //최신순으로
-      }).slice(skip, skip + limit);
+      })
+      .slice(skip, skip + limit);
 
     return {
       success: true,
