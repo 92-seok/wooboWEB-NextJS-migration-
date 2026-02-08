@@ -30,6 +30,9 @@ import {
 } from "lucide-react";
 import { weathersrApi } from "@/lib/api";
 import { WeatherDevice } from "@/lib/types";
+import { DataSyncIndicator } from "@/components/ui/data-sync-indicator";
+import { getDeviceStatusBadgeClass } from "@/lib/dataDisplay";
+import dayjs from "dayjs";
 
 const PROVINCE_GROUPS = [
   { name: "전국", codes: [] },
@@ -46,6 +49,7 @@ const WeatherSRPage = () => {
   const [selectedProvince, setSelectedProvince] = useState(PROVINCE_GROUPS[0]);
   const [devices, setDevices] = useState<WeatherDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
@@ -56,6 +60,7 @@ const WeatherSRPage = () => {
       const res = await weathersrApi.getDevices();
       if (res && res.success) {
         setDevices(res.data || []);
+        setLastUpdated(new Date());
       }
     } catch (err) {
       console.error("SR 장비 로드 실패:", err);
@@ -83,6 +88,9 @@ const WeatherSRPage = () => {
   });
 
   const totalItems = filteredDevices.length;
+  const normalCount = filteredDevices.filter((d) => d.STATUS === "OK").length;
+  const errorCount = filteredDevices.filter((d) => d.STATUS !== "OK").length;
+
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedDevices = filteredDevices.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -90,400 +98,284 @@ const WeatherSRPage = () => {
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 pb-32 px-6 sm:px-12 lg:px-16 mt-12">
-      {/* 지역 필터 */}
-      <div className="space-y-2">
-        <label className="text-[11px] font-black text-slate-400 flex items-center gap-2 uppercase tracking-wider pl-1">
-          <Monitor className="h-3 w-3 text-indigo-600" /> Area Filter
-        </label>
-        <div className="bg-white/80 backdrop-blur-sm p-2 rounded-2xl flex flex-wrap gap-1.5 border border-slate-200/60 shadow-sm">
-          {PROVINCE_GROUPS.map((prov) => (
-            <Button
-              key={prov.name}
-              variant={selectedProvince.name === prov.name ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setSelectedProvince(prov)}
-              className={`h-8 px-3.5 rounded-xl text-[11px] font-bold transition-all ${
-                selectedProvince.name === prov.name
-                  ? "bg-indigo-700 text-white shadow-md shadow-indigo-100"
-                  : "text-slate-500 hover:bg-slate-100"
-              }`}
-            >
-              {prov.name}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* 컨트롤 바 */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-2">
-        <div>
-          <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-            소하천 관측 리스트
-            <Badge
-              variant="outline"
-              className="text-indigo-600 border-indigo-100 bg-indigo-50/30 font-bold rounded-lg px-2"
-            >
-              {selectedProvince.name}
-            </Badge>
-          </h2>
-          <p className="text-[11px] text-slate-400 font-medium italic">
-            실시간 수위 및 유입량 현황을 모니터링합니다. (총 {totalItems}개)
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 font-bold" />
-            <input
-              placeholder="장비명 또는 코드 검색"
-              className="w-full pl-9 pr-4 h-11 text-sm border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 outline-none rounded-2xl bg-white shadow-sm transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={loadDevices}
-            className="h-11 w-11 shrink-0 border-slate-200 bg-white rounded-2xl"
-          >
-            <RotateCw className={`h-4 w-4 text-slate-500 ${loading ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
-      </div>
-
-      {/* 장비 테이블 및 모바일 카드 리스트 */}
-      <div className="space-y-4 font-sans">
-        {/* 데스크탑 테이블 뷰 */}
-        <Card className="overflow-hidden border-none shadow-xl rounded-[2rem] border-t-4 border-indigo-700 bg-white">
-          <div className="overflow-x-auto">
-            <Table className="w-full table-fixed">
-              <TableHeader className="bg-slate-50/50 border-b">
-                <TableRow className="h-14 hover:bg-transparent">
-                  <TableHead className="w-[30px] sm:w-[40px] px-1"></TableHead>
-                  <TableHead className="w-[30px] sm:w-[60px] text-center font-bold text-slate-500 text-[9px] sm:text-[10px] tracking-wider px-0.5">
-                    번호
-                  </TableHead>
-                  <TableHead className="w-[40px] sm:w-[100px] text-center font-bold text-slate-500 text-[9px] sm:text-[10px] tracking-wider px-0.5">
-                    지역
-                  </TableHead>
-                  <TableHead className="font-bold text-slate-800 text-center text-[9px] sm:text-[12px] px-0.5">
-                    관측소명
-                  </TableHead>
-                  <TableHead className="w-[50px] sm:w-[90px] text-center font-bold text-slate-500 text-[9px] sm:text-[10px] tracking-wider px-0.5">
-                    상태
-                  </TableHead>
-                  <TableHead className="w-[50px] sm:w-[120px] text-center font-bold text-slate-500 text-[9px] sm:text-[10px] tracking-wider px-0.5">
-                    수위
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-60 text-center text-slate-400">
-                      데이터를 로드 중입니다...
-                    </TableCell>
-                  </TableRow>
-                ) : paginatedDevices.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-60 text-center text-slate-400">
-                      조회된 데이터가 없습니다.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedDevices.map((item, index) => (
-                    <React.Fragment key={item.IDX}>
-                      <TableRow
-                        className={`h-14 border-b transition-all cursor-pointer ${expandedRow === item.IDX ? "bg-indigo-50/50" : "hover:bg-slate-50/50"}`}
-                        onClick={() => setExpandedRow(expandedRow === item.IDX ? null : item.IDX)}
-                      >
-                        <TableCell className="text-center px-1">
-                          {expandedRow === item.IDX ? (
-                            <ChevronUp className="h-4 w-4 text-indigo-600 mx-auto" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-slate-300 mx-auto" />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center font-mono text-[9px] sm:text-[11px] text-slate-400 px-0.5">
-                          {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                        </TableCell>
-                        <TableCell className="text-center font-bold text-slate-600 text-[9px] sm:text-[11px] px-0.5 truncate max-w-[50px] sm:max-w-none">
-                          {item.BDONG_CD?.substring(0, 5)}
-                        </TableCell>
-                        <TableCell className="font-bold text-slate-800 text-center text-[9px] sm:text-[13px] truncate px-0.5 tracking-tighter">
-                          {item.NM_DIST_OBSV}
-                        </TableCell>
-                        <TableCell className="text-center px-0.5">
-                          <Badge
-                            className={`px-3 py-1 text-[8px] sm:text-[11px] font-black border-none justify-center w-full sm:w-auto mx-auto ${item.STATUS === "OK" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700 animate-pulse"}`}
-                          >
-                            {item.STATUS === "OK" ? "정상" : "점검"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center text-indigo-700 font-black text-[9px] sm:text-[12px] px-0.5">
-                          {item.waterLevel || "-"}{" "}
-                          <span className="text-[8px] text-slate-300 ml-0.5 sm:ml-1 hidden sm:inline">
-                            M
-                          </span>
-                        </TableCell>
-                      </TableRow>
-
-                      {expandedRow === item.IDX && (
-                        <TableRow className="bg-slate-50/30">
-                          <TableCell colSpan={6} className="p-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-2">
-                              {/* 기본 정보 */}
-                              <Card className="p-5 space-y-4 bg-white border-slate-100 shadow-sm rounded-2xl">
-                                <h4 className="text-[11px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                                  <MapPin className="h-3.5 w-3.5" /> 기본 정보
-                                </h4>
-                                <div className="space-y-3 text-[12px]">
-                                  <div className="flex justify-between border-b border-slate-50 pb-2">
-                                    <span className="font-bold text-slate-500">주소</span>
-                                    <span className="text-slate-800 font-medium">
-                                      {item.DTL_ADRES || "-"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between border-b border-slate-50 pb-2">
-                                    <span className="font-bold text-slate-500">좌표</span>
-                                    <span className="text-slate-800 font-mono italic">
-                                      {item.LAT} / {item.LON}
-                                    </span>
-                                  </div>
-                                  <Button
-                                    variant="outline"
-                                    className="w-full text-[10px] h-8 rounded-xl border-slate-200 mt-2"
-                                  >
-                                    <Activity className="h-3 w-3 mr-2 text-green-500" /> 외부 지도
-                                    보기
-                                  </Button>
-                                </div>
-                              </Card>
-
-                              {/* 로거 관측 정보 */}
-                              <Card className="p-5 space-y-4 bg-white border-slate-100 shadow-sm rounded-2xl">
-                                <h4 className="text-[11px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                                  <Cpu className="h-3.5 w-3.5" /> 로거 관측 정보
-                                </h4>
-                                <div className="space-y-3 text-[12px]">
-                                  <div className="flex justify-between border-b border-slate-50 pb-2">
-                                    <span className="font-bold text-slate-500">최근 통신</span>
-                                    <span className="text-slate-800 font-mono italic">
-                                      {item.LOGGER_TIME || "-"}
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4 pt-1">
-                                    <div className="bg-slate-50 p-2 rounded-xl text-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">
-                                        GL
-                                      </p>
-                                      <p className="text-sm font-black text-indigo-600">
-                                        {item.LOGGER_GL || "0.00"}
-                                      </p>
-                                    </div>
-                                    <div className="bg-slate-50 p-2 rounded-xl text-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">
-                                        FL
-                                      </p>
-                                      <p className="text-sm font-black text-teal-600">
-                                        {item.LOGGER_FL || "0.00"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Card>
-
-                              {/* NDMI API 연계 */}
-                              <Card className="p-5 space-y-4 bg-white border-slate-100 shadow-sm rounded-2xl">
-                                <h4 className="text-[11px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                                  <Share2 className="h-3.5 w-3.5" /> NDMI 연계 정보
-                                </h4>
-                                <div className="space-y-3 text-[12px]">
-                                  <div className="flex justify-between border-b border-slate-50 pb-2">
-                                    <span className="font-bold text-slate-500">상태</span>
-                                    <Badge className="bg-blue-500 h-4 text-[9px] px-2 rounded-full font-black">
-                                      정상 연동
-                                    </Badge>
-                                  </div>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="text-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                        수위
-                                      </p>
-                                      <p className="text-[13px] font-black">
-                                        {item.waterLevel || "0.0"}
-                                      </p>
-                                    </div>
-                                    <div className="text-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                        유속
-                                      </p>
-                                      <p className="text-[13px] font-black">
-                                        {item.averageVelocity || "0.0"}
-                                      </p>
-                                    </div>
-                                    <div className="text-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                        Disch
-                                      </p>
-                                      <p className="text-[13px] font-black">
-                                        {item.totalDischarge || "0.0"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Card>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
-
-        {/* 모바일 카드 리스트 뷰 */}
-        <div className="hidden">
-          {" "}
-          {/* This div is now hidden */}
-          {loading ? (
-            <div className="p-20 text-center text-slate-400">데이터 로드 중...</div>
-          ) : (
-            paginatedDevices.map((item, index) => (
-              <Card
-                key={item.IDX}
-                className="p-5 rounded-3xl border-none shadow-lg bg-white space-y-4 overflow-hidden relative"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xs">
-                      {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                    </div>
-                    <div>
-                      <h3 className="font-black text-slate-800 text-base">{item.NM_DIST_OBSV}</h3>
-                      <p className="text-[10px] text-slate-400 font-mono">{item.IDX}</p>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`px-2.5 py-1 text-[10px] font-black border-none ${item.STATUS === "OK" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                  >
-                    {item.STATUS === "OK" ? "ONLINE" : "OFFLINE"}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 p-3 rounded-2xl">
-                    <p className="text-[10px] text-slate-500 font-bold mb-1">Water Level</p>
-                    <p className="text-xl font-black text-indigo-700">
-                      {item.waterLevel || "-"}
-                      <span className="text-xs ml-1 font-bold">M</span>
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-2xl flex flex-col justify-center">
-                    <p className="text-[10px] text-slate-500 font-bold mb-1">Last Update</p>
-                    <div className="flex items-center gap-1.5 text-slate-700">
-                      <Clock className="h-3 w-3 text-slate-400" />
-                      <span className="text-[11px] font-bold truncate max-w-[80px]">
-                        {item.LOGGER_TIME?.split(" ")[1] || "-"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  className="w-full h-10 rounded-2xl bg-indigo-50/50 text-indigo-600 text-xs font-black gap-2"
-                  onClick={() => setExpandedRow(expandedRow === item.IDX ? null : item.IDX)}
-                >
-                  상세 정보 보기{" "}
-                  {expandedRow === item.IDX ? (
-                    <ChevronUp className="h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3" />
-                  )}
-                </Button>
-
-                {expandedRow === item.IDX && (
-                  <div className="pt-2 space-y-4 animate-in fade-in slide-in-from-top-2">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase pl-1">
-                        Address
-                      </p>
-                      <div className="p-3 bg-slate-50 rounded-2xl text-xs text-slate-600 leading-relaxed font-medium">
-                        {item.DTL_ADRES || "정보 없음"}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase pl-1">
-                          GL/FL Level
-                        </p>
-                        <div className="p-3 bg-slate-50 rounded-2xl text-[12px] font-black text-blue-600 text-center">
-                          {item.LOGGER_GL || "0.0"}/{item.LOGGER_FL || "0.0"}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase pl-1">
-                          NDMI Sync
-                        </p>
-                        <div className="p-3 bg-slate-50 rounded-2xl text-[12px] font-black text-teal-600 text-center">
-                          {item.totalDischarge || "0.0"} m³/s
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            ))
+    <div className="max-w-[1440px] mx-auto space-y-6 pb-32 px-4 sm:px-8 lg:px-12 mt-8">
+      {/* 페이지 헤더 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">
+            소하천 관측 목록
+          </h1>
+          {lastUpdated && (
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>마지막 갱신: {dayjs(lastUpdated).format("YYYY-MM-DD HH:mm:ss")}</span>
+            </div>
           )}
         </div>
+        <Button
+          onClick={loadDevices}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
+        >
+          <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          새로고침
+        </Button>
+      </div>
 
-        {/* 페이징 컨트롤 */}
-        {totalPages > 0 && (
-          <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
-            <p className="text-xs text-slate-500 font-medium tracking-tight">
-              Showing{" "}
-              <span className="font-bold text-indigo-600">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-bold text-indigo-600">
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
-              </span>{" "}
-              of <span className="font-bold text-slate-800">{totalItems}</span>
-            </p>
-            <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
+      {/* 상태 요약 박스 */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-center">
+          <div className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">전체</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">{totalItems}</div>
+        </div>
+        <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-2xl p-4 text-center">
+          <div className="text-xs sm:text-sm font-bold text-green-600 dark:text-green-400 mb-1">정상</div>
+          <div className="text-2xl sm:text-3xl font-black text-green-700 dark:text-green-300">{normalCount}</div>
+        </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-4 text-center">
+          <div className="text-xs sm:text-sm font-bold text-red-600 dark:text-red-400 mb-1">점검필요</div>
+          <div className="text-2xl sm:text-3xl font-black text-red-700 dark:text-red-300">{errorCount}</div>
+        </div>
+      </div>
+
+      {/* 지역 필터 및 검색 */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-4 items-end">
+        <div className="space-y-3">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
+            지역 필터
+          </label>
+          <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+            {PROVINCE_GROUPS.map((prov) => (
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-xl text-slate-500"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                key={prov.name}
+                variant={selectedProvince.name === prov.name ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedProvince(prov)}
+                className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                  selectedProvince.name === prov.name
+                    ? "bg-blue-600 dark:bg-blue-700 text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
               >
-                <ChevronLeft className="h-4 w-4" />
+                {prov.name}
               </Button>
-              <div className="px-4 py-1.5 flex items-center gap-1.5">
-                <span className="text-xs font-black text-indigo-600">{currentPage}</span>
-                <span className="text-[10px] text-slate-300 font-bold italic">of</span>
-                <span className="text-xs font-bold text-slate-400">{totalPages}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-xl text-slate-500"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors" />
+          <Input
+            placeholder="장비명 또는 코드 검색..."
+            className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 장비 테이블 */}
+      <div className="space-y-4">
+        <Card className="overflow-hidden border-none shadow-xl rounded-3xl border-t-4 border-blue-600 dark:border-blue-700 bg-white dark:bg-slate-800">
+          <Table className="w-full table-fixed">
+            <TableHeader className="bg-slate-50/50 dark:bg-slate-800/80 border-b dark:border-slate-600">
+              <TableRow className="h-14 hover:bg-transparent">
+                <TableHead className="w-[30px] sm:w-[40px] px-1"></TableHead>
+                <TableHead className="w-[30px] sm:w-[60px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
+                  번호
+                </TableHead>
+                <TableHead className="w-[40px] sm:w-[70px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
+                  유형
+                </TableHead>
+                <TableHead className="font-bold text-slate-800 dark:text-slate-200 text-center text-[9px] sm:text-[12px] px-0.5">
+                  관측소명
+                </TableHead>
+                <TableHead className="w-[50px] sm:w-[80px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
+                  상태
+                </TableHead>
+                <TableHead className="w-[80px] sm:w-[160px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
+                  수위 데이터
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-60 text-center text-slate-400 dark:text-slate-500">
+                    데이터를 로드 중입니다...
+                  </TableCell>
+                </TableRow>
+              ) : paginatedDevices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-60 text-center text-slate-400 dark:text-slate-500">
+                    조회된 데이터가 없습니다.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedDevices.map((item, index) => {
+                  const isNormal = item.STATUS === "OK";
+                  const statusClass = getDeviceStatusBadgeClass(isNormal);
+                  
+                  return (
+                  <React.Fragment key={item.IDX}>
+                    <TableRow
+                      className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${
+                        expandedRow === item.IDX
+                          ? "bg-blue-50/50 dark:bg-blue-900/10"
+                          : "hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
+                      }`}
+                      onClick={() => setExpandedRow(expandedRow === item.IDX ? null : item.IDX)}
+                    >
+                      <TableCell className="text-center px-2">
+                        {expandedRow === item.IDX ? (
+                          <ChevronUp className="h-4 w-4 text-blue-500 dark:text-blue-400 mx-auto" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-500 mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center text-xs font-mono text-slate-600 dark:text-slate-400">
+                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <img
+                            src="/water.png"
+                            alt="수위계"
+                            className="h-6 w-6 mx-auto object-contain"
+                          />
+                          <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400">
+                            소하천
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate px-2">
+                          {item.NM_DIST_OBSV || "-"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className={statusClass}>
+                          {isNormal ? "정상" : "점검"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="text-xs text-slate-700 dark:text-slate-300 font-mono px-1">
+                          {item.waterLevel ? (
+                            <span className="font-bold">{item.waterLevel} <span className="text-[10px] text-slate-400 dark:text-slate-500">M</span></span>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {expandedRow === item.IDX && (
+                      <TableRow className="bg-slate-50/30 dark:bg-slate-900/30">
+                        <TableCell colSpan={6} className="p-4 sm:p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                                <MapPin size={16} /> 기본 정보
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
+                                    {item.DTL_ADRES || "-"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
+                                </div>
+                                <div className="flex justify-between py-2">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
+                                    {item.LAT} / {item.LON}
+                                  </span>
+                                </div>
+                              </div>
+                            </Card>
+
+                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                                <Activity size={16} /> 관측 데이터
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">최근 통신</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
+                                    {item.LOGGER_TIME || "-"}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl text-center border border-blue-100 dark:border-blue-800">
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mb-1">GL</p>
+                                    <p className="text-lg font-black text-blue-700 dark:text-blue-300">
+                                      {item.LOGGER_GL || "0.00"}
+                                    </p>
+                                  </div>
+                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
+                                    <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
+                                    <p className="text-lg font-black text-teal-700 dark:text-teal-300">
+                                      {item.LOGGER_FL || "0.00"}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+
+          {/* 페이지네이션 */}
+          {totalPages > 0 && (
+            <div className="py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                전체 <span className="font-bold text-slate-800 dark:text-slate-200">{totalItems}</span>개 중{" "}
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </span>
+                -
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
+                </span>{" "}
+                표시
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1 || loading}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{currentPage}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages || loading}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );

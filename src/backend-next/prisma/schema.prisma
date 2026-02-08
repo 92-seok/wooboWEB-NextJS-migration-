@@ -1,0 +1,197 @@
+// Portfolio Backend - Prisma + Supabase PostgreSQL
+// https://supabase.com/docs/guides/database/connecting-to-postgres
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== Auth (default) ====================
+
+model NmsUser {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique @db.VarChar(50)
+  password   String    @db.VarChar(255)
+  email      String    @db.VarChar(100)
+  name       String    @db.VarChar(50)
+  phone      String?   @db.VarChar(50)
+  role       String    @default("operator") @db.VarChar(20)
+  is_active  Int       @default(1)
+  kakao_id   String?   @db.VarChar(100)
+  last_login_at DateTime? @map("last_login_at")
+  created_at DateTime? @default(now()) @map("created_at")
+  updated_at DateTime? @updatedAt @map("updated_at")
+
+  authorities NmsUserAuthority[]
+  token       NmsUserToken?
+
+  @@map("nms_user")
+}
+
+model NmsUserAuthority {
+  id             Int      @id @default(autoincrement())
+  user_id        Int      @map("user_id")
+  authority_name String   @map("authority_name") @db.VarChar(255)
+
+  user NmsUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("nms_user_authority")
+}
+
+model NmsUserToken {
+  user_id    Int       @id @map("user_id")
+  hashed_rt  String?   @map("hashed_rt") @db.VarChar(255)
+  last_login_at DateTime? @map("last_login_at")
+
+  user NmsUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("nms_user_token")
+}
+
+// ==================== WeatherSI ====================
+
+model NmsDevice {
+  BDONG_CD     String   @map("BDONG_CD") @db.VarChar(10)
+  CD_DIST_OBSV String   @map("CD_DIST_OBSV") @db.VarChar(10)
+  JHACode      String?  @map("JHACode") @db.VarChar(10)
+  NM_DIST_OBSV String?  @map("NM_DIST_OBSV") @db.VarChar(30)
+  GB_OBSV      String?  @map("GB_OBSV") @db.Char(2)
+  ConnModel    String?  @map("ConnModel") @db.VarChar(20)
+  ConnPhone    String?  @map("ConnPhone") @db.VarChar(20)
+  ConnIP       String?  @map("ConnIP") @db.VarChar(20)
+  ConnPort     String?  @map("ConnPort") @db.VarChar(5)
+  LastStatus   String?  @map("LastStatus") @db.VarChar(10)
+  LastDate     String?  @map("LastDate") @db.VarChar(20)
+  ErrorChk     Int?     @map("ErrorChk")
+  USE_YN       String?  @map("USE_YN") @db.Char(2)
+  LAT          Float?   @map("LAT")
+  LON          Float?   @map("LON")
+  DTL_ADRES    String?  @map("DTL_ADRES") @db.VarChar(100)
+  DATA         String?  @map("DATA") @db.Text
+  UNIT         String?  @map("UNIT") @db.VarChar(10)
+  RainBit      Float?   @map("RainBit")
+  SubOBCount   Int?     @map("SubOBCount")
+  DetCode      Int?     @map("DetCode")
+  SeeLevelUse  String?  @map("SeeLevelUse") @db.VarChar(10)
+  SizeX        Int?     @map("SizeX")
+  SizeY        Int?     @map("SizeY")
+  EComment     String?  @map("EComment") @db.VarChar(400)
+  sub_obsv     Int?     @map("sub_obsv")
+  LoggerTime   String?  @map("LoggerTime") @db.VarChar(50)
+
+  @@id([BDONG_CD, CD_DIST_OBSV])
+  @@index([GB_OBSV])
+  @@map("nms_device")
+}
+
+model NmsBrdSend {
+  IDX         Int       @id @default(autoincrement())
+  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
+  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
+  RCMD        String?   @map("RCMD") @db.VarChar(5)
+  Parm1       String?   @map("Parm1") @db.VarChar(50)
+  Parm2       String?   @map("Parm2") @db.VarChar(10)
+  Parm3       String?   @map("Parm3") @db.VarChar(500)
+  Parm4       String?   @map("Parm4") @db.VarChar(50)
+  BStatus     String?   @map("BStatus") @db.VarChar(10)
+  RegDate     String?   @map("RegDate") @db.VarChar(20)
+  RetData     String?   @map("RetData") @db.VarChar(100)
+  RetDate     DateTime? @map("RetDate")
+  Auth        String?   @map("Auth") @db.VarChar(50)
+  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
+  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
+
+  @@index([BStatus])
+  @@map("nms_brdsend")
+}
+
+model NmsDisSend {
+  IDX         Int       @id @default(autoincrement())
+  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
+  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
+  RCMD        String?   @map("RCMD") @db.VarChar(5)
+  Parm1       String?   @map("Parm1") @db.VarChar(50)
+  Parm2       String?   @map("Parm2") @db.VarChar(10)
+  Parm3       String?   @map("Parm3") @db.VarChar(500)
+  RegDate     String?   @map("RegDate") @db.VarChar(20)
+  BStatus     String?   @map("BStatus") @db.VarChar(10)
+  Auth        String?   @map("Auth") @db.VarChar(50)
+  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
+  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
+
+  @@index([BStatus])
+  @@map("nms_dissend")
+}
+
+model NmsGateControl {
+  IDX         Int       @id @default(autoincrement())
+  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
+  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
+  Gate        String?   @map("Gate") @db.VarChar(10)
+  Light       String?   @map("Light") @db.VarChar(10)
+  Sound       String?   @map("Sound") @db.VarChar(10)
+  GStatus     String?   @map("GStatus") @db.VarChar(10)
+  RegDate     String?   @map("RegDate") @db.VarChar(20)
+  Auth        String?   @map("Auth") @db.VarChar(50)
+  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
+  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
+
+  @@index([GStatus])
+  @@map("nms_gatecontrol")
+}
+
+model TcmCouDngrAdm {
+  ADMCODE     String    @id @map("ADMCODE") @db.Char(5)
+  NM_ADM      String?   @map("NM_ADM") @db.VarChar(50)
+  ADM_NM      String?   @map("ADM_NM") @db.VarChar(50)
+  CHPSNNM     String?   @map("CHPSNNM") @db.VarChar(100)
+  CHARGE_DEPT String?   @map("CHARGE_DEPT") @db.VarChar(100)
+  CTTPC       String?   @map("CTTPC") @db.VarChar(20)
+  RM          String?   @map("RM") @db.VarChar(1000)
+  USE_YN      String?   @map("USE_YN") @db.Char(1)
+  RGSDE       DateTime? @default(now()) @map("RGSDE")
+  UPDDE       DateTime? @updatedAt @map("UPDDE")
+
+  @@index([USE_YN])
+  @@map("tcm_cou_dngr_adm")
+}
+
+// ==================== WeatherSR ====================
+
+model SrEquip {
+  observatoryCode    String    @id @map("observatoryCode") @db.VarChar(13)
+  BDONG_CD           String    @map("BDONG_CD") @db.VarChar(10)
+  observatoryName    String?   @map("observatoryName") @db.VarChar(50)
+  SW_VERSION         String?   @map("SW_VERSION") @db.VarChar(10)
+  FW_VERSION         String?   @map("FW_VERSION") @db.VarChar(10)
+  LOGGER_UPTIME      DateTime? @map("LOGGER_UPTIME")
+  LOGGER_TIME        DateTime? @map("LOGGER_TIME")
+  LOGGER_GL          String?   @map("LOGGER_GL") @db.VarChar(10)
+  LOGGER_EL          String?   @map("LOGGER_EL") @db.VarChar(10)
+  LOGGER_FL          String?   @map("LOGGER_FL") @db.VarChar(10)
+  serviceKey         String?   @map("serviceKey") @db.VarChar(36)
+  observationDateTime DateTime? @map("observationDateTime")
+  waterLevel         String?   @map("waterLevel") @db.VarChar(10)
+  averageVelocity    String?   @map("averageVelocity") @db.VarChar(10)
+  totalDischarge     String?   @map("totalDischarge") @db.VarChar(10)
+  ResultCode         String?   @map("ResultCode") @db.VarChar(10)
+  ResultMsg          String?   @map("ResultMsg") @db.VarChar(255)
+  StatusDateTime     DateTime? @map("statusDateTime")
+  StatusResultCode   String?   @map("statusResultCode") @db.VarChar(10)
+  StatusResultMsg    String?   @map("statusResultMsg") @db.VarChar(255)
+  waterLevelStatusCode String? @map("waterLevelStatusCode") @db.VarChar(2)
+  velocityStatusCode   String? @map("velocityStatusCode") @db.VarChar(2)
+  dischargeStatusCode  String? @map("dischargeStatusCode") @db.VarChar(2)
+  upsStatusCode      String?   @map("upsStatusCode") @db.VarChar(2)
+  RTSP_URL           String?   @map("RTSP_URL") @db.VarChar(1024)
+  LAT                Float?    @map("LAT")
+  LON                Float?    @map("LON")
+  DTL_ADRES          String?   @map("DTL_ADRES") @db.VarChar(100)
+
+  @@index([LOGGER_TIME])
+  @@map("sr_equip")
+}

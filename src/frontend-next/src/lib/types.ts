@@ -3,6 +3,10 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
   code?: string;
+  meta?: {
+    total?: number;
+    totalPages?: number;
+  };
 }
 
 export interface WeatherDevice {
@@ -51,6 +55,7 @@ export interface User {
   role: string;
   email?: string;
   isActive?: boolean;
+  lastLoginAt?: string;
 }
 
 export interface AuthResponse {

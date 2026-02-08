@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Lock, ArrowLeft } from "lucide-react";
+import { User, Lock, ArrowLeft } from "lucide-react";
 import { authApi } from "@/lib/api";
 
 const SignupPage = () => {
@@ -79,10 +79,10 @@ const SignupPage = () => {
 
   return (
     <div className="flex min-h-[85vh] items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-lg shadow-xl border-blue-50">
+      <Card className="w-full max-w-lg shadow-xl border-blue-50 dark:border-slate-700 dark:bg-slate-800">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">회원가입</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl font-bold text-center dark:text-slate-100">회원가입</CardTitle>
+          <CardDescription className="text-center dark:text-slate-400">
             시스템 이용을 위해 계정 정보를 입력해 주세요.
           </CardDescription>
         </CardHeader>
@@ -111,13 +111,13 @@ const SignupPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="username">이메일 계정</Label>
+              <Label htmlFor="username">아이디</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="username"
                   type="text"
-                  placeholder="example@woobo.com"
+                  placeholder="사용자 아이디"
                   className="pl-10"
                   value={formData.username}
                   onChange={handleChange}
@@ -166,10 +166,10 @@ const SignupPage = () => {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4 border-t pt-6 bg-slate-50/50">
-          <p className="text-sm text-slate-600 text-center">
+        <CardFooter className="flex flex-col space-y-4 border-t pt-6 bg-slate-50/50 dark:bg-slate-900/50 dark:border-slate-700">
+          <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
             이미 계정이 있으신가요?{" "}
-            <Link href="/login" className="text-blue-700 font-bold hover:underline">
+            <Link href="/login" className="text-blue-700 dark:text-blue-400 font-bold hover:underline">
               로그인으로 이동
             </Link>
           </p>

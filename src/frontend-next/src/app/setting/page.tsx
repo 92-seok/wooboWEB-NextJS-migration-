@@ -26,6 +26,8 @@ import toast from "react-hot-toast";
 import { adminApi } from "@/lib/api";
 import { ControlHistory } from "@/lib/types";
 import dayjs from "dayjs";
+import { DataSyncIndicator } from "@/components/ui/data-sync-indicator";
+import { useCallback } from "react";
 
 const SettingPage = () => {
   const router = useRouter();
@@ -33,6 +35,7 @@ const SettingPage = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [history, setHistory] = useState<ControlHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   // 페이징
@@ -72,8 +75,7 @@ const SettingPage = () => {
   }, [router]);
 
   // 제어 이력 조회
-  // loadHistory 함수 내부
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     if (!isAuthorized) return;
 
     setLoading(true);
@@ -83,7 +85,6 @@ const SettingPage = () => {
         limit,
       };
 
-      // 🔍 요청 파라미터 로그
       console.log("📤 백엔드 요청:", query);
 
       let response;
@@ -97,7 +98,6 @@ const SettingPage = () => {
         response = await adminApi.getAllControlHistory(query);
       }
 
-      // 🔍 백엔드 응답 로그
       console.log("📥 백엔드 응답:", {
         데이터_개수: response.data?.length,
         메타정보: response.meta,
@@ -107,19 +107,20 @@ const SettingPage = () => {
       setHistory(response.data || []);
       setTotal(response.meta?.total || 0);
       setTotalPages(response.meta?.totalPages || 1);
+      setLastUpdated(new Date());
     } catch (error: any) {
       console.error("제어 이력 조회 실패:", error);
       toast.error(error.message || "제어 이력을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthorized, currentPage, limit, typeFilter]);
 
   useEffect(() => {
     if (isAuthorized) {
       loadHistory();
     }
-  }, [isAuthorized, currentPage, typeFilter, limit]);
+  }, [isAuthorized, currentPage, typeFilter, limit, loadHistory]);
 
   // 장비 유형 아이콘
   const getTypeIcon = (type: string) => {
@@ -211,95 +212,80 @@ const SettingPage = () => {
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-8 pb-32 px-6 sm:px-12 lg:px-16 mt-12">
-      {/* 헤더 섹션 */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg border shadow-sm">
-        <div className="space-y-2">
-          <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <History className="h-5 w-5 text-indigo-700" /> 제어 이력 조회
+    <div className="max-w-[1440px] mx-auto space-y-6 pb-32 px-4 sm:px-8 lg:px-12 mt-8">
+      {/* 페이지 헤더 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400">
+            제어 이력 조회
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            장비 제어 및 테스트 수행 기록을 확인합니다. (총 {total}건)
-          </p>
+          <DataSyncIndicator loading={loading} lastUpdated={lastUpdated} variant="indigo" />
         </div>
         <Button
-          variant="outline"
-          size="sm"
-          className="h-9 gap-2 text-indigo-700 border-indigo-200"
           onClick={loadHistory}
           disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
         >
-          <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> 새로고침
+          <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          새로고침
         </Button>
       </div>
 
       {/* 필터 섹션 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="space-y-1.5">
-          <label className="text-[12px] font-bold text-slate-500 ml-1">장비 유형</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
+            장비 유형
+          </label>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-9 text-xs">
+            <SelectTrigger className="h-10 text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
               <SelectValue placeholder="전체 장비" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체 장비</SelectItem>
-              <SelectItem value="broadcast">예경보</SelectItem>
-              <SelectItem value="display">전광판</SelectItem>
-              <SelectItem value="gate">차단기</SelectItem>
+            <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+              <SelectItem value="all" className="dark:text-slate-200">전체 장비</SelectItem>
+              <SelectItem value="broadcast" className="dark:text-slate-200">예경보</SelectItem>
+              <SelectItem value="display" className="dark:text-slate-200">전광판</SelectItem>
+              <SelectItem value="gate" className="dark:text-slate-200">차단기</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="md:col-span-2 space-y-1.5">
-          <label className="text-[12px] font-bold text-slate-500 ml-1">사용자 검색</label>
+        <div className="space-y-2 sm:col-span-2 md:col-span-3">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
+            검색
+          </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
             <Input
-              placeholder="장비명 또는 사용자 검색"
-              className="pl-9 h-9 text-xs"
+              placeholder="장비명, 사용자, 조작자 검색..."
+              className="h-10 pl-10 text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
-        <div className="space-y-1.5 flex flex-col items-end">
-          <label className="text-[12px] font-bold text-slate-500 ml-1 text-right block mr-1">
-            조회 개수
-          </label>
-          <Select value={limit.toString()} onValueChange={(val) => setLimit(Number(val))}>
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue placeholder="50개씩 보기" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10개씩 보기</SelectItem>
-              <SelectItem value="20">20개씩 보기</SelectItem>
-              <SelectItem value="30">30개씩 보기</SelectItem>
-              <SelectItem value="50">50개씩 보기</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
-      {/* 데이터 테이블 */}
-      <Card className="overflow-hidden border-none shadow-xl rounded-[2rem] border-t-4 border-indigo-700 bg-white">
+      {/* 테이블 */}
+      <Card className="overflow-hidden border-none shadow-xl rounded-3xl border-t-4 border-indigo-600 dark:border-indigo-700 bg-white dark:bg-slate-800">
         <Table>
-          <TableHeader className="bg-slate-50/50 border-b">
-            <TableRow className="h-14 hover:bg-transparent">
-              <TableHead className="w-[60px] text-center text-[10px] font-bold text-slate-500 tracking-wider">
-                번호
+          <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b dark:border-slate-700">
+            <TableRow className="h-12 hover:bg-transparent">
+              <TableHead className="w-[50px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                No
               </TableHead>
-              <TableHead className="w-[100px] text-center text-[10px] font-bold text-slate-500 tracking-wider">
+              <TableHead className="w-[80px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 유형
               </TableHead>
-              <TableHead className="text-center text-[12px] font-bold text-slate-800">
+              <TableHead className="text-center text-xs font-bold text-slate-700 dark:text-slate-300">
                 장비명
               </TableHead>
-              <TableHead className="w-[150px] text-center text-[10px] font-bold text-slate-500 tracking-wider">
-                제어 사용자
+              <TableHead className="w-[120px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                사용자
               </TableHead>
-              <TableHead className="w-[180px] text-center text-[10px] font-bold text-slate-500 tracking-wider">
+              <TableHead className="w-[140px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 제어 시간
               </TableHead>
-              <TableHead className="w-[100px] text-center text-[10px] font-bold text-slate-500 tracking-wider">
+              <TableHead className="w-[80px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 상태
               </TableHead>
             </TableRow>
@@ -307,13 +293,13 @@ const SettingPage = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-60 text-center text-slate-400">
-                  데이터를 불러오는 중...
+                <TableCell colSpan={6} className="h-48 text-center">
+                  <DataSyncIndicator loading={loading} lastUpdated={null} variant="indigo" />
                 </TableCell>
               </TableRow>
             ) : filteredHistory.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-60 text-center text-slate-400">
+                <TableCell colSpan={6} className="h-48 text-center text-slate-400 dark:text-slate-500 text-sm">
                   조회된 제어 이력이 없습니다.
                 </TableCell>
               </TableRow>
@@ -321,30 +307,30 @@ const SettingPage = () => {
               filteredHistory.map((item, index) => (
                 <TableRow
                   key={item.uniqueId || `${item.type}-${item.IDX}-${index}`}
-                  className="h-14 border-b hover:bg-slate-50/50 transition-all"
+                  className="h-12 border-b dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-all"
                 >
-                  <TableCell className="text-center text-[11px] font-mono text-slate-400">
+                  <TableCell className="text-center text-[11px] font-mono text-slate-400 dark:text-slate-500">
                     {(currentPage - 1) * limit + index + 1}
                   </TableCell>
-                  <TableCell className="text-center text-[13px] font-medium">
-                    <div className="flex items-center justify-center gap-1">
-                      <span>{getTypeIcon(item.type)}</span>
-                      <span className="hidden sm:inline text-[10px] text-slate-500 font-bold">
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-base">{getTypeIcon(item.type)}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase">
                         {getTypeName(item.type)}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center font-bold text-slate-800 text-[13px] tracking-tighter">
+                  <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
                     {item.NM_DIST_OBSV || "-"}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-xs text-slate-600">
-                      <User className="h-3 w-3 text-indigo-500" />
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                      <User className="h-3 w-3 text-indigo-500 dark:text-indigo-400" />
                       {item.userName || item.Auth || "-"}
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-slate-500">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400">
                       <Clock className="h-3 w-3" />
                       {item.dtmCreate ? dayjs(item.dtmCreate).format("YYYY-MM-DD HH:mm:ss") : "-"}
                     </div>
@@ -356,36 +342,39 @@ const SettingPage = () => {
           </TableBody>
         </Table>
 
-        {/* 페이징 */}
+        {/* 페이지네이션 */}
         {totalPages > 0 && (
-          <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 px-6">
-            <p className="text-xs text-slate-500 font-medium tracking-tight">
-              Showing{" "}
-              <span className="font-bold text-indigo-600">{(currentPage - 1) * limit + 1}</span> to{" "}
-              <span className="font-bold text-indigo-600">
+          <div className="py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              전체 <span className="font-bold text-slate-800 dark:text-slate-200">{total}</span>개 중{" "}
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                {(currentPage - 1) * limit + 1}
+              </span>
+              -
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">
                 {Math.min(currentPage * limit, total)}
               </span>{" "}
-              of <span className="font-bold text-slate-800">{total}</span>
+              표시
             </p>
-            <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
+            <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1 || loading}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="px-4 py-1.5 flex items-center gap-1.5">
-                <span className="text-xs font-black text-indigo-600">{currentPage}</span>
-                <span className="text-[10px] text-slate-300 font-bold italic">of</span>
-                <span className="text-xs font-bold text-slate-400">{totalPages}</span>
+              <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{currentPage}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>
               </div>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages || loading}
               >

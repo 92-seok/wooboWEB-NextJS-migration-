@@ -83,15 +83,15 @@ const LoginPage = () => {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4 pb-32">
-      <Card className="w-full max-w-md shadow-lg border-blue-100">
+      <Card className="w-full max-w-md shadow-lg border-blue-100 dark:border-slate-700 dark:bg-slate-800">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="p-3 bg-blue-600 rounded-full text-white">
               <Lock className="h-6 w-6" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-900">로그인</CardTitle>
-          <CardDescription>우보 온라인 운영지원시스템에 접속합니다.</CardDescription>
+          <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">로그인</CardTitle>
+          <CardDescription className="dark:text-slate-400">우보 온라인 운영지원시스템에 접속합니다.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -152,7 +152,7 @@ const LoginPage = () => {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">또는</span>
+                <span className="bg-white dark:bg-slate-800 px-2 text-slate-500 dark:text-slate-400">또는</span>
               </div>
             </div>
             <Button
@@ -171,10 +171,10 @@ const LoginPage = () => {
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4 border-t pt-6 bg-slate-50/50">
-          <div className="text-sm text-center text-slate-500">
+        <CardFooter className="flex flex-col space-y-4 border-t pt-6 bg-slate-50/50 dark:bg-slate-900/50 dark:border-slate-700">
+          <div className="text-sm text-center text-slate-500 dark:text-slate-400">
             아직 계정이 없으신가요?{" "}
-            <Link href="/signup" className="text-blue-700 font-bold hover:underline">
+            <Link href="/signup" className="text-blue-700 dark:text-blue-400 font-bold hover:underline">
               회원가입 요청
             </Link>
           </div>

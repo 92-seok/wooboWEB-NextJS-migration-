@@ -36,7 +36,7 @@ const KakaoCallbackPage = () => {
         // 로그인 성공 메시지
         toast.success(`카카오 로그인 성공! 환영합니다, ${response.user.name}님!`, {
           duration: 3000,
-          position: "top-center",
+          position: "bottom-center",
         });
 
         // 메인 페이지로 이동

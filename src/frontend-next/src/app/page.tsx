@@ -43,14 +43,14 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center space-y-8">
         {/* 로고 영역 (Vue의 v-img) */}
         <div className="w-full max-w-[200px]">
-          <h1 className="text-3xl font-black text-blue-700 italic text-center">WOOBO</h1>
-          <p className="text-center text-sm text-slate-500 font-medium mt-1 uppercase tracking-widest">
+          <h1 className="text-3xl font-black text-blue-700 dark:text-blue-400 italic text-center">WOOBO</h1>
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 uppercase tracking-widest">
             Support System
           </p>
         </div>
 
         <div className="w-full max-w-2xl">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 text-center">설치 파일 다운로드</h2>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6 text-center">설치 파일 다운로드</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {downloadItems.map((item) => (
@@ -61,18 +61,18 @@ export default function Home() {
                 className={`${item.disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
               >
                 <Card
-                  className={`group transition-all hover:shadow-md ${item.disabled ? "opacity-60 grayscale" : "hover:border-blue-300"}`}
+                  className={`group transition-all hover:shadow-md ${item.disabled ? "opacity-60 grayscale" : "hover:border-blue-300 dark:hover:border-blue-600"}`}
                 >
                   <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                    <div className={`p-2 rounded-lg bg-slate-50 mr-3 ${item.color}`}>
+                    <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-700 mr-3 ${item.color}`}>
                       <item.icon className="h-5 w-5" />
                     </div>
-                    <CardTitle className="text-base font-bold text-slate-700 group-hover:text-blue-700 transition-colors">
+                    <CardTitle className="text-base font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                       {item.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-slate-500 font-mono bg-slate-50 p-2 rounded border border-dashed text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-700/30 p-2 rounded border border-dashed dark:border-slate-600 text-center">
                       {item.text}
                     </p>
                   </CardContent>

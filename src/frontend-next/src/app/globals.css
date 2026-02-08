@@ -123,3 +123,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 데이터 동기화 프로그레스 바 애니메이션 */
+@keyframes data-sync-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(350%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+.animate-data-sync-shimmer {
+  animation: data-sync-shimmer 1.5s ease-in-out infinite;
+}
+
+/* 다크모드 전역 텍스트/배경 보완 */
+.dark main {
+  @apply bg-slate-900 text-slate-100;
+}
+
+/* 다크모드 테이블/카드 공통 */
+.dark [data-slot="table-header"] {
+  @apply bg-slate-800/50 border-slate-700;
+}
+.dark [data-slot="table"] thead tr {
+  @apply border-slate-700;
+}
+.dark [data-slot="table-body"] tr {
+  @apply border-slate-700/80;
+}
+.dark [data-slot="table-body"] tr:hover {
+  @apply bg-slate-800/30;
+}

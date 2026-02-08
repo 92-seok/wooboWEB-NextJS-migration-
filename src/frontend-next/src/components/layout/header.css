@@ -66,3 +66,21 @@
     padding: 0 3rem;
   }
 }
+
+/* 다크모드 스타일 */
+.dark .header-wrapper {
+  background-color: #1e293b;
+  border-bottom-color: #475569;
+}
+
+.dark .system-bar {
+  background-color: #0f172a;
+}
+
+.dark .app-bar {
+  background-color: #1e293b;
+}
+
+.dark .logo-text {
+  color: #60a5fa;
+}

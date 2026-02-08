@@ -142,7 +142,7 @@ const Header = () => {
 
       toast.success("로그아웃되었습니다.", {
         duration: 2000,
-        position: "top-center",
+        position: "bottom-center",
       });
 
       setTimeout(() => {
