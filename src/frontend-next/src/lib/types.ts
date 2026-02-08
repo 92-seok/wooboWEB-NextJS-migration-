@@ -27,8 +27,21 @@ export interface WeatherDevice {
 
   // 로거 정보
   LOGGER_TIME?: string;
+  LOGGER_UPTIME?: string;
   LOGGER_GL?: string | number;
   LOGGER_FL?: string | number;
+
+  // API 연계 정보
+  serviceKey?: string;
+  ResultCode?: string;
+  observationDateTime?: string;
+
+  // 상태 정보
+  statusDateTime?: string;
+  waterLevelStatusCode?: string;
+  velocityStatusCode?: string;
+  dischargeStatusCode?: string;
+  upsStatusCode?: string;
 
   // 에러 장비 관련
   CD_DIST_OBSV?: string;

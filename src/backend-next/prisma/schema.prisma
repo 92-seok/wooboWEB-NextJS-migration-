@@ -1,5 +1,6 @@
-// Portfolio Backend - Prisma + Supabase PostgreSQL
-// https://supabase.com/docs/guides/database/connecting-to-postgres
+// Woobo Online - Portfolio Backend (Anonymized)
+// Database: PostgreSQL (Vercel Postgres / Supabase)
+// Phase 3: Prisma Schema with Anonymized Tables & Columns
 
 generator client {
   provider = "prisma-client-js"
@@ -10,188 +11,209 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== Auth (default) ====================
+// ==================== Auth Models ====================
 
-model NmsUser {
-  id         Int       @id @default(autoincrement())
-  username   String    @unique @db.VarChar(50)
-  password   String    @db.VarChar(255)
-  email      String    @db.VarChar(100)
-  name       String    @db.VarChar(50)
-  phone      String?   @db.VarChar(50)
-  role       String    @default("operator") @db.VarChar(20)
-  is_active  Int       @default(1)
-  kakao_id   String?   @db.VarChar(100)
-  last_login_at DateTime? @map("last_login_at")
-  created_at DateTime? @default(now()) @map("created_at")
-  updated_at DateTime? @updatedAt @map("updated_at")
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique @db.VarChar(50)
+  password      String    @db.VarChar(255)
+  email         String    @db.VarChar(100)
+  name          String    @db.VarChar(50)
+  phone         String?   @db.VarChar(50)
+  role          UserRole  @default(OPERATOR)
+  is_active     Boolean   @default(true)
+  kakao_id      String?   @db.VarChar(100)
+  last_login_at DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
-  authorities NmsUserAuthority[]
-  token       NmsUserToken?
+  authorities UserAuthority[]
+  token       UserToken?
 
-  @@map("nms_user")
+  @@map("users")
 }
 
-model NmsUserAuthority {
-  id             Int      @id @default(autoincrement())
-  user_id        Int      @map("user_id")
-  authority_name String   @map("authority_name") @db.VarChar(255)
+model UserAuthority {
+  id        Int    @id @default(autoincrement())
+  user_id   Int
+  authority String @db.VarChar(255)
 
-  user NmsUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@map("nms_user_authority")
+  @@map("user_authorities")
 }
 
-model NmsUserToken {
-  user_id    Int       @id @map("user_id")
-  hashed_rt  String?   @map("hashed_rt") @db.VarChar(255)
-  last_login_at DateTime? @map("last_login_at")
+model UserToken {
+  user_id       Int       @id
+  hashed_token  String?   @db.VarChar(255)
+  last_login_at DateTime?
 
-  user NmsUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@map("nms_user_token")
+  @@map("user_tokens")
 }
 
-// ==================== WeatherSI ====================
-
-model NmsDevice {
-  BDONG_CD     String   @map("BDONG_CD") @db.VarChar(10)
-  CD_DIST_OBSV String   @map("CD_DIST_OBSV") @db.VarChar(10)
-  JHACode      String?  @map("JHACode") @db.VarChar(10)
-  NM_DIST_OBSV String?  @map("NM_DIST_OBSV") @db.VarChar(30)
-  GB_OBSV      String?  @map("GB_OBSV") @db.Char(2)
-  ConnModel    String?  @map("ConnModel") @db.VarChar(20)
-  ConnPhone    String?  @map("ConnPhone") @db.VarChar(20)
-  ConnIP       String?  @map("ConnIP") @db.VarChar(20)
-  ConnPort     String?  @map("ConnPort") @db.VarChar(5)
-  LastStatus   String?  @map("LastStatus") @db.VarChar(10)
-  LastDate     String?  @map("LastDate") @db.VarChar(20)
-  ErrorChk     Int?     @map("ErrorChk")
-  USE_YN       String?  @map("USE_YN") @db.Char(2)
-  LAT          Float?   @map("LAT")
-  LON          Float?   @map("LON")
-  DTL_ADRES    String?  @map("DTL_ADRES") @db.VarChar(100)
-  DATA         String?  @map("DATA") @db.Text
-  UNIT         String?  @map("UNIT") @db.VarChar(10)
-  RainBit      Float?   @map("RainBit")
-  SubOBCount   Int?     @map("SubOBCount")
-  DetCode      Int?     @map("DetCode")
-  SeeLevelUse  String?  @map("SeeLevelUse") @db.VarChar(10)
-  SizeX        Int?     @map("SizeX")
-  SizeY        Int?     @map("SizeY")
-  EComment     String?  @map("EComment") @db.VarChar(400)
-  sub_obsv     Int?     @map("sub_obsv")
-  LoggerTime   String?  @map("LoggerTime") @db.VarChar(50)
-
-  @@id([BDONG_CD, CD_DIST_OBSV])
-  @@index([GB_OBSV])
-  @@map("nms_device")
+enum UserRole {
+  ADMIN
+  OPERATOR
+  VIEWER
 }
 
-model NmsBrdSend {
-  IDX         Int       @id @default(autoincrement())
-  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
-  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
-  RCMD        String?   @map("RCMD") @db.VarChar(5)
-  Parm1       String?   @map("Parm1") @db.VarChar(50)
-  Parm2       String?   @map("Parm2") @db.VarChar(10)
-  Parm3       String?   @map("Parm3") @db.VarChar(500)
-  Parm4       String?   @map("Parm4") @db.VarChar(50)
-  BStatus     String?   @map("BStatus") @db.VarChar(10)
-  RegDate     String?   @map("RegDate") @db.VarChar(20)
-  RetData     String?   @map("RetData") @db.VarChar(100)
-  RetDate     DateTime? @map("RetDate")
-  Auth        String?   @map("Auth") @db.VarChar(50)
-  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
-  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
+// ==================== Region Models ====================
 
-  @@index([BStatus])
-  @@map("nms_brdsend")
+model Region {
+  code        String    @id @db.VarChar(10)
+  name        String    @db.VarChar(100)
+  admin_name  String    @db.VarChar(100)
+  manager     String?   @db.VarChar(100)
+  department  String?   @db.VarChar(100)
+  contact     String?   @db.VarChar(50)
+  memo        String?   @db.VarChar(1000)
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  devices Device[]
+
+  @@index([is_active])
+  @@map("regions")
 }
 
-model NmsDisSend {
-  IDX         Int       @id @default(autoincrement())
-  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
-  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
-  RCMD        String?   @map("RCMD") @db.VarChar(5)
-  Parm1       String?   @map("Parm1") @db.VarChar(50)
-  Parm2       String?   @map("Parm2") @db.VarChar(10)
-  Parm3       String?   @map("Parm3") @db.VarChar(500)
-  RegDate     String?   @map("RegDate") @db.VarChar(20)
-  BStatus     String?   @map("BStatus") @db.VarChar(10)
-  Auth        String?   @map("Auth") @db.VarChar(50)
-  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
-  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
+// ==================== Device Models ====================
 
-  @@index([BStatus])
-  @@map("nms_dissend")
+model Device {
+  id               String    @id @default(uuid())
+  region_code      String    @db.VarChar(10)
+  device_code      String    @db.VarChar(10)
+  area_code        String?   @db.VarChar(10)
+  device_name      String    @db.VarChar(100)
+  device_type      DeviceType
+  protocol         String?   @db.VarChar(20)
+  phone            String?   @db.VarChar(50)
+  ip_address       String?   @db.VarChar(50)
+  port             String?   @db.VarChar(10)
+  last_status      String?   @db.VarChar(20)
+  last_updated_at  String?   @db.VarChar(50)
+  error_count      Int       @default(5)
+  is_active        Boolean   @default(true)
+  latitude         Float?
+  longitude        Float?
+  address          String?   @db.VarChar(200)
+  data             String?   @db.Text
+  unit             String?   @db.VarChar(20)
+  comment          String?   @db.VarChar(500)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  region Region @relation(fields: [region_code], references: [code])
+
+  broadcast_logs BroadcastLog[]
+  display_logs   DisplayLog[]
+  gate_logs      GateLog[]
+
+  @@unique([region_code, device_code])
+  @@index([device_type])
+  @@index([region_code])
+  @@index([error_count])
+  @@map("devices")
 }
 
-model NmsGateControl {
-  IDX         Int       @id @default(autoincrement())
-  BDONG_CD    String?   @map("BDONG_CD") @db.VarChar(10)
-  CD_DIST_OBSV String?  @map("CD_DIST_OBSV") @db.VarChar(10)
-  Gate        String?   @map("Gate") @db.VarChar(10)
-  Light       String?   @map("Light") @db.VarChar(10)
-  Sound       String?   @map("Sound") @db.VarChar(10)
-  GStatus     String?   @map("GStatus") @db.VarChar(10)
-  RegDate     String?   @map("RegDate") @db.VarChar(20)
-  Auth        String?   @map("Auth") @db.VarChar(50)
-  dtmCreate   DateTime? @default(now()) @map("dtmCreate")
-  dtmUpdate   DateTime? @updatedAt @map("dtmUpdate")
-
-  @@index([GStatus])
-  @@map("nms_gatecontrol")
+enum DeviceType {
+  RAIN_GAUGE      // 01 - 강우량계
+  WATER_LEVEL     // 02 - 수위계
+  DISPLACEMENT    // 03 - 변위계
+  SNOW_GAUGE      // 06 - 적설계
+  WARNING_SYSTEM  // 17 - 예경보
+  DISPLAY_BOARD   // 18 - 전광판
+  GATE_CONTROL    // 20 - 차단기
+  OTHER           // 기타
 }
 
-model TcmCouDngrAdm {
-  ADMCODE     String    @id @map("ADMCODE") @db.Char(5)
-  NM_ADM      String?   @map("NM_ADM") @db.VarChar(50)
-  ADM_NM      String?   @map("ADM_NM") @db.VarChar(50)
-  CHPSNNM     String?   @map("CHPSNNM") @db.VarChar(100)
-  CHARGE_DEPT String?   @map("CHARGE_DEPT") @db.VarChar(100)
-  CTTPC       String?   @map("CTTPC") @db.VarChar(20)
-  RM          String?   @map("RM") @db.VarChar(1000)
-  USE_YN      String?   @map("USE_YN") @db.Char(1)
-  RGSDE       DateTime? @default(now()) @map("RGSDE")
-  UPDDE       DateTime? @updatedAt @map("UPDDE")
+// ==================== Control Log Models ====================
 
-  @@index([USE_YN])
-  @@map("tcm_cou_dngr_adm")
+model BroadcastLog {
+  id            Int       @id @default(autoincrement())
+  device_id     String
+  command       String    @db.VarChar(10)
+  param1        String?   @db.VarChar(50)
+  param2        String?   @db.VarChar(50)
+  param3        String?   @db.VarChar(500)
+  param4        String?   @db.VarChar(50)
+  status        ControlStatus @default(START)
+  response_data String?   @db.VarChar(200)
+  response_at   DateTime?
+  user          String?   @db.VarChar(50)
+  registered_at String?   @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([created_at])
+  @@map("broadcast_logs")
 }
 
-// ==================== WeatherSR ====================
+model DisplayLog {
+  id            Int       @id @default(autoincrement())
+  device_id     String
+  command       String    @db.VarChar(10)
+  param1        String?   @db.VarChar(50)
+  param2        String?   @db.VarChar(50)
+  param3        String?   @db.VarChar(500)
+  status        ControlStatus @default(START)
+  user          String?   @db.VarChar(50)
+  registered_at String?   @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
-model SrEquip {
-  observatoryCode    String    @id @map("observatoryCode") @db.VarChar(13)
-  BDONG_CD           String    @map("BDONG_CD") @db.VarChar(10)
-  observatoryName    String?   @map("observatoryName") @db.VarChar(50)
-  SW_VERSION         String?   @map("SW_VERSION") @db.VarChar(10)
-  FW_VERSION         String?   @map("FW_VERSION") @db.VarChar(10)
-  LOGGER_UPTIME      DateTime? @map("LOGGER_UPTIME")
-  LOGGER_TIME        DateTime? @map("LOGGER_TIME")
-  LOGGER_GL          String?   @map("LOGGER_GL") @db.VarChar(10)
-  LOGGER_EL          String?   @map("LOGGER_EL") @db.VarChar(10)
-  LOGGER_FL          String?   @map("LOGGER_FL") @db.VarChar(10)
-  serviceKey         String?   @map("serviceKey") @db.VarChar(36)
-  observationDateTime DateTime? @map("observationDateTime")
-  waterLevel         String?   @map("waterLevel") @db.VarChar(10)
-  averageVelocity    String?   @map("averageVelocity") @db.VarChar(10)
-  totalDischarge     String?   @map("totalDischarge") @db.VarChar(10)
-  ResultCode         String?   @map("ResultCode") @db.VarChar(10)
-  ResultMsg          String?   @map("ResultMsg") @db.VarChar(255)
-  StatusDateTime     DateTime? @map("statusDateTime")
-  StatusResultCode   String?   @map("statusResultCode") @db.VarChar(10)
-  StatusResultMsg    String?   @map("statusResultMsg") @db.VarChar(255)
-  waterLevelStatusCode String? @map("waterLevelStatusCode") @db.VarChar(2)
-  velocityStatusCode   String? @map("velocityStatusCode") @db.VarChar(2)
-  dischargeStatusCode  String? @map("dischargeStatusCode") @db.VarChar(2)
-  upsStatusCode      String?   @map("upsStatusCode") @db.VarChar(2)
-  RTSP_URL           String?   @map("RTSP_URL") @db.VarChar(1024)
-  LAT                Float?    @map("LAT")
-  LON                Float?    @map("LON")
-  DTL_ADRES          String?   @map("DTL_ADRES") @db.VarChar(100)
+  device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
 
-  @@index([LOGGER_TIME])
-  @@map("sr_equip")
+  @@index([status])
+  @@index([created_at])
+  @@map("display_logs")
 }
+
+model GateLog {
+  id            Int       @id @default(autoincrement())
+  device_id     String
+  gate_action   String?   @db.VarChar(20)
+  light_action  String?   @db.VarChar(20)
+  sound_action  String?   @db.VarChar(20)
+  status        ControlStatus @default(START)
+  user          String?   @db.VarChar(50)
+  registered_at String?   @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([created_at])
+  @@map("gate_logs")
+}
+
+enum ControlStatus {
+  START
+  ING
+  END
+  FAIL
+  ERROR
+}
+
+// ==================== Notes ====================
+
+// Phase 3 완료:
+// ✅ 모든 테이블/컬럼명 익명화
+// ✅ Enum 타입 정의 (UserRole, DeviceType, ControlStatus)
+// ✅ 관계 설정 (FK, Cascade)
+// ✅ 인덱스 정의
+// ✅ UUID 사용 (devices.id)
+// ✅ Boolean 타입 사용 (is_active)
+// ✅ DateTime 자동 관리 (@default(now), @updatedAt)
+
+// 다음 단계 (Phase 4):
+// 1. Vercel Postgres 또는 Supabase DB 생성
+// 2. DATABASE_URL 환경 변수 설정
+// 3. prisma migrate dev --name init
+// 4. 시드 데이터 생성

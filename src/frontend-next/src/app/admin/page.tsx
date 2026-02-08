@@ -32,6 +32,7 @@ import {
   UserMinus,
   ChevronLeft,
   ChevronRight,
+  Clock,
 } from "lucide-react";
 import {
   Dialog,
@@ -45,8 +46,8 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { adminApi } from "@/lib/api";
 import { User } from "@/lib/types";
-import { DataSyncIndicator } from "@/components/ui/data-sync-indicator";
 import { useCallback } from "react";
+import dayjs from "dayjs";
 
 const AdminPage = () => {
   const router = useRouter();
@@ -55,6 +56,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   // 페이징
@@ -142,6 +144,14 @@ const AdminPage = () => {
       loadUsers();
     }
   }, [isAuthorized, currentPage, roleFilter, loadUsers]);
+
+  // 실시간 시계
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // 검색
   const handleSearch = () => {
@@ -238,19 +248,19 @@ const AdminPage = () => {
     switch (role) {
       case "admin":
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-none">관리자</Badge>
+          <Badge variant="outline" className="border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-black text-[10px] px-2 py-1 rounded-full">관리자</Badge>
         );
       case "user":
         return (
-          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none">사용자</Badge>
+          <Badge variant="outline" className="border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-black text-[10px] px-2 py-1 rounded-full">사용자</Badge>
         );
       case "operator":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">일반</Badge>
+          <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">일반</Badge>
         );
       default:
         return (
-          <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100 border-none">
+          <Badge variant="outline" className="border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black text-[10px] px-2 py-1 rounded-full">
             게스트
           </Badge>
         );
@@ -265,87 +275,133 @@ const AdminPage = () => {
     <div className="max-w-[1440px] mx-auto space-y-6 pb-32 px-4 sm:px-8 lg:px-12 mt-8">
       {/* 페이지 헤더 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl font-black text-cyan-600 dark:text-cyan-400">
             사용자 관리
           </h1>
-          <DataSyncIndicator loading={loading} lastUpdated={lastUpdated} variant="blue" />
+          {lastUpdated && (
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>마지막 갱신: {dayjs(lastUpdated).format("YYYY-MM-DD HH:mm:ss")}</span>
+              <span className="mx-2">|</span>
+              <span>현재: {dayjs(currentTime).format("HH:mm:ss")}</span>
+            </div>
+          )}
         </div>
         <Button
           onClick={loadUsers}
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
+          className="bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-700 dark:hover:bg-cyan-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
         >
           <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           새로고침
         </Button>
       </div>
 
-      {/* 필터 섹션 */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="sm:col-span-2 space-y-2">
-          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
-            사용자 검색
-          </label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
-              <Input
-                placeholder="아이디 또는 이름으로 검색"
-                className="pl-10 h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-            </div>
-            <Button 
-              onClick={handleSearch} 
-              className="h-10 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-            >
-              검색
-            </Button>
-          </div>
-        </div>
+      {/* 필터 및 검색 섹션 */}
+      <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
             권한 필터
           </label>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="h-10 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
-              <SelectValue placeholder="전체 권한" />
-            </SelectTrigger>
-            <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-              <SelectItem value="all" className="dark:text-slate-200">전체 권한</SelectItem>
-              <SelectItem value="admin" className="dark:text-slate-200">관리자</SelectItem>
-              <SelectItem value="user" className="dark:text-slate-200">사용자</SelectItem>
-              <SelectItem value="operator" className="dark:text-slate-200">일반</SelectItem>
-              <SelectItem value="guest" className="dark:text-slate-200">게스트</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <Button
+              variant={roleFilter === "all" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setRoleFilter("all")}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                roleFilter === "all"
+                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+            >
+              전체 권한
+            </Button>
+            <Button
+              variant={roleFilter === "admin" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setRoleFilter("admin")}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                roleFilter === "admin"
+                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+            >
+              관리자
+            </Button>
+            <Button
+              variant={roleFilter === "user" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setRoleFilter("user")}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                roleFilter === "user"
+                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+            >
+              사용자
+            </Button>
+            <Button
+              variant={roleFilter === "operator" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setRoleFilter("operator")}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                roleFilter === "operator"
+                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+            >
+              일반
+            </Button>
+            <Button
+              variant={roleFilter === "guest" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setRoleFilter("guest")}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                roleFilter === "guest"
+                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              }`}
+            >
+              게스트
+            </Button>
+          </div>
         </div>
       </div>
 
+      {/* 검색 */}
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-cyan-500 dark:group-focus-within:text-cyan-400 transition-colors" />
+        <Input
+          placeholder="아이디 또는 이름으로 검색..."
+          className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-cyan-500/20 dark:focus:ring-cyan-500/30 transition-all text-sm"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+        />
+      </div>
+
       {/* 사용자 테이블 */}
-      <Card className="overflow-hidden border-none shadow-xl rounded-3xl border-t-4 border-blue-600 dark:border-blue-700 bg-white dark:bg-slate-800">
-        <Table>
-          <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b dark:border-slate-700">
-            <TableRow className="h-12 hover:bg-transparent">
-              <TableHead className="w-[60px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                No
+      <Card className="overflow-hidden border-none shadow-xl rounded-3xl border-t-4 border-cyan-600 dark:border-cyan-700 bg-white dark:bg-slate-800">
+        <Table className="w-full table-fixed">
+          <TableHeader className="bg-slate-50/50 dark:bg-slate-800/80 border-b dark:border-slate-600">
+            <TableRow className="h-14 hover:bg-transparent">
+              <TableHead className="w-[30px] sm:w-[60px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
+                번호
               </TableHead>
-              <TableHead className="text-center text-xs font-bold text-slate-700 dark:text-slate-300">
+              <TableHead className="font-bold text-slate-800 dark:text-slate-200 text-center text-[9px] sm:text-[12px] px-0.5">
                 사용자 정보
               </TableHead>
-              <TableHead className="w-[100px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <TableHead className="w-[60px] sm:w-[90px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
                 권한
               </TableHead>
-              <TableHead className="w-[100px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <TableHead className="w-[60px] sm:w-[80px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
                 상태
               </TableHead>
-              <TableHead className="w-[140px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <TableHead className="hidden md:table-cell w-[120px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
                 최근 접속
               </TableHead>
-              <TableHead className="w-[140px] text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <TableHead className="w-[90px] sm:w-[140px] text-center font-bold text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] tracking-wider px-0.5">
                 관리
               </TableHead>
             </TableRow>
@@ -353,13 +409,13 @@ const AdminPage = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-48 text-center">
-                  <DataSyncIndicator loading={loading} lastUpdated={null} variant="blue" />
+                <TableCell colSpan={6} className="h-60 text-center text-slate-400 dark:text-slate-500">
+                  데이터를 로드 중입니다...
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-48 text-center text-slate-400 dark:text-slate-500 text-sm">
+                <TableCell colSpan={6} className="h-60 text-center text-slate-400 dark:text-slate-500">
                   조회된 사용자가 없습니다.
                 </TableCell>
               </TableRow>
@@ -367,62 +423,64 @@ const AdminPage = () => {
               users.map((user, index) => (
                 <TableRow
                   key={`user-${currentPage}-${index}-${user.id}`}
-                  className="h-12 border-b dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-all"
+                  className="h-14 border-b dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-all"
                 >
-                  <TableCell className="text-center text-[11px] font-mono text-slate-400 dark:text-slate-500">
+                  <TableCell className="text-center text-xs font-mono text-slate-600 dark:text-slate-400">
                     {(currentPage - 1) * limit + index + 1}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate max-w-[150px]">
                         {user.name}
                       </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">{user.username}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{user.username}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center">{getRoleBadge(user.role)}</TableCell>
                   <TableCell className="text-center">
                     {user.isActive ? (
-                      <div className="flex items-center justify-center gap-1 text-green-600 dark:text-green-400 text-xs font-bold">
-                        <UserCheck className="h-3 w-3" /> 활성
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 text-green-600 dark:text-green-400 text-[10px] sm:text-xs font-bold">
+                        <UserCheck className="h-3 w-3" />
+                        <span className="hidden sm:inline">활성</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center gap-1 text-red-500 dark:text-red-400 text-xs font-bold">
-                        <UserMinus className="h-3 w-3" /> 비활성
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 text-red-500 dark:text-red-400 text-[10px] sm:text-xs font-bold">
+                        <UserMinus className="h-3 w-3" />
+                        <span className="hidden sm:inline">비활성</span>
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-center text-xs text-slate-500 dark:text-slate-400 font-mono">
-                    {user.lastLoginAt || "-"}
+                  <TableCell className="hidden md:table-cell text-center text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {user.lastLoginAt ? dayjs(user.lastLoginAt).format("MM-DD HH:mm") : "-"}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex justify-center gap-1">
+                    <div className="flex justify-center gap-0.5 sm:gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
                         onClick={() => handleOpenEdit(user)}
                         title="권한 및 상태 수정"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-amber-500 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-amber-500 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
                         onClick={() => handleOpenPassword(user)}
                         title="비밀번호 변경"
                       >
-                        <Key className="h-4 w-4" />
+                        <Key className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                         onClick={() => handleOpenDelete(user)}
                         title="사용자 삭제"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -437,11 +495,11 @@ const AdminPage = () => {
           <div className="py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               전체 <span className="font-bold text-slate-800 dark:text-slate-200">{total}</span>개 중{" "}
-              <span className="font-bold text-blue-600 dark:text-blue-400">
+              <span className="font-bold text-cyan-600 dark:text-cyan-400">
                 {(currentPage - 1) * limit + 1}
               </span>
               -
-              <span className="font-bold text-blue-600 dark:text-blue-400">
+              <span className="font-bold text-cyan-600 dark:text-cyan-400">
                 {Math.min(currentPage * limit, total)}
               </span>{" "}
               표시
@@ -457,7 +515,7 @@ const AdminPage = () => {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{currentPage}</span>
+                <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400">{currentPage}</span>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>
               </div>
@@ -515,7 +573,7 @@ const AdminPage = () => {
             <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="dark:text-slate-300 dark:hover:bg-slate-700">
               취소
             </Button>
-            <Button className="bg-blue-700 hover:bg-blue-800 dark:bg-blue-700 dark:hover:bg-blue-800" onClick={handleSaveEdit}>
+            <Button className="bg-cyan-700 hover:bg-cyan-800 dark:bg-cyan-700 dark:hover:bg-cyan-800" onClick={handleSaveEdit}>
               저장하기
             </Button>
           </DialogFooter>

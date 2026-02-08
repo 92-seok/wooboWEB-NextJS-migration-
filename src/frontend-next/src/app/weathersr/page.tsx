@@ -50,6 +50,7 @@ const WeatherSRPage = () => {
   const [devices, setDevices] = useState<WeatherDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
@@ -72,6 +73,14 @@ const WeatherSRPage = () => {
   useEffect(() => {
     loadDevices();
   }, [loadDevices]);
+
+  // 실시간 시계
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -109,6 +118,8 @@ const WeatherSRPage = () => {
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Clock className="h-3.5 w-3.5" />
               <span>마지막 갱신: {dayjs(lastUpdated).format("YYYY-MM-DD HH:mm:ss")}</span>
+              <span className="mx-2">|</span>
+              <span>현재: {dayjs(currentTime).format("HH:mm:ss")}</span>
             </div>
           )}
         </div>
@@ -139,8 +150,8 @@ const WeatherSRPage = () => {
       </div>
 
       {/* 지역 필터 및 검색 */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-4 items-end">
-        <div className="space-y-3">
+      <div className="space-y-4">
+        <div className="space-y-2">
           <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
             지역 필터
           </label>
@@ -162,15 +173,17 @@ const WeatherSRPage = () => {
             ))}
           </div>
         </div>
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors" />
-          <Input
-            placeholder="장비명 또는 코드 검색..."
-            className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all text-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      </div>
+
+      {/* 검색 */}
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors" />
+        <Input
+          placeholder="장비명 또는 코드 검색..."
+          className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
       {/* 장비 테이블 */}
@@ -271,54 +284,163 @@ const WeatherSRPage = () => {
                     {expandedRow === item.IDX && (
                       <TableRow className="bg-slate-50/30 dark:bg-slate-900/30">
                         <TableCell colSpan={6} className="p-4 sm:p-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                                <MapPin size={16} /> 기본 정보
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
-                                    {item.DTL_ADRES || "-"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
-                                </div>
-                                <div className="flex justify-between py-2">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
-                                    {item.LAT} / {item.LON}
-                                  </span>
-                                </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                                <Activity size={16} /> 관측 데이터
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">최근 통신</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
-                                    {item.LOGGER_TIME || "-"}
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl text-center border border-blue-100 dark:border-blue-800">
-                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mb-1">GL</p>
-                                    <p className="text-lg font-black text-blue-700 dark:text-blue-300">
-                                      {item.LOGGER_GL || "0.00"}
-                                    </p>
+                          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {/* 기본 정보 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                                  <MapPin size={16} /> 기본 정보
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
+                                      {item.DTL_ADRES || "-"}
+                                    </span>
                                   </div>
-                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
-                                    <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
-                                    <p className="text-lg font-black text-teal-700 dark:text-teal-300">
-                                      {item.LOGGER_FL || "0.00"}
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
+                                  </div>
+                                  <div className="flex justify-between py-2">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono">
+                                      {item.LAT} / {item.LON}
+                                    </span>
+                                  </div>
+                                </div>
+                              </Card>
+
+                              <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                                  <Activity size={16} /> 로거 데이터
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">로거 시간</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                      {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">부팅 시간</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                      {item.LOGGER_UPTIME ? dayjs(item.LOGGER_UPTIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl text-center border border-blue-100 dark:border-blue-800">
+                                      <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mb-1">GL</p>
+                                      <p className="text-lg font-black text-blue-700 dark:text-blue-300">
+                                        {item.LOGGER_GL || "0.00"} M
+                                      </p>
+                                    </div>
+                                    <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
+                                      <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
+                                      <p className="text-lg font-black text-teal-700 dark:text-teal-300">
+                                        {item.LOGGER_FL || "0.00"} M
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            </div>
+
+                            {/* API 연계 정보 */}
+                            <Card className="p-5 space-y-4 bg-amber-50/30 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 shadow-sm rounded-2xl">
+                              <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                                <Activity size={16} /> 국립재난안전연구원 API 연계
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between py-2 border-b border-amber-100 dark:border-amber-900">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">서비스키</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs truncate max-w-[200px]">
+                                    {item.serviceKey || "-"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-amber-100 dark:border-amber-900">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">API 연계 상태</span>
+                                  <Badge
+                                    variant="outline"
+                                    className={`${
+                                      item.ResultCode === "OK"
+                                        ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                        : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                    } font-black text-[10px] px-2 py-1 rounded-full`}
+                                  >
+                                    {item.ResultCode || "-"}
+                                  </Badge>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-amber-100 dark:border-amber-900">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">API 전송시간</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                    {item.observationDateTime ? dayjs(item.observationDateTime).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2">
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg text-center border border-amber-100 dark:border-amber-800">
+                                    <p className="text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-1">수위(FL)</p>
+                                    <p className="text-sm font-black text-amber-700 dark:text-amber-300 mb-1.5">
+                                      {item.waterLevel || "-"}
                                     </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.waterLevelStatusCode === "00"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.waterLevelStatusCode === "00" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg text-center border border-amber-100 dark:border-amber-800">
+                                    <p className="text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-1">유량(㎧)</p>
+                                    <p className="text-sm font-black text-amber-700 dark:text-amber-300 mb-1.5">
+                                      {item.averageVelocity || "-"}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.velocityStatusCode === "10"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.velocityStatusCode === "10" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg text-center border border-amber-100 dark:border-amber-800">
+                                    <p className="text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-1">유속(㎥/s)</p>
+                                    <p className="text-sm font-black text-amber-700 dark:text-amber-300 mb-1.5">
+                                      {item.totalDischarge || "-"}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.dischargeStatusCode === "20"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.dischargeStatusCode === "20" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg text-center border border-amber-100 dark:border-amber-800">
+                                    <p className="text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-1">UPS</p>
+                                    <p className="text-sm font-black text-amber-700 dark:text-amber-300 mb-1.5">
+                                      -
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.upsStatusCode === "00"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.upsStatusCode === "00" ? "정상" : "점검"}
+                                    </Badge>
                                   </div>
                                 </div>
                               </div>

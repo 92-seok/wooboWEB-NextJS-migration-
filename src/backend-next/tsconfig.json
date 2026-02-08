@@ -18,8 +18,8 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@config/*": ["src/config/*"],
-      "@entities/*": ["src/*/entities/*"]
+      "@config/*": ["src/config/*"]
     }
-  }
+  },
+  "include": ["src/**/*", "prisma/**/*"]
 }
