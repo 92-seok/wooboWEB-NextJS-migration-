@@ -149,3 +149,11 @@ export interface ControlHistoryQuery {
   limit?: number;
   page?: number;
 }
+
+export interface AreaItem {
+  ADMCODE: string;
+  RM?: string;
+  NM_ADM?: string;
+  title?: string;
+  value?: string;
+}

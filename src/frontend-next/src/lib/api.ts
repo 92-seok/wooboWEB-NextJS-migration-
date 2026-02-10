@@ -16,7 +16,6 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
   });
 
   if (!response.ok) {
-    // ✅ 추가
     // 401 오류 시 로그인 페이지로 리다이렉트
     if (response.status === 401) {
       if (typeof window !== "undefined") {
@@ -31,18 +30,27 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
 }
 
 export const weathersiApi = {
-  getAreas: () => fetchApi<ApiResponse<unknown>>("/weathersi/areaList"),
+  // getAreas 응답 타입
+  getAreas: () => fetchApi<ApiResponse<[]>>("/weathersi/areaList"),
+
+  // getDevices - bdongCd가 '%' 또는 undefined면 전체, 아니면 해당 시도 코드로 검색
   getDevices: (bdongCd?: string) => {
-    const url = bdongCd ? `/weathersi/devices?BDONG_CD=${bdongCd}` : "/weathersi/devices";
-    return fetchApi<ApiResponse<WeatherDevice[]>>(url);
+    if (!bdongCd || bdongCd === "%") {
+      return fetchApi<ApiResponse<WeatherDevice[]>>("/weathersi/devices");
+    }
+    return fetchApi<ApiResponse<WeatherDevice[]>>(`/weathersi/devices?BDONG_CD=${bdongCd}`)
   },
   getErrorDevices: (bdongCd?: string) => {
-    const url = bdongCd ? `/weathersi/errorDevices?BDONG_CD=${bdongCd}` : "/weathersi/errorDevices";
-    return fetchApi<ApiResponse<WeatherDevice[]>>(url);
+    if (!bdongCd || bdongCd === "%") {
+      return fetchApi<ApiResponse<WeatherDevice[]>>("/weathersi/errorDevices");
+    }
+    return fetchApi<ApiResponse<WeatherDevice[]>>(`/weathersi/errorDevices?BDONG_CD=${bdongCd}`)
   },
   getControlDevices: (bdongCd?: string) => {
-    const url = bdongCd ? `/weathersi/control?BDONG_CD=${bdongCd}` : "/weathersi/control";
-    return fetchApi<ApiResponse<WeatherDevice[]>>(url);
+    if (!bdongCd || bdongCd === "%") {
+      return fetchApi<ApiResponse<WeatherDevice[]>>("/weathersi/control");
+    }
+    return fetchApi<ApiResponse<WeatherDevice[]>>(`/weathersi/control?BDONG_CD=${bdongCd}`)
   },
 
   // 제어 API
@@ -66,8 +74,10 @@ export const weathersiApi = {
 export const weathersrApi = {
   getAreas: () => fetchApi<ApiResponse<unknown>>("/weathersr/areaList"),
   getDevices: (bdongCd?: string) => {
-    const url = bdongCd ? `/weathersr/devices?BDONG_CD=${bdongCd}` : "/weathersr/devices";
-    return fetchApi<ApiResponse<WeatherDevice[]>>(url);
+    if (!bdongCd || bdongCd === "%") {
+      return fetchApi<ApiResponse<WeatherDevice[]>>("/weathersr/devices");
+    }
+    return fetchApi<ApiResponse<WeatherDevice[]>>(`/weathersr/devices?BDONG_CD=${bdongCd}`);
   },
 };
 

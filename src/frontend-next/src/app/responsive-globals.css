@@ -23,6 +23,17 @@
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
+/* 메인 컨텐츠 하단 여백: 푸터 고정 시 스크롤 시 버튼이 푸터에 가려지지 않도록 */
+.main-content-padding {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 1rem);
+  -webkit-overflow-scrolling: touch; /* iOS 모바일 스크롤 부드럽게 */
+}
+@media (min-width: 1024px) {
+  .main-content-padding {
+    padding-bottom: calc(64px + 1rem);
+  }
+}
+
 /* Common Utility Classes for Responsiveness */
 .hide-on-mobile {
   display: none !important;

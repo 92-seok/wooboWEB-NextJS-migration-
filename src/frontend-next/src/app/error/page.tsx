@@ -24,50 +24,94 @@ import {
   Activity,
   Clock,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { weathersiApi } from "@/lib/api";
 import { WeatherDevice } from "@/lib/types";
 import { getDeviceImageSrc, getDeviceTypeName } from "@/lib/deviceIcons";
 import { getDeviceStatusBadgeClass, calculateDaysSince } from "@/lib/dataDisplay";
 import dayjs from "dayjs";
 
-const PROVINCE_GROUPS = [
-  { name: "전국", codes: [] },
-  { name: "경기도/서울/인천", codes: ["11", "28", "41"] },
-  { name: "전라도", codes: ["29", "45", "46"] },
-  { name: "경상도", codes: ["26", "27", "31", "47", "48"] },
-  { name: "충청도", codes: ["30", "36", "43", "44"] },
-  { name: "강원도", codes: ["42", "51"] },
-  { name: "제주도", codes: ["50"] },
+const REGION_MENU = [
+  { name: "전국", filter: ["전국"] },
+  { name: "경기도", filter: ["경기", "서울"] },
+  { name: "전라도", filter: ["전라", "광주"] },
+  { name: "경상도", filter: ["경상", "부산", "울산", "대구"] },
+  { name: "충청도", filter: ["충청", "대전", "세종"] },
+  { name: "강원도", filter: ["강원"] },
+  { name: "인천/제주도", filter: ["인천", "제주"] },
 ];
 
 const ErrorDevicesPage = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState(PROVINCE_GROUPS[0]);
+  const [areaList, setAreaList] = useState<{ title: string; value: string }[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string>("%");
+  const [selectedRegionMenu, setSelectedRegionMenu] = useState<string | null>(null);
   const [devices, setDevices] = useState<WeatherDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showStatusCards, setShowStatusCards] = useState(false);
   const ITEMS_PER_PAGE = 50;
 
-  const loadErrorDevices = async () => {
+  const filterAndSortArea = (filterTerms: string[]) => {
+    return areaList
+      .filter((area) =>
+        filterTerms.some((term) => (area.title || "").includes(term))
+      )
+      .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+  };
+
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await weathersiApi.getErrorDevices();
-      if (res && res.success) {
-        setDevices(res.data || []);
+      const [areasRes, devicesRes] = await Promise.all([
+        weathersiApi.getAreas(),
+        weathersiApi.getErrorDevices(selectedArea === "%" ? undefined : selectedArea),
+      ]);
+      if (areasRes?.success && areasRes?.data) {
+        const list = (
+          areasRes.data as { RM?: string; ADMCODE?: string; title?: string; value?: string }[]
+        ).map((item) => ({
+          title: item.RM || item.title || "",
+          value: item.ADMCODE || item.value || "",
+        }));
+        setAreaList(list);
+      }
+      if (devicesRes?.success && devicesRes?.data) {
+        setDevices(devicesRes.data || []);
         setLastUpdated(new Date());
       }
     } catch (err) {
-      console.error("에러 장비 로드 실패:", err);
+      console.error("점검 필요 장비 로드 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAreaChange = async (adcode: string, menuName?: string | null) => {
+    setSelectedArea(adcode);
+    setSelectedRegionMenu(menuName ?? null);
+    setLoading(true);
+    try {
+      const res = await weathersiApi.getErrorDevices(adcode === "%" ? undefined : adcode);
+      if (res?.success) setDevices(res.data || []);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error("점검 필요 장비 로드 실패:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadErrorDevices();
+    loadData();
   }, []);
 
   // 실시간 시계
@@ -80,19 +124,32 @@ const ErrorDevicesPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedProvince, searchQuery]);
+  }, [selectedArea, searchQuery]);
 
   const filteredDevices = devices.filter((d) => {
     const matchesSearch =
       (d.NM_DIST_OBSV || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (d.CD_DIST_OBSV || "").includes(searchQuery);
-    const sidoCode = String(d.BDONG_CD || "").substring(0, 2);
-    const matchesProvince =
-      selectedProvince.codes.length === 0 || selectedProvince.codes.includes(sidoCode);
-    return matchesSearch && matchesProvince;
+    return matchesSearch;
   });
 
   const totalItems = filteredDevices.length;
+
+  // 경과일 색상별 갯수 (0일: 파랑, 1~60일: 노랑, 61~365일: 빨강, null/366+일: 회색)
+  const daysCounts = React.useMemo(() => {
+    let blue = 0; // 0일
+    let yellow = 0; // 1~60일
+    let red = 0; // 61~365일
+    let gray = 0; // null 또는 366일 이상
+    filteredDevices.forEach((d) => {
+      const days = calculateDaysSince(d.LastDate);
+      if (days === null || days > 365) gray++;
+      else if (days === 0) blue++;
+      else if (days <= 60) yellow++;
+      else red++;
+    });
+    return { blue, yellow, red, gray };
+  }, [filteredDevices]);
 
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedDevices = filteredDevices.slice(
@@ -126,7 +183,7 @@ const ErrorDevicesPage = () => {
           )}
         </div>
         <Button
-          onClick={loadErrorDevices}
+          onClick={loadData}
           disabled={loading}
           className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
         >
@@ -135,28 +192,92 @@ const ErrorDevicesPage = () => {
         </Button>
       </div>
 
-      {/* 필터 섹션 */}
+      {/* 통계 토글 버튼 */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowStatusCards(!showStatusCards)}
+          className="h-9 px-4 text-xs gap-2 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-300"
+        >
+          <Activity className="h-4 w-4" />
+          {showStatusCards ? "통계 숨김" : "통계 표시"}
+        </Button>
+      </div>
+
+      {/* 점검 필요 장비 대수 + 경과일 색상별 갯수 - 한 줄 */}
+      {showStatusCards && (
+        <div className="flex flex-nowrap items-stretch gap-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700">
+            <span className="text-xs font-bold">점검 필요</span>
+            <span className="text-xl font-black">{totalItems}</span>
+            <span className="text-[10px] opacity-80">대</span>
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700">
+            <span className="text-xs font-bold">0일</span>
+            <span className="text-xl font-black">{daysCounts.blue}</span>
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700">
+            <span className="text-xs font-bold">1~60일</span>
+            <span className="text-xl font-black">{daysCounts.yellow}</span>
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700">
+            <span className="text-xs font-bold">61~365일</span>
+            <span className="text-xl font-black">{daysCounts.red}</span>
+          </div>
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600">
+            <span className="text-xs font-bold">366일+</span>
+            <span className="text-xl font-black">{daysCounts.gray}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 지역 필터 - weathersi와 동일 */}
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
-            지역 필터
-          </label>
-          <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
-            {PROVINCE_GROUPS.map((prov) => (
-              <Button
-                key={prov.name}
-                variant={selectedProvince.name === prov.name ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSelectedProvince(prov)}
-                className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                  selectedProvince.name === prov.name
-                    ? "bg-red-600 dark:bg-red-700 text-white shadow-md"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                }`}
-              >
-                {prov.name}
-              </Button>
-            ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
+              지역 필터
+            </label>
+            <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+              {REGION_MENU.filter((menu) => {
+                if (menu.name === "전국") return true;
+                return filterAndSortArea(menu.filter).length > 0;
+              }).map((menu) => (
+                <DropdownMenu key={menu.name}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={selectedRegionMenu === menu.name ? "default" : "ghost"}
+                      size="sm"
+                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                        selectedRegionMenu === menu.name
+                          ? "bg-red-600 dark:bg-red-700 text-white shadow-md"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {menu.name}
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                    {menu.name === "전국" ? (
+                      <DropdownMenuItem onClick={() => handleAreaChange("%", menu.name)}>
+                        전국
+                      </DropdownMenuItem>
+                    ) : (
+                      filterAndSortArea(menu.filter).map((item) => (
+                        <DropdownMenuItem
+                          key={item.value}
+                          onClick={() => handleAreaChange(item.value, menu.name)}
+                        >
+                          {item.title}
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ))}
+            </div>
           </div>
         </div>
       </div>
