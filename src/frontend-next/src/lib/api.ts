@@ -1,6 +1,25 @@
 import { ApiResponse, ControlPayload, WeatherDevice } from "./types";
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+// 모바일 접속 시에도 백엔드에 접근할 수 있도록 동적 API URL 설정
+const getApiBaseUrl = () => {
+  if (typeof window === "undefined") {
+    // 서버사이드: localhost 사용
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+  }
+
+  // 클라이언트사이드: 현재 호스트의 IP를 사용
+  const host = window.location.hostname;
+
+  // localhost나 127.0.0.1이면 그대로 사용
+  if (host === "localhost" || host === "127.0.0.1") {
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+  }
+
+  // 그 외의 경우 (192.168.0.51 등) 같은 호스트의 8080 포트 사용
+  return `http://${host}:8080/api`;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   // sessionStorage 토큰 가져오기

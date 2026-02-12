@@ -23,6 +23,34 @@
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
+/* 모바일에서 스크롤 강제 활성화 */
+@media (max-width: 1023px) {
+  body {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+    height: auto !important;
+    min-height: 100vh;
+  }
+  
+  main {
+    overflow: visible !important;
+    min-height: calc(100vh - 56px);
+  }
+  
+  /* 페이지 하단 여백 확보 (Footer에 가려지지 않도록) */
+  .page-container {
+    padding-bottom: 180px !important;
+    min-height: 100vh;
+  }
+}
+
+/* 데스크톱에서는 기본 여백 */
+@media (min-width: 1024px) {
+  .page-container {
+    padding-bottom: 8rem;
+  }
+}
+
 /* Common Utility Classes for Responsiveness */
 .hide-on-mobile {
   display: none !important;

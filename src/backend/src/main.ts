@@ -36,19 +36,24 @@ async function bootstrap() {
   // CORS
   app.enableCors({
     origin: [
-      'http://localhost', 
-      'http://localhost:80', 
-      'http://localhost:3000', 
+      'http://localhost',
+      'http://localhost:80',
+      'http://localhost:3000',
       'http://127.0.0.1:3000',
-      'http://172.30.1.89:3000'
+      'http://172.30.1.89:3000',
+      'http://192.168.0.51:3000',
+      'http://192.168.0.51',
     ],
     methods: 'GET,POST,PUT,PATCH,DELETE',
     credentials: true,
   });
 
-  await app.listen(process.env.SERVICE_PORT ?? 8080);
+  await app.listen(process.env.SERVICE_PORT ?? 8080, '0.0.0.0');
   console.log(
-    `🚀 애플리케이션이 http://localhost:${process.env.SERVICE_PORT}(${await app.getUrl()}) 에서 실행 중입니다`,
+    `🚀 애플리케이션이 http://0.0.0.0:${process.env.SERVICE_PORT}(${await app.getUrl()}) 에서 실행 중입니다`,
+  );
+  console.log(
+    `📱 모바일 접속: http://192.168.0.51:${process.env.SERVICE_PORT}`,
   );
 }
 

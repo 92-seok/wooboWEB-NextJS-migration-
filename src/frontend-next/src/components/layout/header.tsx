@@ -125,7 +125,7 @@ const Header = () => {
         ),
         {
           duration: Infinity,
-          position: "bottom-center",
+          position: "top-center",
         }
       );
     });

@@ -272,7 +272,7 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-6 pb-32 px-4 sm:px-8 lg:px-12 mt-8">
+    <div className="page-container max-w-[1440px] mx-auto space-y-6 pb-32 lg:pb-32 px-4 sm:px-8 lg:px-12 mt-8" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom))' }}>
       {/* 페이지 헤더 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
@@ -492,7 +492,7 @@ const AdminPage = () => {
 
         {/* 페이지네이션 */}
         {totalPages > 0 && (
-          <div className="py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6">
+          <div className="relative py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6 bg-white dark:bg-slate-900 rounded-b-3xl z-10">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               전체 <span className="font-bold text-slate-800 dark:text-slate-200">{total}</span>개 중{" "}
               <span className="font-bold text-cyan-600 dark:text-cyan-400">
@@ -514,7 +514,7 @@ const AdminPage = () => {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow-sm">
                 <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400">{currentPage}</span>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>

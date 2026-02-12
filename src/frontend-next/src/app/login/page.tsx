@@ -15,13 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Lock, Mail, ArrowLeft } from "lucide-react";
+import { Lock, Mail, ArrowLeft, User } from "lucide-react";
 import { authApi } from "@/lib/api";
 
 const LoginPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showGeneralLogin, setShowGeneralLogin] = useState(false); // 일반 로그인 표시 상태
 
   // 폼 상태 관리
   const [formData, setFormData] = useState({
@@ -90,91 +91,128 @@ const LoginPage = () => {
               <Lock className="h-6 w-6" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">로그인</CardTitle>
-          <CardDescription className="dark:text-slate-400">우보 온라인 운영지원시스템에 접속합니다.</CardDescription>
+          <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            우보온라인 운영지원 시스템
+          </CardTitle>
+          <CardDescription className="dark:text-slate-400">
+            우보 온라인 운영지원시스템에 접속합니다.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 에러 메시지 표시 */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+          {!showGeneralLogin ? (
+            // 기본 화면: 카카오 로그인만 표시
+            <div className="space-y-4">
+              {/* 카카오 로그인 버튼 */}
+              <Button
+                type="button"
+                className="w-full h-12 bg-yellow-300 hover:bg-yellow-400 border-yellow-400 text-slate-900 text-base font-semibold"
+                onClick={handleKakaoLogin}
+              >
+                <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"
+                  />
+                </svg>
+                카카오로 시작하기
+              </Button>
 
-            <div className="space-y-2">
-              <Label htmlFor="username">이메일 계정</Label>
+              {/* 일반 로그인 버튼 */}
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  id="username"
-                  placeholder="example@woobo.com"
-                  type="text"
-                  className="pl-10"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200 dark:border-slate-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-800 px-2 text-slate-500 dark:text-slate-400">
+                    또는
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">비밀번호</Label>
-                <Link href="#" className="text-xs text-blue-600 hover:underline">
-                  비밀번호 찾기
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  className="pl-10"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-base"
-              disabled={loading}
-            >
-              {loading ? "로그인 중..." : "시스템 접속"}
-            </Button>
-          </form>
 
-          {/* 카카오 로그인 버튼 */}
-          <div className="mt-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-slate-800 px-2 text-slate-500 dark:text-slate-400">또는</span>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-11 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                onClick={() => setShowGeneralLogin(true)}
+              >
+                <User className="w-4 h-4 mr-2" />
+                일반 로그인
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-4 bg-yellow-300 hover:bg-yellow-400 border-yellow-400 text-slate-900"
-              onClick={handleKakaoLogin}
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"
-                />
-              </svg>
-              카카오로 시작하기
-            </Button>
-          </div>
+          ) : (
+            // 일반 로그인 폼
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* 에러 메시지 표시 */}
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="username">아이디</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="username"
+                    placeholder="아이디를 입력하세요"
+                    type="text"
+                    className="pl-10"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">비밀번호</Label>
+                  <Link href="#" className="text-xs text-blue-600 hover:underline">
+                    비밀번호 찾기
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    className="pl-10"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-base"
+                disabled={loading}
+              >
+                {loading ? "로그인 중..." : "로그인"}
+              </Button>
+
+              {/* 뒤로가기 버튼 */}
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                onClick={() => setShowGeneralLogin(false)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                카카오 로그인으로 돌아가기
+              </Button>
+            </form>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 border-t pt-6 bg-slate-50/50 dark:bg-slate-900/50 dark:border-slate-700">
           <div className="text-sm text-center text-slate-500 dark:text-slate-400">
             아직 계정이 없으신가요?{" "}
-            <Link href="/signup" className="text-blue-700 dark:text-blue-400 font-bold hover:underline">
+            <Link
+              href="/signup"
+              className="text-blue-700 dark:text-blue-400 font-bold hover:underline"
+            >
               회원가입 요청
             </Link>
           </div>
