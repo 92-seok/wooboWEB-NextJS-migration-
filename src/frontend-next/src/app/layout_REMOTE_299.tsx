@@ -9,27 +9,24 @@ import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+export const metaadata: Metadata = {
   title: "우보 온라인 - 운영지원시스템",
   description: "우보 온라인 운영지원시스템",
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground antialiased`}
+        className={`${inter.className} h-screen flex flex-col bg-background text-foreground antialiased overflow-hidden`}
       >
         {/* 상단 헤더 */}
         <Header />
 
-        {/* 메인 컨텐츠 영역: 스크롤 가능하도록 설정 */}
-        <main className="flex-1 overflow-auto relative">{children}</main>
+        {/* 메인 컨텐츠 영역: 스크롤 가능 (min-h-0: flexbox 스크롤 fix, pb: 푸터 고정 시 하단 여백) */}
+        <main className="flex-1 min-h-0 overflow-auto overflow-x-hidden relative main-content-padding">
+          {children}
+        </main>
 
         {/* 하단 푸터 */}
         <Footer />

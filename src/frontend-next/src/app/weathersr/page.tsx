@@ -20,33 +20,37 @@ import {
   RotateCw,
   ChevronLeft,
   ChevronRight,
-  Monitor,
-  Waves,
-  Cpu,
-  Share2,
   MapPin,
   Clock,
   Activity,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { weathersrApi } from "@/lib/api";
 import { WeatherDevice } from "@/lib/types";
 import { DataSyncIndicator } from "@/components/ui/data-sync-indicator";
 import { getDeviceStatusBadgeClass } from "@/lib/dataDisplay";
 import dayjs from "dayjs";
 
-const PROVINCE_GROUPS = [
-  { name: "전국", codes: [] },
-  { name: "경기도/서울/인천", codes: ["11", "28", "41"] },
-  { name: "전라도", codes: ["29", "45", "46"] },
-  { name: "경상도", codes: ["26", "27", "31", "47", "48"] },
-  { name: "충청도", codes: ["30", "36", "43", "44"] },
-  { name: "강원도", codes: ["42", "51"] },
-  { name: "제주도", codes: ["50"] },
+const REGION_MENU = [
+  { name: "전국", filter: ["전국"] },
+  { name: "경기도", filter: ["경기", "서울"] },
+  { name: "전라도", filter: ["전라", "광주"] },
+  { name: "경상도", filter: ["경상", "부산", "울산", "대구"] },
+  { name: "충청도", filter: ["충청", "대전", "세종"] },
+  { name: "강원도", filter: ["강원"] },
+  { name: "인천/제주도", filter: ["인천", "제주"] },
 ];
 
 const WeatherSRPage = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState(PROVINCE_GROUPS[0]);
+  const [areaList, setAreaList] = useState<{ title: string; value: string }[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string>("%");
+  const [selectedRegionMenu, setSelectedRegionMenu] = useState<string | null>(null);
   const [devices, setDevices] = useState<WeatherDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -55,24 +59,59 @@ const WeatherSRPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
 
-  const loadDevices = React.useCallback(async () => {
+  const filterAndSortArea = (filterTerms: string[]) => {
+    return areaList
+      .filter((area) =>
+        filterTerms.some((term) => (area.title || "").includes(term))
+      )
+      .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+  };
+
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await weathersrApi.getDevices();
-      if (res && res.success) {
-        setDevices(res.data || []);
+      const [areasRes, devicesRes] = await Promise.all([
+        weathersrApi.getAreas(),
+        weathersrApi.getDevices(selectedArea === "%" ? undefined : selectedArea),
+      ]);
+      if (areasRes?.success && areasRes?.data) {
+        const list = (
+          areasRes.data as { RM?: string; ADMCODE?: string; title?: string; value?: string }[]
+        ).map((item) => ({
+          title: item.RM || item.title || "",
+          value: item.ADMCODE || item.value || "",
+        }));
+        setAreaList(list);
+      }
+      if (devicesRes?.success && devicesRes?.data) {
+        setDevices(devicesRes.data);
         setLastUpdated(new Date());
       }
+    } catch (err) {
+      console.error("SR 데이터 로드 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAreaChange = async (adcode: string, menuName?: string | null) => {
+    setSelectedArea(adcode);
+    setSelectedRegionMenu(menuName ?? null);
+    setLoading(true);
+    try {
+      const res = await weathersrApi.getDevices(adcode === "%" ? undefined : adcode);
+      if (res?.success) setDevices(res.data || []);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error("SR 장비 로드 실패:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    loadDevices();
-  }, [loadDevices]);
+    loadData();
+  }, []);
 
   // 실시간 시계
   useEffect(() => {
@@ -84,16 +123,13 @@ const WeatherSRPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedProvince, searchQuery]);
+  }, [selectedArea, searchQuery]);
 
   const filteredDevices = devices.filter((d) => {
     const matchesSearch =
       (d.NM_DIST_OBSV || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (d.IDX || "").includes(searchQuery);
-    const sidoCode = String(d.BDONG_CD || "").substring(0, 2);
-    const matchesProvince =
-      selectedProvince.codes.length === 0 || selectedProvince.codes.includes(sidoCode);
-    return matchesSearch && matchesProvince;
+    return matchesSearch;
   });
 
   const totalItems = filteredDevices.length;
@@ -124,7 +160,7 @@ const WeatherSRPage = () => {
           )}
         </div>
         <Button
-          onClick={loadDevices}
+          onClick={loadData}
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
         >
@@ -149,28 +185,52 @@ const WeatherSRPage = () => {
         </div>
       </div>
 
-      {/* 지역 필터 및 검색 */}
+      {/* 지역 필터 */}
       <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
-            지역 필터
-          </label>
-          <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
-            {PROVINCE_GROUPS.map((prov) => (
-              <Button
-                key={prov.name}
-                variant={selectedProvince.name === prov.name ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSelectedProvince(prov)}
-                className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                  selectedProvince.name === prov.name
-                    ? "bg-blue-600 dark:bg-blue-700 text-white shadow-md"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                }`}
-              >
-                {prov.name}
-              </Button>
-            ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">
+              지역 필터
+            </label>
+            <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+              {REGION_MENU.filter((menu) => {
+                if (menu.name === "전국") return true;
+                return filterAndSortArea(menu.filter).length > 0;
+              }).map((menu) => (
+                <DropdownMenu key={menu.name}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={selectedRegionMenu === menu.name ? "default" : "ghost"}
+                      size="sm"
+                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                        selectedRegionMenu === menu.name
+                          ? "bg-blue-600 dark:bg-blue-700 text-white shadow-md"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {menu.name}
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                    {menu.name === "전국" ? (
+                      <DropdownMenuItem onClick={() => handleAreaChange("%", menu.name)}>
+                        전국
+                      </DropdownMenuItem>
+                    ) : (
+                      filterAndSortArea(menu.filter).map((item) => (
+                        <DropdownMenuItem
+                          key={item.value}
+                          onClick={() => handleAreaChange(item.value, menu.name)}
+                        >
+                          {item.title}
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ))}
+            </div>
           </div>
         </div>
       </div>

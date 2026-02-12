@@ -18,7 +18,6 @@ import {
   ChevronUp,
   Search,
   RotateCw,
-  Settings,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -34,6 +33,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { weathersiApi } from "@/lib/api";
 import { usePermission } from "@/hooks/usePermission";
@@ -42,14 +54,14 @@ import { isImageUrl, isHtmlContent, getDeviceStatusBadgeClass } from "@/lib/data
 import { DisplayRenderer } from "@/components/ui/display-renderer";
 import dayjs from "dayjs";
 
-const PROVINCE_GROUPS = [
-  { name: "전국", codes: [] },
-  { name: "경기도/서울/인천", codes: ["11", "28", "41"] },
-  { name: "전라도", codes: ["29", "45", "46"] },
-  { name: "경상도", codes: ["26", "27", "31", "47", "48"] },
-  { name: "충청도", codes: ["30", "36", "43", "44"] },
-  { name: "강원도", codes: ["42", "51"] },
-  { name: "제주도", codes: ["50"] },
+const REGION_MENU = [
+  { name: "전국", filter: ["전국"] },
+  { name: "경기도", filter: ["경기", "서울"] },
+  { name: "전라도", filter: ["전라", "광주"] },
+  { name: "경상도", filter: ["경상", "부산", "울산", "대구"] },
+  { name: "충청도", filter: ["충청", "대전", "세종"] },
+  { name: "강원도", filter: ["강원"] },
+  { name: "인천/제주도", filter: ["인천", "제주"] },
 ];
 
 const DEVICE_TYPES = [
@@ -66,7 +78,9 @@ const DEVICE_TYPES = [
 const WeatherSIPage = () => {
   const { canShowTestButton, canExecuteTest } = usePermission();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState(PROVINCE_GROUPS[0]);
+  const [areaList, setAreaList] = useState<{ title: string; value: string; }[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string>("%");
+  const [selectedRegionMenu, setSelectedRegionMenu] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState(DEVICE_TYPES[0]);
   const [devices, setDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,22 +91,79 @@ const WeatherSIPage = () => {
   const [showStatusCards, setShowStatusCards] = useState(false);
   const ITEMS_PER_PAGE = 50;
 
+  // 지역 필터링 함수
+  const filterAndSortArea = (filterTerms: string[]) => {
+    return areaList
+      .filter((area) =>
+        filterTerms.some((term) => (area.title || "").includes(term))
+      )
+      .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+  };
+
+  // 초기 로드 = 지역 + 장비
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [areasRes, devicesRes] = await Promise.all([
+        weathersiApi.getAreas(),
+        weathersiApi.getDevices(selectedArea === "%" ? undefined : selectedArea),
+      ]);
+      if (areasRes?.success && areasRes?.data) {
+        const list = (areasRes.data as { RM?: string; ADMCODE?: string; title?: string; value?: string }[]).map(
+          (item) => ({
+            title: item.RM || item.title || "",
+            value: item.ADMCODE || item.value || "",
+          })
+        );
+        setAreaList(list);
+      }
+      if (devicesRes?.success && devicesRes?.data) {
+        setDevices(devicesRes.data);
+        setLastUpdated(new Date());
+      }
+    } catch (err) {
+      console.error("데이터 로드 실패: ", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 시군구 선택 시 장비만 다시 로드
+  const handleAreaChange = async (adcode: string, menuName?: string | null) => {
+    setSelectedArea(adcode);
+    setSelectedRegionMenu(menuName ?? null);
+    setLoading(true);
+    try {
+      const res = await weathersiApi.getDevices(adcode === "%" ? undefined : adcode);
+      if (res?.success) setDevices(res.data || []);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error("장비 로드 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
   // HTML에서 이미지 URL 추출 함수
   const extractImageFromHtml = (htmlString: string): string | null => {
     if (!htmlString) return null;
-    
+
     // <img src="..."> 형식 추출
     const imgRegex = /<img[^>]+src=["']([^"']+)["']/i;
     const match = htmlString.match(imgRegex);
-    
+
     if (match && match[1]) {
       return match[1];
     }
-    
+
     // src="..." 만 있는 경우도 추출
     const srcRegex = /src=["']([^"']+)["']/i;
     const srcMatch = htmlString.match(srcRegex);
-    
+
     return srcMatch ? srcMatch[1] : null;
   };
 
@@ -108,27 +179,6 @@ const WeatherSIPage = () => {
   const [selectedControlItem, setSelectedControlItem] = useState<any>(null);
   const [testMessage, setTestMessage] = useState("");
 
-  const loadDevices = async () => {
-    setLoading(true);
-    try {
-      const res = await weathersiApi.getDevices();
-      console.log('🔍 API 응답:', res);
-      if (res && res.success) {
-        console.log('✅ 로드된 장비 수:', res.data?.length);
-        console.log('📊 첫 번째 장비 샘플:', res.data?.[0]);
-        setDevices(res.data || []);
-        setLastUpdated(new Date());
-      }
-    } catch (err) {
-      console.error("❌ 장비 로드 실패:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDevices();
-  }, []);
 
   // 실시간 시계
   useEffect(() => {
@@ -140,7 +190,7 @@ const WeatherSIPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedProvince, selectedType, searchQuery]);
+  }, [selectedArea, selectedType, searchQuery]);
 
   const handleOpenControl = (item: any) => {
     if (!canExecuteTest) {
@@ -149,16 +199,16 @@ const WeatherSIPage = () => {
     }
 
     setSelectedControlItem(item);
-    
+
     const gb = String(item.GB_OBSV || "").padStart(2, "0");
-    
+
     // 예경보(GB 17)의 경우 기본 메시지 설정
     if (gb === "17") {
       setTestMessage(`${item.NM_DIST_OBSV || "해당 지역"} 방송 테스트 중입니다.`);
     } else {
       setTestMessage("");
     }
-    
+
     setControlDialogOpen(true);
   };
 
@@ -219,12 +269,9 @@ const WeatherSIPage = () => {
     const matchesSearch =
       (d.NM_DIST_OBSV || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (d.CD_DIST_OBSV || "").includes(searchQuery);
-    const sidoCode = String(d.BDONG_CD || "").substring(0, 2);
-    const matchesProvince =
-      selectedProvince.codes.length === 0 || selectedProvince.codes.includes(sidoCode);
     const gbCode = String(d.GB_OBSV || "").padStart(2, "0");
     const matchesType = selectedType.codes.length === 0 || selectedType.codes.includes(gbCode);
-    return matchesSearch && matchesProvince && matchesType;
+    return matchesSearch && matchesType;
   });
 
   const totalItems = filteredDevices.length;
@@ -335,7 +382,7 @@ const WeatherSIPage = () => {
           )}
         </div>
         <Button
-          onClick={loadDevices}
+          onClick={loadData}
           disabled={loading}
           className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 h-11 px-6 rounded-xl font-bold shadow-md gap-2"
         >
@@ -384,20 +431,38 @@ const WeatherSIPage = () => {
               지역 필터
             </label>
             <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
-              {PROVINCE_GROUPS.map((prov) => (
-                <Button
-                  key={prov.name}
-                  variant={selectedProvince.name === prov.name ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setSelectedProvince(prov)}
-                className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                  selectedProvince.name === prov.name
-                    ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                }`}
-                >
-                  {prov.name}
-                </Button>
+              {REGION_MENU.map((menu) => (
+                <DropdownMenu key={menu.name}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={selectedRegionMenu === menu.name ? "default" : "ghost"}
+                      size="sm"
+                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${selectedRegionMenu === menu.name
+                        ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {menu.name}
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                    {menu.name === "전국" ? (
+                      <DropdownMenuItem onClick={() => handleAreaChange("%", menu.name)}>
+                        전국
+                      </DropdownMenuItem>
+                    ) : (
+                      filterAndSortArea(menu.filter).map((item) => (
+                        <DropdownMenuItem
+                          key={item.value}
+                          onClick={() => handleAreaChange(item.value, menu.name)}
+                        >
+                          {item.title}
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ))}
             </div>
           </div>
@@ -414,11 +479,10 @@ const WeatherSIPage = () => {
                   variant={selectedType.name === type.name ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setSelectedType(type)}
-                className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                  selectedType.name === type.name
+                  className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${selectedType.name === type.name
                     ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                }`}
+                    }`}
                 >
                   {type.name}
                 </Button>
@@ -485,269 +549,298 @@ const WeatherSIPage = () => {
                   const gb = String(item.GB_OBSV || "").padStart(2, "0");
 
                   return (
-                  <React.Fragment key={item.IDX}>
-                    <TableRow
-                      className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${
-                        expandedRow === item.IDX
+                    <React.Fragment key={item.IDX}>
+                      <TableRow
+                        className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${expandedRow === item.IDX
                           ? "bg-purple-50/50 dark:bg-purple-900/10"
                           : "hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
-                      }`}
-                      onClick={() => setExpandedRow(expandedRow === item.IDX ? null : item.IDX)}
-                    >
-                      <TableCell className="text-center px-2">
-                        {expandedRow === item.IDX ? (
-                          <ChevronUp className="h-4 w-4 text-purple-500 dark:text-purple-400 mx-auto" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-500 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center text-xs font-mono text-slate-600 dark:text-slate-400">
-                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <img
-                            src={deviceImage}
-                            alt={deviceTypeName}
-                            className="h-6 w-6 object-contain"
-                          />
-                          <span className="text-[9px] text-slate-500 dark:text-slate-400">
-                            {deviceTypeName}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate px-2">
-                          {item.NM_DIST_OBSV || "-"}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge 
-                          variant="outline" 
-                          className={`${statusClass} ${!isNormal ? 'animate-pulse' : ''}`}
-                        >
-                          {isNormal ? "정상" : "점검"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="text-xs text-slate-700 dark:text-slate-300 font-mono px-2">
-                          {/* 전광판(18)인 경우 특별 처리 */}
-                          {gb === "18" && item.DATA ? (
-                            (() => {
-                              // 1. 이미지 URL인 경우
-                              if (isImageUrl(item.DATA)) {
-                                return (
-                                  <img
-                                    src={item.DATA}
-                                    alt="전광판"
-                                    className="h-8 w-auto max-w-full mx-auto object-contain"
-                                  />
-                                );
-                              }
-
-                              // 2. HTML 컨텐츠인 경우 - 이미지로 변환하여 작게 표시
-                              if (isHtmlContent(item.DATA)) {
-                                return (
-                                  <DisplayRenderer
-                                    htmlContent={item.DATA}
-                                    size="small"
-                                  />
-                                );
-                              }
-
-                              // 3. 기본 텍스트 표시
-                              return (
-                                <span className="block truncate max-w-[180px] mx-auto text-[10px]">
-                                  {item.DATA}
-                                </span>
-                              );
-                            })()
-                          ) : item.DATA && isImageUrl(item.DATA) ? (
+                          }`}
+                        onClick={() => setExpandedRow(expandedRow === item.IDX ? null : item.IDX)}
+                      >
+                        <TableCell className="text-center px-2">
+                          {expandedRow === item.IDX ? (
+                            <ChevronUp className="h-4 w-4 text-purple-500 dark:text-purple-400 mx-auto" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-500 mx-auto" />
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center text-xs font-mono text-slate-600 dark:text-slate-400">
+                          {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-1">
                             <img
-                              src={item.DATA}
-                              alt="data"
-                              className="h-8 w-auto max-w-full mx-auto object-contain"
+                              src={deviceImage}
+                              alt={deviceTypeName}
+                              className="h-6 w-6 object-contain"
                             />
-                          ) : item.DATA && isHtmlContent(item.DATA) ? (
-                            (() => {
-                              const imageUrl = extractImageFromHtml(item.DATA);
-                              if (imageUrl) {
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400">
+                              {deviceTypeName}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate px-2">
+                            {item.NM_DIST_OBSV || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant="outline"
+                            className={`${statusClass} ${!isNormal ? 'animate-pulse' : ''}`}
+                          >
+                            {isNormal ? "정상" : "점검"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="text-xs text-slate-700 dark:text-slate-300 font-mono px-2">
+                            {/* 전광판(18)인 경우 특별 처리 */}
+                            {gb === "18" && item.DATA ? (
+                              (() => {
+                                // 1. 이미지 URL인 경우
+                                if (isImageUrl(item.DATA)) {
+                                  return (
+                                    <img
+                                      src={item.DATA}
+                                      alt="전광판"
+                                      className="h-8 w-auto max-w-full mx-auto object-contain"
+                                    />
+                                  );
+                                }
+
+                                // 2. HTML 컨텐츠인 경우 - 이미지로 변환하여 작게 표시
+                                if (isHtmlContent(item.DATA)) {
+                                  return (
+                                    <DisplayRenderer
+                                      htmlContent={item.DATA}
+                                      size="small"
+                                    />
+                                  );
+                                }
+
+                                // 3. 기본 텍스트 표시
                                 return (
-                                  <img
-                                    src={imageUrl}
-                                    alt="data"
-                                    className="h-8 w-auto max-w-full mx-auto object-contain"
-                                  />
-                                );
-                              }
-                              const textContent = extractTextFromHtml(item.DATA);
-                              if (textContent) {
-                                return (
-                                  <span className="block truncate max-w-[180px] mx-auto text-[10px]" title={textContent}>
-                                    {textContent}
+                                  <span className="block truncate max-w-[180px] mx-auto text-[10px]">
+                                    {item.DATA}
                                   </span>
                                 );
-                              }
-                              return (
-                                <div className="text-[10px] bg-slate-900 dark:bg-slate-700 text-green-400 px-2 py-1 rounded font-mono inline-block">
-                                  LED
-                                </div>
-                              );
-                            })()
-                          ) : (
-                            <span className="block truncate max-w-[180px] mx-auto" title={item.DATA || ""}>
-                              {item.DATA || "-"}
-                            </span>
+                              })()
+                            ) : item.DATA && isImageUrl(item.DATA) ? (
+                              <img
+                                src={item.DATA}
+                                alt="data"
+                                className="h-8 w-auto max-w-full mx-auto object-contain"
+                              />
+                            ) : item.DATA && isHtmlContent(item.DATA) ? (
+                              (() => {
+                                const imageUrl = extractImageFromHtml(item.DATA);
+                                if (imageUrl) {
+                                  return (
+                                    <img
+                                      src={imageUrl}
+                                      alt="data"
+                                      className="h-8 w-auto max-w-full mx-auto object-contain"
+                                    />
+                                  );
+                                }
+                                const textContent = extractTextFromHtml(item.DATA);
+                                if (textContent) {
+                                  return (
+                                    <span className="block truncate max-w-[180px] mx-auto text-[10px]" title={textContent}>
+                                      {textContent}
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <div className="text-[10px] bg-slate-900 dark:bg-slate-700 text-green-400 px-2 py-1 rounded font-mono inline-block">
+                                    LED
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <span className="block truncate max-w-[180px] mx-auto" title={item.DATA || ""}>
+                                {item.DATA || "-"}
+                              </span>
+                            )}
+                          </div>
+                          {item.UNIT && (
+                            <div className="text-[9px] text-slate-400 dark:text-slate-500">{item.UNIT}</div>
                           )}
-                        </div>
-                        {item.UNIT && (
-                          <div className="text-[9px] text-slate-400 dark:text-slate-500">{item.UNIT}</div>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                        </TableCell>
+                      </TableRow>
 
                     {expandedRow === item.IDX && (
                       <TableRow className="bg-slate-50/30 dark:bg-slate-900/30">
                         <TableCell colSpan={6} className="p-4 sm:p-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {/* 기본 정보 */}
                             <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
                                 <MapPin size={16} /> 기본 정보
                               </h4>
-                              <div className="space-y-3 text-sm">
-                                <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">장비명</span>
-                                  <span className="text-slate-800 dark:text-slate-200 font-bold">
-                                    {item.NM_DIST_OBSV || "-"}
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
+                                    {item.DTL_ADRES || "-"}
                                   </span>
                                 </div>
-                                <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">주소</span>
-                                  <span className="text-slate-800 dark:text-slate-200 text-right">{item.DTL_ADRES || "-"}</span>
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
                                 </div>
-                                <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">좌표</span>
-                                  <span className="text-slate-800 dark:text-slate-200 font-mono text-xs">
+                                <div className="flex justify-between py-2">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
                                     {item.LAT} / {item.LON}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">접속 정보</span>
-                                  <span className="text-slate-800 dark:text-slate-200 font-mono text-xs">
-                                    {item.IP || "-"}:{item.PORT || "-"}
                                   </span>
                                 </div>
                               </div>
                             </Card>
 
                             <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                                <Activity size={16} /> 통신 상태
+                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                                <Activity size={16} /> 로거 데이터
                               </h4>
-                              <div className="space-y-3 text-sm">
-                                <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">최근 통신</span>
-                                  <span className="text-slate-800 dark:text-slate-200 font-mono text-xs">
-                                    {item.LastDate ? dayjs(item.LastDate).format("YYYY-MM-DD HH:mm") : "-"}
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">로거 시간</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                    {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
                                   </span>
                                 </div>
-                                <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">상태</span>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`${statusClass} ${!isNormal ? 'animate-pulse' : ''}`}
-                                  >
-                                    {isNormal ? "정상" : "점검필요"}
-                                  </Badge>
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">부팅 시간</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                    {item.LOGGER_UPTIME ? dayjs(item.LOGGER_UPTIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                  </span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium text-slate-500 dark:text-slate-400">데이터</span>
-                                  <div className="text-slate-800 dark:text-slate-200 flex justify-end">
-                                    {/* 전광판(18)인 경우 특별 처리 */}
-                                    {gb === "18" && item.DATA ? (
-                                      (() => {
-                                        // 1. 이미지 URL인 경우
-                                        if (isImageUrl(item.DATA)) {
-                                          return (
-                                            <img
-                                              src={item.DATA}
-                                              alt="전광판"
-                                              className="h-24 w-auto max-w-full object-contain rounded shadow-md"
-                                            />
-                                          );
-                                        }
-                                        
-                                        // 2. HTML 컨텐츠인 경우 - 실제 크기로 표시
-                                        if (isHtmlContent(item.DATA)) {
-                                          return (
-                                            <div 
-                                              className="bg-black px-4 py-3 rounded inline-flex items-center justify-center overflow-auto max-w-full"
-                                              style={{ 
-                                                maxWidth: '100%',
-                                                minHeight: '100px'
-                                              }}
-                                              dangerouslySetInnerHTML={{ __html: item.DATA }}
-                                            />
-                                          );
-                                        }
-                                        
-                                        // 3. 기본 텍스트 표시
-                                        return (
-                                          <span className="font-mono text-xs">
-                                            {item.DATA} {item.UNIT || ""}
-                                          </span>
-                                        );
-                                      })()
-                                    ) : item.DATA && isHtmlContent(item.DATA) ? (
-                                      (() => {
-                                        const imageUrl = extractImageFromHtml(item.DATA);
-                                        if (imageUrl) {
-                                          return (
-                                            <img
-                                              src={imageUrl}
-                                              alt="전광판"
-                                              className="h-16 w-auto max-w-full object-contain rounded shadow-sm"
-                                            />
-                                          );
-                                        }
-                                        const textContent = extractTextFromHtml(item.DATA);
-                                        if (textContent) {
-                                          return (
-                                            <span className="font-mono text-xs">
-                                              {textContent}
-                                            </span>
-                                          );
-                                        }
-                                        return (
-                                          <span className="font-mono text-xs">
-                                            {item.DATA} {item.UNIT || ""}
-                                          </span>
-                                        );
-                                      })()
-                                    ) : (
-                                      <span className="font-mono text-xs font-bold">
-                                        {item.DATA || "-"} {item.UNIT || ""}
-                                      </span>
-                                    )}
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl text-center border border-purple-100 dark:border-purple-800">
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 font-bold mb-1">GL</p>
+                                    <p className="text-lg font-black text-purple-700 dark:text-purple-300">
+                                      {item.LOGGER_GL || "0.00"} M
+                                    </p>
+                                  </div>
+                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
+                                    <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
+                                    <p className="text-lg font-black text-teal-700 dark:text-teal-300">
+                                      {item.LOGGER_FL || "0.00"} M
+                                    </p>
                                   </div>
                                 </div>
                               </div>
+                            </Card>
 
-                              {canShowTestButton &&
-                                ["17", "18", "20"].includes(gb) && (
-                                  <div className="pt-2">
-                                    <Button
-                                      className="w-full bg-slate-900 dark:bg-slate-700 hover:bg-black dark:hover:bg-slate-600 text-white text-xs font-bold h-10 rounded-xl gap-2 shadow-md transition-transform active:scale-95"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenControl(item);
-                                      }}
-                                    >
-                                      <Settings className="h-4 w-4" />
-                                      원격 제어 테스트
-                                    </Button>
+                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                                <Activity size={16} /> 국립재난안전연구원 API 연계
+                              </h4>
+                              <div className="space-y-3 text-sm">
+                                {/* API 기본 정보 */}
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">서비스키</span>
+                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs truncate max-w-[200px]">
+                                    {item.serviceKey || "-"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">API 연계 상태</span>
+                                  <Badge
+                                    variant="outline"
+                                    className={`${
+                                      item.ResultCode === "OK"
+                                        ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                        : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                    } font-black text-[10px] px-2 py-1 rounded-full`}
+                                  >
+                                    {item.ResultCode || "-"}
+                                  </Badge>
+                                </div>
+                                
+                                {/* 전송 시간 정보 */}
+                                <div className="grid grid-cols-2 gap-3 py-2 border-b border-slate-100 dark:border-slate-700">
+                                  <div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">API 전송시간</p>
+                                    <p className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                      {item.observationDateTime ? dayjs(item.observationDateTime).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                    </p>
                                   </div>
-                                )}
+                                  <div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">상태 전송시간</p>
+                                    <p className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                      {item.statusDateTime ? dayjs(item.statusDateTime).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* 측정 데이터 */}
+                                <div className="grid grid-cols-3 gap-2 pt-2 pb-3">
+                                  <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg text-center border border-blue-100 dark:border-blue-800">
+                                    <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold mb-1">수위(FL)</p>
+                                    <p className="text-sm font-black text-blue-700 dark:text-blue-300 mb-1.5">
+                                      {item.waterLevel || "-"}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.waterLevelStatusCode === "00"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.waterLevelStatusCode === "00" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                  <div className="bg-cyan-50 dark:bg-cyan-900/20 p-2.5 rounded-lg text-center border border-cyan-100 dark:border-cyan-800">
+                                    <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold mb-1">유량(㎧)</p>
+                                    <p className="text-sm font-black text-cyan-700 dark:text-cyan-300 mb-1.5">
+                                      {item.averageVelocity || "-"}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.velocityStatusCode === "10"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.velocityStatusCode === "10" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-lg text-center border border-teal-100 dark:border-teal-800">
+                                    <p className="text-[9px] text-teal-600 dark:text-teal-400 font-bold mb-1">유속(㎥/s)</p>
+                                    <p className="text-sm font-black text-teal-700 dark:text-teal-300 mb-1.5">
+                                      {item.totalDischarge || "-"}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className={`${
+                                        item.dischargeStatusCode === "20"
+                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
+                                    >
+                                      {item.dischargeStatusCode === "20" ? "정상" : "점검"}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                {/* UPS 상태 */}
+                                <div className="flex justify-between items-center py-2">
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">UPS 상태</span>
+                                  <Badge
+                                    variant="outline"
+                                    className={`${
+                                      item.upsStatusCode === "00"
+                                        ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                        : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                    } font-black text-[9px] px-2 py-0.5 rounded-full`}
+                                  >
+                                    {item.upsStatusCode === "00" ? "정상" : "점검"}
+                                  </Badge>
+                                </div>
+                              </div>
                             </Card>
                           </div>
                         </TableCell>
@@ -806,16 +899,16 @@ const WeatherSIPage = () => {
       {/* 제어 Dialog */}
       <Dialog open={controlDialogOpen} onOpenChange={setControlDialogOpen}>
         <DialogContent className="max-w-md dark:bg-slate-800 dark:border-slate-700 p-0 overflow-hidden">
-          
+
           {/* 예경보 (17) - 텍스트 입력 */}
           {selectedControlItem?.GB_OBSV === "17" && (
             <>
               <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
                 <div className="flex items-center gap-4">
                   <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img 
-                      src="/broad.png" 
-                      alt="예경보" 
+                    <img
+                      src="/broad.png"
+                      alt="예경보"
                       className="h-10 w-10 object-contain drop-shadow-lg"
                     />
                   </div>
@@ -847,8 +940,8 @@ const WeatherSIPage = () => {
                   >
                     취소
                   </Button>
-                  <Button 
-                    onClick={handleSendControl} 
+                  <Button
+                    onClick={handleSendControl}
                     className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
                   >
                     방송 전송
@@ -864,9 +957,9 @@ const WeatherSIPage = () => {
               <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
                 <div className="flex items-center gap-4">
                   <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img 
-                      src="/gate.png" 
-                      alt="차단기" 
+                    <img
+                      src="/gate.png"
+                      alt="차단기"
                       className="h-10 w-10 object-contain drop-shadow-lg"
                     />
                   </div>
@@ -882,7 +975,7 @@ const WeatherSIPage = () => {
                 <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
                   차단기를 제어하시겠습니까?
                 </p>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     onClick={async () => {
@@ -896,7 +989,7 @@ const WeatherSIPage = () => {
                         await weathersiApi.sendGate(payload);
                         setControlDialogOpen(false);
                         alert("차단기 열림 명령을 전송했습니다.");
-                        loadDevices();
+                        loadData();
                       } catch (err: any) {
                         alert(err.message || "차단기 제어 실패");
                       }
@@ -906,7 +999,7 @@ const WeatherSIPage = () => {
                     <LockOpen className="h-8 w-8" />
                     열기
                   </Button>
-                  
+
                   <Button
                     onClick={async () => {
                       try {
@@ -919,7 +1012,7 @@ const WeatherSIPage = () => {
                         await weathersiApi.sendGate(payload);
                         setControlDialogOpen(false);
                         alert("차단기 닫힘 명령을 전송했습니다.");
-                        loadDevices();
+                        loadData();
                       } catch (err: any) {
                         alert(err.message || "차단기 제어 실패");
                       }
@@ -930,7 +1023,7 @@ const WeatherSIPage = () => {
                     닫기
                   </Button>
                 </div>
-                
+
                 <DialogFooter>
                   <Button
                     variant="outline"
@@ -950,9 +1043,9 @@ const WeatherSIPage = () => {
               <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
                 <div className="flex items-center gap-4">
                   <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img 
-                      src="/display.png" 
-                      alt="전광판" 
+                    <img
+                      src="/display.png"
+                      alt="전광판"
                       className="h-10 w-10 object-contain drop-shadow-lg"
                     />
                   </div>
@@ -970,14 +1063,14 @@ const WeatherSIPage = () => {
                     테스트 이미지
                   </label>
                   <div className="flex justify-center p-6 bg-slate-100 dark:bg-slate-900/50 rounded-lg">
-                    <img 
-                      src="/display_test.png" 
-                      alt="테스트 이미지" 
+                    <img
+                      src="/display_test.png"
+                      alt="테스트 이미지"
                       className="max-h-32 object-contain"
                     />
                   </div>
                 </div>
-                
+
                 <DialogFooter>
                   <Button
                     variant="outline"
@@ -986,8 +1079,8 @@ const WeatherSIPage = () => {
                   >
                     취소
                   </Button>
-                  <Button 
-                    onClick={handleSendControl} 
+                  <Button
+                    onClick={handleSendControl}
                     className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
                   >
                     테스트 이미지 전송

@@ -11,10 +11,10 @@
 *.md
 
 # compiled output
-node_modules/
-dist/
-build/
-src/mobile/
+node_modules
+/build
+/dist
+mobile
 
 # dotenv environment variable files
 .env
@@ -71,16 +71,3 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Temporary and database files
-*.meta
-*.sst
-*.ldb
-*.log
-
-# Next.js build output (매우 중요)
-**/.next/
-**/out/
-**/node_modules/
-**/*.meta
-**/*.sst

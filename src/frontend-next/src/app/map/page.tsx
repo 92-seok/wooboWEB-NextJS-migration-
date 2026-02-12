@@ -344,108 +344,81 @@ const MapPage = () => {
         </Button>
       </div>
 
-      {/* 하단 컨트롤 영역 (absolute positioning for independent placement) */}
-
-      {/* 1. Live Connection 상태 박스 (모바일: 토글됨 / 데스크탑: 항상 표시) */}
-      {(showStatusCard || !isMobile) && (
-        <div
-          className={`absolute z-[999] ${isMobile ? "left-3 right-3 bottom-[calc(var(--footer-h-mobile)+240px)] animate-slide-up origin-bottom" : "left-6 bottom-[calc(var(--footer-h-desktop)+20px)] w-auto"}`}
-        >
-          <div className="status-card bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-6">
-            <div className="flex flex-col gap-0.5 pr-5 border-r border-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-green-400 uppercase tracking-wider">
-                  Live
+      {/* 하단 컨트롤: Live 박스 + 레이어 버튼 동일 라인 (레이어 우측 끝) */}
+      <div
+        className={`absolute z-[999] flex justify-between items-center gap-4 pointer-events-none ${
+          isMobile
+            ? "left-3 right-3 bottom-[calc(var(--footer-h-mobile)+180px)]"
+            : "left-6 right-6 bottom-[calc(var(--footer-h-desktop)+20px)]"
+        }`}
+      >
+        {/* 좌측: Live 박스 또는 모바일 상태 토글 버튼 */}
+        <div className="pointer-events-auto flex items-center min-w-0">
+          {(showStatusCard || !isMobile) ? (
+            <div
+              className={`status-card relative bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-6 ${
+                isMobile ? "animate-slide-up origin-bottom" : ""
+              }`}
+            >
+              <div className="flex flex-col gap-0.5 pr-5 border-r border-slate-600">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-green-400 uppercase tracking-wider">
+                    Live
+                  </span>
+                </div>
+                <span className="text-[9px] text-slate-400 font-mono tracking-tight hidden sm:block">
+                  {mountTime}
                 </span>
               </div>
-              <span className="text-[9px] text-slate-400 font-mono tracking-tight hidden sm:block">
-                {mountTime}
-              </span>
-            </div>
-            <div className="flex gap-6">
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] uppercase text-slate-500 font-bold">Total</span>
-                <span className="text-sm font-black text-white">{stations.length}</span>
+              <div className="flex gap-6">
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] uppercase text-slate-500 font-bold">Total</span>
+                  <span className="text-sm font-black text-white">{stations.length}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] uppercase text-green-500/70 font-bold">Normal</span>
+                  <span className="text-sm font-black text-green-400">
+                    {stations.filter((s) => s.status === "normal").length}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[9px] uppercase text-red-500/70 font-bold">Error</span>
+                  <span className="text-sm font-black text-red-500 animate-pulse">
+                    {stations.filter((s) => s.status === "error").length}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] uppercase text-green-500/70 font-bold">Normal</span>
-                <span className="text-sm font-black text-green-400">
-                  {stations.filter((s) => s.status === "normal").length}
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] uppercase text-red-500/70 font-bold">Error</span>
-                <span className="text-sm font-black text-red-500 animate-pulse">
-                  {stations.filter((s) => s.status === "error").length}
-                </span>
-              </div>
-            </div>
-            {/* 데스크탑 닫기 버튼 (옵션) */}
-            {isMobile && (
-              <button
-                onClick={() => setShowStatusCard(false)}
-                className="absolute -top-2 -right-2 bg-slate-800 rounded-full p-1 border border-slate-600 shadow-lg"
-              >
-                <X size={12} className="text-slate-300" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 2. 모바일 하단 버튼 그룹 (Layer: 우측, Status: 좌측) */}
-      <div className="absolute z-[999] left-3 right-3 bottom-[calc(var(--footer-h-mobile)+180px)] flex justify-between items-end pointer-events-none sm:hidden">
-        {/* 좌측: 상태 토글 버튼 */}
-        <Button
-          onClick={() => setShowStatusCard(!showStatusCard)}
-          className={`pointer-events-auto h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${
-            showStatusCard
-              ? "bg-green-500 text-white ring-4 ring-green-500/30"
-              : "bg-white text-slate-900"
-          }`}
-        >
-          <Activity className="h-5 w-5" />
-        </Button>
-
-        {/* 우측: 레이어 메뉴 버튼 */}
-        <div className="pointer-events-auto relative">
-          {showLayerMenu && (
-            <div className="absolute bottom-14 right-0 w-32 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-slide-up p-1 flex flex-col gap-1">
-              {[
-                { id: "ROADMAP", name: "일반 지도" },
-                { id: "HYBRID", name: "하이브리드" },
-              ].map((layer) => (
+              {isMobile && (
                 <button
-                  key={layer.id}
-                  onClick={() => changeMapType(layer.id)}
-                  className={`text-[11px] font-bold py-2 px-3 rounded-xl text-left w-full transition-colors ${
-                    currentLayer === layer.id
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
+                  onClick={() => setShowStatusCard(false)}
+                  className="absolute -top-2 -right-2 bg-slate-800 rounded-full p-1 border border-slate-600 shadow-lg"
                 >
-                  {layer.name}
+                  <X size={12} className="text-slate-300" />
                 </button>
-              ))}
+              )}
             </div>
+          ) : (
+            <Button
+              onClick={() => setShowStatusCard(!showStatusCard)}
+              className={`sm:hidden h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${
+                showStatusCard
+                  ? "bg-green-500 text-white ring-4 ring-green-500/30"
+                  : "bg-white text-slate-900"
+              }`}
+            >
+              <Activity className="h-5 w-5" />
+            </Button>
           )}
-          <Button
-            onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className={`h-12 w-12 rounded-2xl shadow-xl border-none transition-all ${
-              showLayerMenu ? "bg-indigo-600 text-white" : "bg-white text-slate-900"
-            }`}
-          >
-            <Layers className="h-5 w-5" />
-          </Button>
         </div>
-      </div>
 
-      {/* 3. 데스크탑 레이어 버튼 (기존 위치 유지) - 태블릿 환경 고려 Z-index 상향 및 위치 조정 */}
-      <div className="hidden sm:block absolute z-[999] right-6 bottom-[calc(var(--footer-h-desktop)+80px)]">
-        <div className="relative">
+        {/* 우측 끝: 레이어 버튼 */}
+        <div className="pointer-events-auto relative flex-shrink-0">
           {showLayerMenu && (
-            <div className="absolute bottom-16 right-0 w-40 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-slide-up p-1.5 flex flex-col gap-1">
-              {/* 데스크탑 레이어 메뉴 내용 동일 */}
+            <div
+              className={`absolute bottom-14 right-0 w-32 sm:w-40 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-slide-up p-1 sm:p-1.5 flex flex-col gap-1 ${
+                isMobile ? "" : "sm:block"
+              }`}
+            >
               {[
                 { id: "ROADMAP", name: "일반 지도", desc: "표준 벡터" },
                 { id: "HYBRID", name: "하이브리드", desc: "위성+도로" },
@@ -453,24 +426,28 @@ const MapPage = () => {
                 <button
                   key={layer.id}
                   onClick={() => changeMapType(layer.id)}
-                  className={`text-xs font-bold py-2.5 px-3 rounded-xl text-left w-full transition-colors flex flex-col ${
+                  className={`text-[11px] sm:text-xs font-bold py-2 px-3 sm:py-2.5 sm:px-3 rounded-xl text-left w-full transition-colors flex flex-col ${
                     currentLayer === layer.id
                       ? "bg-indigo-50 text-indigo-600"
                       : "text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   <span>{layer.name}</span>
-                  <span className="text-[9px] opacity-50 font-normal">{layer.desc}</span>
+                  <span className="text-[9px] opacity-50 font-normal hidden sm:inline">
+                    {layer.desc}
+                  </span>
                 </button>
               ))}
             </div>
           )}
           <Button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className="h-14 px-6 rounded-2xl shadow-2xl bg-white text-slate-900
-            border-none font-bold gap-3 hover:bg-slate-50"
+            className={`h-12 w-12 sm:h-14 sm:px-6 sm:w-auto rounded-2xl shadow-2xl border-none font-bold gap-3 transition-all ${
+              showLayerMenu ? "bg-indigo-600 text-white" : "bg-white text-slate-900 hover:bg-slate-50"
+            }`}
           >
-            <Layers className="h-5 w-5" /> 레이어
+            <Layers className="h-5 w-5" />
+            <span className="hidden sm:inline">레이어</span>
           </Button>
         </div>
       </div>

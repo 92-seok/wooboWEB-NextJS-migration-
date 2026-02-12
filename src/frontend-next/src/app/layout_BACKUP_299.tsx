@@ -28,8 +28,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 상단 헤더 */}
         <Header />
 
+<<<<<<< HEAD
         {/* 메인 컨텐츠 영역: 스크롤 가능하도록 설정 */}
-        <main className="flex-1 overflow-auto relative">{children}</main>
+        <main className="flex-1 relative pb-20 lg:pb-0">{children}</main>
+=======
+        {/* 메인 컨텐츠 영역: 스크롤 가능 (min-h-0: flexbox 스크롤 fix, pb: 푸터 고정 시 하단 여백) */}
+        <main className="flex-1 min-h-0 overflow-auto overflow-x-hidden relative main-content-padding">
+          {children}
+        </main>
+>>>>>>> 1140f3e48b9fab17793d69735ba1a59b8f225999
 
         {/* 하단 푸터 */}
         <Footer />

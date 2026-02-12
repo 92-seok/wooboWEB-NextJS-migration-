@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
 
         {/* 메인 컨텐츠 영역: 스크롤 가능하도록 설정 */}
-        <main className="flex-1 overflow-auto relative">{children}</main>
+        <main className="flex-1 relative pb-20 lg:pb-0">{children}</main>
 
         {/* 하단 푸터 */}
         <Footer />

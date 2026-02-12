@@ -78,7 +78,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="flex min-h-[85vh] items-center justify-center px-4 py-8">
+    <div className="flex min-h-[85vh] items-center justify-center px-4 pt-8 pb-36 min-[480px]:pb-40">
       <Card className="w-full max-w-lg shadow-xl border-blue-50 dark:border-slate-700 dark:bg-slate-800">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center dark:text-slate-100">회원가입</CardTitle>

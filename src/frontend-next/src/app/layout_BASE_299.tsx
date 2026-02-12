@@ -9,21 +9,16 @@ import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+export const metaadata: Metadata = {
   title: "우보 온라인 - 운영지원시스템",
   description: "우보 온라인 운영지원시스템",
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground antialiased`}
+        className={`${inter.className} h-screen flex flex-col bg-background text-foreground antialiased overflow-hidden`}
       >
         {/* 상단 헤더 */}
         <Header />
