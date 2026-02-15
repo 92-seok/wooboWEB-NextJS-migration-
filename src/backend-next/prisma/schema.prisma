@@ -62,16 +62,16 @@ enum UserRole {
 // ==================== Region Models ====================
 
 model Region {
-  code        String    @id @db.VarChar(10)
-  name        String    @db.VarChar(100)
-  admin_name  String    @db.VarChar(100)
-  manager     String?   @db.VarChar(100)
-  department  String?   @db.VarChar(100)
-  contact     String?   @db.VarChar(50)
-  memo        String?   @db.VarChar(1000)
-  is_active   Boolean   @default(true)
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  code       String   @id @db.VarChar(10)
+  name       String   @db.VarChar(100)
+  admin_name String   @db.VarChar(100)
+  manager    String?  @db.VarChar(100)
+  department String?  @db.VarChar(100)
+  contact    String?  @db.VarChar(50)
+  memo       String?  @db.VarChar(1000)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   devices Device[]
 
@@ -82,28 +82,28 @@ model Region {
 // ==================== Device Models ====================
 
 model Device {
-  id               String    @id @default(uuid())
-  region_code      String    @db.VarChar(10)
-  device_code      String    @db.VarChar(10)
-  area_code        String?   @db.VarChar(10)
-  device_name      String    @db.VarChar(100)
-  device_type      DeviceType
-  protocol         String?   @db.VarChar(20)
-  phone            String?   @db.VarChar(50)
-  ip_address       String?   @db.VarChar(50)
-  port             String?   @db.VarChar(10)
-  last_status      String?   @db.VarChar(20)
-  last_updated_at  String?   @db.VarChar(50)
-  error_count      Int       @default(5)
-  is_active        Boolean   @default(true)
-  latitude         Float?
-  longitude        Float?
-  address          String?   @db.VarChar(200)
-  data             String?   @db.Text
-  unit             String?   @db.VarChar(20)
-  comment          String?   @db.VarChar(500)
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
+  id              String     @id @default(uuid())
+  region_code     String     @db.VarChar(10)
+  device_code     String     @db.VarChar(10)
+  area_code       String?    @db.VarChar(10)
+  device_name     String     @db.VarChar(100)
+  device_type     DeviceType
+  protocol        String?    @db.VarChar(20)
+  phone           String?    @db.VarChar(50)
+  ip_address      String?    @db.VarChar(50)
+  port            String?    @db.VarChar(10)
+  last_status     String?    @db.VarChar(20)
+  last_updated_at String?    @db.VarChar(50)
+  error_count     Int        @default(5)
+  is_active       Boolean    @default(true)
+  latitude        Float?
+  longitude       Float?
+  address         String?    @db.VarChar(200)
+  data            String?    @db.Text
+  unit            String?    @db.VarChar(20)
+  comment         String?    @db.VarChar(500)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
 
   region Region @relation(fields: [region_code], references: [code])
 
@@ -119,33 +119,33 @@ model Device {
 }
 
 enum DeviceType {
-  RAIN_GAUGE      // 01 - 강우량계
-  WATER_LEVEL     // 02 - 수위계
-  DISPLACEMENT    // 03 - 변위계
-  SNOW_GAUGE      // 06 - 적설계
-  WARNING_SYSTEM  // 17 - 예경보
-  DISPLAY_BOARD   // 18 - 전광판
-  GATE_CONTROL    // 20 - 차단기
-  OTHER           // 기타
+  RAIN_GAUGE // 01 - 강우량계
+  WATER_LEVEL // 02 - 수위계
+  DISPLACEMENT // 03 - 변위계
+  SNOW_GAUGE // 06 - 적설계
+  WARNING_SYSTEM // 17 - 예경보
+  DISPLAY_BOARD // 18 - 전광판
+  GATE_CONTROL // 20 - 차단기
+  OTHER // 기타
 }
 
 // ==================== Control Log Models ====================
 
 model BroadcastLog {
-  id            Int       @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   device_id     String
-  command       String    @db.VarChar(10)
-  param1        String?   @db.VarChar(50)
-  param2        String?   @db.VarChar(50)
-  param3        String?   @db.VarChar(500)
-  param4        String?   @db.VarChar(50)
+  command       String        @db.VarChar(10)
+  param1        String?       @db.VarChar(50)
+  param2        String?       @db.VarChar(50)
+  param3        String?       @db.VarChar(500)
+  param4        String?       @db.VarChar(50)
   status        ControlStatus @default(START)
-  response_data String?   @db.VarChar(200)
+  response_data String?       @db.VarChar(200)
   response_at   DateTime?
-  user          String?   @db.VarChar(50)
-  registered_at String?   @db.VarChar(50)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  user          String?       @db.VarChar(50)
+  registered_at String?       @db.VarChar(50)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
 
   device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
 
@@ -155,17 +155,17 @@ model BroadcastLog {
 }
 
 model DisplayLog {
-  id            Int       @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   device_id     String
-  command       String    @db.VarChar(10)
-  param1        String?   @db.VarChar(50)
-  param2        String?   @db.VarChar(50)
-  param3        String?   @db.VarChar(500)
+  command       String        @db.VarChar(10)
+  param1        String?       @db.VarChar(50)
+  param2        String?       @db.VarChar(50)
+  param3        String?       @db.VarChar(500)
   status        ControlStatus @default(START)
-  user          String?   @db.VarChar(50)
-  registered_at String?   @db.VarChar(50)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  user          String?       @db.VarChar(50)
+  registered_at String?       @db.VarChar(50)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
 
   device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
 
@@ -175,16 +175,16 @@ model DisplayLog {
 }
 
 model GateLog {
-  id            Int       @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   device_id     String
-  gate_action   String?   @db.VarChar(20)
-  light_action  String?   @db.VarChar(20)
-  sound_action  String?   @db.VarChar(20)
+  gate_action   String?       @db.VarChar(20)
+  light_action  String?       @db.VarChar(20)
+  sound_action  String?       @db.VarChar(20)
   status        ControlStatus @default(START)
-  user          String?   @db.VarChar(50)
-  registered_at String?   @db.VarChar(50)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  user          String?       @db.VarChar(50)
+  registered_at String?       @db.VarChar(50)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
 
   device Device @relation(fields: [device_id], references: [id], onDelete: Cascade)
 
@@ -199,6 +199,42 @@ enum ControlStatus {
   END
   FAIL
   ERROR
+}
+
+// ==================== SR Equip Models (소하천) ====================
+
+model SrEquip {
+  observatory_code        String    @id @db.VarChar(13)
+  bdong_cd                String    @db.VarChar(10)
+  observatory_name        String?   @db.VarChar(50)
+  sw_version              String?   @db.VarChar(10)
+  fw_version              String?   @db.VarChar(10)
+  logger_uptime           DateTime?
+  logger_time             DateTime?
+  logger_gl               String?   @db.VarChar(10)
+  logger_el               String?   @db.VarChar(10)
+  logger_fl               String?   @db.VarChar(10)
+  service_key             String?   @db.VarChar(36)
+  observation_date_time   DateTime?
+  water_level             String?   @db.VarChar(10)
+  average_velocity        String?   @db.VarChar(10)
+  total_discharge         String?   @db.VarChar(10)
+  result_code             String?   @db.VarChar(10)
+  result_msg              String?   @db.VarChar(255)
+  status_date_time        DateTime?
+  status_result_code      String?   @db.VarChar(10)
+  status_result_msg       String?   @db.VarChar(255)
+  water_level_status_code String?   @db.VarChar(2)
+  velocity_status_code    String?   @db.VarChar(2)
+  discharge_status_code   String?   @db.VarChar(2)
+  ups_status_code         String?   @db.VarChar(2)
+  rtsp_url                String?   @db.VarChar(1024)
+  lat                     Float?
+  lon                     Float?
+  dtl_adres               String?   @db.VarChar(100)
+
+  @@index([logger_time])
+  @@map("sr_equip")
 }
 
 // ==================== Notes ====================

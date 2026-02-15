@@ -34,8 +34,8 @@ const Header = () => {
 
     // 사용자 정보 업데이트
     const updateUserInfo = () => {
-      const token = sessionStorage.getItem("accessToken");
-      const userStr = sessionStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
 
       setIsLoggedIn(!!token);
 

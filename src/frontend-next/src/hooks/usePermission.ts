@@ -20,7 +20,7 @@ export const usePermission = (): PermissionResult => {
     }
 
     try {
-      const userStr = sessionStorage.getItem("user");
+      const userStr = localStorage.getItem("user");
 
       // 유효한 사용자 정보가 없으면 권한 없음
       if (!userStr || userStr === "undefined" || userStr === "null") {
@@ -33,14 +33,14 @@ export const usePermission = (): PermissionResult => {
       const userRole = user?.role;
 
       // 역할에 따른 권한 설정
-      // admin: 모든 권한
-      // user: 테스트 버튼 표시 및 실행 가능
-      // operator: 테스트 버튼 표시만 가능 (실행 불가)
+      // ADMIN: 모든 권한
+      // VIEWER: 테스트 버튼 표시 및 실행 가능
+      // OPERATOR: 테스트 버튼 표시만 가능 (실행 불가)
       // guest: 권한 없음
-      if (userRole === "admin" || userRole === "user") {
+      if (userRole === "ADMIN" || userRole === "VIEWER") {
         setCanShowTestButton(true);
         setCanExecuteTest(true);
-      } else if (userRole === "operator") {
+      } else if (userRole === "OPERATOR") {
         setCanShowTestButton(true);
         setCanExecuteTest(false);
       } else {

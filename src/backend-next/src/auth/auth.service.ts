@@ -25,7 +25,7 @@ export class AuthService {
   ) {}
 
   // ********************* 회원가입 로직 *********************
-  async signUp(dto: SignUpDto): Promise<Tokens> {
+  async signUp(dto: SignUpDto): Promise<any> {
     const exists = await this.prisma.user.findUnique({
       where: { username: dto.username },
     });
@@ -34,8 +34,7 @@ export class AuthService {
       throw new ConflictException('이미 가입된 이메일입니다.');
     }
 
-    const normalizedPw = dto.password.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const hashedPw = await bcrypt.hash(normalizedPw, 10);
+    const hashedPw = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -59,7 +58,15 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.username, user.role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        role: user.role,
+      },
+    };
   }
 
   // ********************* 로그인 로직 *********************
@@ -73,23 +80,18 @@ export class AuthService {
       throw new UnauthorizedException('이메일 또는 비밀번호가 맞지 않습니다.');
     }
 
-    const normalizedPw = dto.password.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const isMatch = await bcrypt.compare(normalizedPw, user.password);
+    const isMatch = await bcrypt.compare(dto.password, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('아이디 또는 비밀번호가 맞지 않습니다.');
     }
 
     if (!user.is_active) {
-      throw new ForbiddenException(
-        '계정이 비활성화 되었습니다. 시스템사업부에 문의하세요.',
-      );
+      throw new ForbiddenException('계정이 비활성화 되었습니다. 시스템사업부에 문의하세요.');
     }
 
     // 권한 확인
-    const hasAdminRole = user.authorities.some(
-      (auth) => auth.authority === 'ROLE_ADMIN',
-    );
+    const hasAdminRole = user.authorities.some((auth) => auth.authority === 'ROLE_ADMIN');
 
     let role: UserRole = UserRole.OPERATOR;
     if (hasAdminRole) {
@@ -156,9 +158,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const hasAdminRole = user.authorities.some(
-      (auth) => auth.authority === 'ROLE_ADMIN',
-    );
+    const hasAdminRole = user.authorities.some((auth) => auth.authority === 'ROLE_ADMIN');
 
     const role = hasAdminRole ? UserRole.ADMIN : UserRole.OPERATOR;
 
@@ -168,17 +168,13 @@ export class AuthService {
     return tokens;
   }
 
-  private async getTokens(
-    userId: number,
-    username: string,
-    role: string,
-  ): Promise<Tokens> {
+  private async getTokens(userId: number, username: string, role: string): Promise<Tokens> {
     const payload = { sub: userId, username, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: '7d',
+        expiresIn: '1h',
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -229,18 +225,14 @@ export class AuthService {
 
   // ********************* 카카오 로그인 *********************
   async kakaoLogin(code: string, domain: string): Promise<any> {
-    const kakaoRestApiKey = this.configService.get<string>(
-      'KAKAO_REST_API_KEY',
-    );
+    const kakaoRestApiKey = this.configService.get<string>('KAKAO_REST_API_KEY');
 
     const kakaoTokenUrl = 'https://kauth.kakao.com/oauth/token';
     const kakaoUserInfoUrl = 'https://kapi.kakao.com/v2/user/me';
 
     if (!kakaoRestApiKey) {
       console.error('KAKAO_REST_API_KEY가 설정 되지 않음');
-      throw new UnauthorizedException(
-        '카카오 로그인 설정이 올바르지 않습니다.',
-      );
+      throw new UnauthorizedException('카카오 로그인 설정이 올바르지 않습니다.');
     }
 
     try {
@@ -296,8 +288,7 @@ export class AuthService {
 
       // 4. 신규 사용자 회원가입
       if (!user) {
-        const nickname =
-          kakaoUser.kakao_account?.profile?.nickname || 'kakao_user';
+        const nickname = kakaoUser.kakao_account?.profile?.nickname || 'kakao_user';
         const email = kakaoUser.kakao_account?.email || `${kakaoId}@kakao.com`;
 
         const randomPassword = Math.random().toString(36).slice(-8);
@@ -327,15 +318,11 @@ export class AuthService {
 
       // 5. 사용자 활성화 확인
       if (!user.is_active) {
-        throw new ForbiddenException(
-          '계정이 비활성화 되었습니다. 시스템사업부에 문의하세요.',
-        );
+        throw new ForbiddenException('계정이 비활성화 되었습니다. 시스템사업부에 문의하세요.');
       }
 
       // 6. 권한 확인
-      const hasAdminRole = user.authorities.some(
-        (auth) => auth.authority === 'ROLE_ADMIN',
-      );
+      const hasAdminRole = user.authorities.some((auth) => auth.authority === 'ROLE_ADMIN');
 
       const role = hasAdminRole ? UserRole.ADMIN : UserRole.OPERATOR;
 
@@ -369,10 +356,7 @@ export class AuthService {
       };
     } catch (error) {
       console.error('카카오 로그인 중 오류발생: ', error);
-      if (
-        error instanceof UnauthorizedException ||
-        error instanceof ForbiddenException
-      ) {
+      if (error instanceof UnauthorizedException || error instanceof ForbiddenException) {
         throw error;
       }
       throw new UnauthorizedException('카카오 로그인에 실패했습니다.');

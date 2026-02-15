@@ -80,8 +80,8 @@ const AdminPage = () => {
   // 권한 체크
   useEffect(() => {
     const checkAuth = () => {
-      const token = sessionStorage.getItem("accessToken");
-      const userStr = sessionStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
 
       if (!token || !userStr) {
         toast.error("로그인이 필요합니다.");
@@ -91,7 +91,7 @@ const AdminPage = () => {
 
       try {
         const user = JSON.parse(userStr);
-        if (user.role === "admin") {
+        if (user.role === "ADMIN") {
           setIsAuthorized(true);
         } else {
           toast.error("관리자 권한이 필요합니다.");
@@ -246,17 +246,17 @@ const AdminPage = () => {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "admin":
+      case "ADMIN":
         return (
           <Badge variant="outline" className="border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-black text-[10px] px-2 py-1 rounded-full">관리자</Badge>
         );
-      case "user":
+      case "VIEWER":
         return (
-          <Badge variant="outline" className="border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-black text-[10px] px-2 py-1 rounded-full">사용자</Badge>
+          <Badge variant="outline" className="border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-black text-[10px] px-2 py-1 rounded-full">뷰어</Badge>
         );
-      case "operator":
+      case "OPERATOR":
         return (
-          <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">일반</Badge>
+          <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">운영자</Badge>
         );
       default:
         return (
@@ -318,11 +318,11 @@ const AdminPage = () => {
               전체 권한
             </Button>
             <Button
-              variant={roleFilter === "admin" ? "default" : "ghost"}
+              variant={roleFilter === "ADMIN" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("admin")}
+              onClick={() => setRoleFilter("ADMIN")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "admin"
+                roleFilter === "ADMIN"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
@@ -330,11 +330,11 @@ const AdminPage = () => {
               관리자
             </Button>
             <Button
-              variant={roleFilter === "user" ? "default" : "ghost"}
+              variant={roleFilter === "VIEWER" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("user")}
+              onClick={() => setRoleFilter("VIEWER")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "user"
+                roleFilter === "VIEWER"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
@@ -342,11 +342,11 @@ const AdminPage = () => {
               사용자
             </Button>
             <Button
-              variant={roleFilter === "operator" ? "default" : "ghost"}
+              variant={roleFilter === "OPERATOR" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("operator")}
+              onClick={() => setRoleFilter("OPERATOR")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "operator"
+                roleFilter === "OPERATOR"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
@@ -550,10 +550,10 @@ const AdminPage = () => {
                   <SelectValue placeholder="권한 선택" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                  <SelectItem value="admin" className="dark:text-slate-200">관리자</SelectItem>
-                  <SelectItem value="user" className="dark:text-slate-200">사용자</SelectItem>
-                  <SelectItem value="operator" className="dark:text-slate-200">일반</SelectItem>
-                  <SelectItem value="guest" className="dark:text-slate-200">게스트</SelectItem>
+                  <SelectItem value="ADMIN" className="dark:text-slate-200">관리자</SelectItem>
+                  <SelectItem value="VIEWER" className="dark:text-slate-200">사용자</SelectItem>
+                  <SelectItem value="OPERATOR" className="dark:text-slate-200">일반</SelectItem>
+                  <SelectItem value="GUEST" className="dark:text-slate-200">게스트</SelectItem>
                 </SelectContent>
               </Select>
             </div>

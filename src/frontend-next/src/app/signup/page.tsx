@@ -60,9 +60,9 @@ const SignupPage = () => {
       });
 
       // 토큰과 사용자 정보 저장
-      sessionStorage.setItem("accessToken", response.accessToken);
-      sessionStorage.setItem("refreshToken", response.refreshToken);
-      sessionStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.user));
 
       // 회원가입 성공 메시지
       alert(`회원가입이 완료되었습니다. 환영합니다, ${response.user.name}님!`);

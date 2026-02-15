@@ -16,15 +16,15 @@ const Footer = () => {
 
   useEffect(() => {
     const updateUserInfo = () => {
-      const token = sessionStorage.getItem("accessToken");
-      const userStr = sessionStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
 
       setIsLoggedIn(!!token);
 
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
-          setIsAdmin(user.role === "admin");
+          setIsAdmin(user.role === "ADMIN");
           // 수정: user 객체에서 직접 이름 가져오기
           setUserName(user.name || user.username || "사용자");
         } catch (e) {

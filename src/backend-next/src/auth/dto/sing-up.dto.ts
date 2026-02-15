@@ -1,7 +1,6 @@
 import { IsNotEmpty, MinLength } from 'class-validator';
 
 export class SignUpDto {
-
   @MinLength(6)
   password: string;
 

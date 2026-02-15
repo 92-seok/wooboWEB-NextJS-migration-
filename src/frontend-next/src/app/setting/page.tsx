@@ -41,8 +41,8 @@ const SettingPage = () => {
   // 권한 체크
   useEffect(() => {
     const checkAuth = () => {
-      const token = sessionStorage.getItem("accessToken");
-      const userStr = sessionStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
 
       if (!token || !userStr) {
         toast.error("로그인이 필요합니다.");
@@ -53,7 +53,7 @@ const SettingPage = () => {
       try {
         const user = JSON.parse(userStr);
         // admin과 user만 접근 가능
-        if (user.role === "admin" || user.role === "user") {
+        if (user.role === "ADMIN" || user.role === "OPERATOR") {
           setIsAuthorized(true);
         } else {
           toast.error("접근 권한이 없습니다.");
