@@ -11,8 +11,8 @@ const DEVICE_TYPE_NAMES: Record<string, string> = {
   "08": "경사",
   "15": "침수",
   "17": "예경보",
-  "18": "전광판",
-  "19": "방송",
+  "18": "방송",
+  "19": "전광판",
   "20": "차단기",
   "21": "통합",
 };
@@ -27,7 +27,6 @@ const DEVICE_IMAGE_MAP: Record<string, string> = {
   "15": "/flood.png",
   "17": "/broad.png",
   "18": "/display.png",
-  "19": "/broad.png",
   "20": "/gate.png",
   "21": "/broad.png",
 };

@@ -16,6 +16,13 @@ dist/
 build/
 src/mobile/
 
+# Backend (로컬 전용 - Git에 올리지 않음)
+src/backend/
+src/backend-next/
+
+# Frontend (사용하지 않음)
+src/frontend/
+
 # dotenv environment variable files
 .env
 .env.development.local

@@ -91,7 +91,7 @@ const AdminPage = () => {
 
       try {
         const user = JSON.parse(userStr);
-        if (user.role === "ADMIN") {
+        if (user.role === "admin") {
           setIsAuthorized(true);
         } else {
           toast.error("관리자 권한이 필요합니다.");
@@ -246,15 +246,15 @@ const AdminPage = () => {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "ADMIN":
+      case "admin":
         return (
           <Badge variant="outline" className="border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-black text-[10px] px-2 py-1 rounded-full">관리자</Badge>
         );
-      case "VIEWER":
+      case "user":
         return (
-          <Badge variant="outline" className="border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-black text-[10px] px-2 py-1 rounded-full">뷰어</Badge>
+          <Badge variant="outline" className="border-blue-300 dark:border-blue-700 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-black text-[10px] px-2 py-1 rounded-full">사용자</Badge>
         );
-      case "OPERATOR":
+      case "operator":
         return (
           <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">운영자</Badge>
         );
@@ -318,11 +318,11 @@ const AdminPage = () => {
               전체 권한
             </Button>
             <Button
-              variant={roleFilter === "ADMIN" ? "default" : "ghost"}
+              variant={roleFilter === "admin" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("ADMIN")}
+              onClick={() => setRoleFilter("admin")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "ADMIN"
+                roleFilter === "admin"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
@@ -330,11 +330,11 @@ const AdminPage = () => {
               관리자
             </Button>
             <Button
-              variant={roleFilter === "VIEWER" ? "default" : "ghost"}
+              variant={roleFilter === "user" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("VIEWER")}
+              onClick={() => setRoleFilter("user")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "VIEWER"
+                roleFilter === "user"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
@@ -342,16 +342,16 @@ const AdminPage = () => {
               사용자
             </Button>
             <Button
-              variant={roleFilter === "OPERATOR" ? "default" : "ghost"}
+              variant={roleFilter === "operator" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setRoleFilter("OPERATOR")}
+              onClick={() => setRoleFilter("operator")}
               className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "OPERATOR"
+                roleFilter === "operator"
                   ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               }`}
             >
-              일반
+              운영자
             </Button>
             <Button
               variant={roleFilter === "guest" ? "default" : "ghost"}
@@ -550,10 +550,10 @@ const AdminPage = () => {
                   <SelectValue placeholder="권한 선택" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                  <SelectItem value="ADMIN" className="dark:text-slate-200">관리자</SelectItem>
-                  <SelectItem value="VIEWER" className="dark:text-slate-200">사용자</SelectItem>
-                  <SelectItem value="OPERATOR" className="dark:text-slate-200">일반</SelectItem>
-                  <SelectItem value="GUEST" className="dark:text-slate-200">게스트</SelectItem>
+                  <SelectItem value="admin" className="dark:text-slate-200">관리자</SelectItem>
+                  <SelectItem value="user" className="dark:text-slate-200">사용자</SelectItem>
+                  <SelectItem value="operator" className="dark:text-slate-200">운영자</SelectItem>
+                  <SelectItem value="guest" className="dark:text-slate-200">게스트</SelectItem>
                 </SelectContent>
               </Select>
             </div>

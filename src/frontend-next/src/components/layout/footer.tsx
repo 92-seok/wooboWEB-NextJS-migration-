@@ -24,7 +24,7 @@ const Footer = () => {
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
-          setIsAdmin(user.role === "ADMIN");
+          setIsAdmin(user.role === "admin");
           // 수정: user 객체에서 직접 이름 가져오기
           setUserName(user.name || user.username || "사용자");
         } catch (e) {

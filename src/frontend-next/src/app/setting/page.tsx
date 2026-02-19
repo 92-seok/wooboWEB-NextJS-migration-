@@ -52,11 +52,11 @@ const SettingPage = () => {
 
       try {
         const user = JSON.parse(userStr);
-        // admin과 user만 접근 가능
-        if (user.role === "ADMIN" || user.role === "OPERATOR") {
+        // ADMIN만 접근 가능 (소문자로 비교)
+        if (user.role === "admin") {
           setIsAuthorized(true);
         } else {
-          toast.error("접근 권한이 없습니다.");
+          toast.error("관리자 권한이 필요합니다.");
           router.push("/");
         }
       } catch (e) {

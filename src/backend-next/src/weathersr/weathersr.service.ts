@@ -14,11 +14,11 @@ export class WeathersrService {
     });
 
     // BDONG_CD 앞 5자리로 시도 코드 추출
-    const admCodes = [
+    const admCodes: string[] = [
       ...new Set(
         srEquips
           .map((sr) => sr.bdong_cd?.substring(0, 5))
-          .filter((code) => code && code.length > 0),
+          .filter((code): code is string => code !== undefined && code.length > 0),
       ),
     ];
 

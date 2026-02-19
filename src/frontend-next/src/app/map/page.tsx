@@ -64,11 +64,11 @@ const MapPage = () => {
               type = "snow";
               break;
             case "17":
-              type = "display";
+              type = "broad";
               break;
             case "18":
             case "21":
-              type = "broad";
+              type = "display";
               break;
             case "20":
               type = "gate";
@@ -84,6 +84,7 @@ const MapPage = () => {
             lng: parseFloat(item.LON) || 127.174,
             type: type,
             status: Number(item.ErrorChk) === 5 ? "normal" : "error",
+            data: item.DATA || "-",
           };
         });
         setStations(mappedData);
@@ -125,6 +126,12 @@ const MapPage = () => {
     markersRef.current = [];
 
     stations.forEach((station) => {
+      console.log('Station:', {
+        name: station.name,
+        type: station.type,
+        data: station.data,
+        status: station.status
+      });
       const isError = station.status !== "normal";
       const imageSrc = `/markers/${station.type}_marker${isError ? "_error" : ""}.png`;
       const imageSize = new window.kakao.maps.Size(36, 51);
@@ -151,7 +158,8 @@ const MapPage = () => {
           <span class="overlay-status-badge ${station.status === "normal" ? "badge-normal" : "badge-error"}">
             ${station.status === "normal" ? "정상" : "점검요망"}
           </span>
-          <span class="text-[10px] text-slate-400 font-mono ml-2">${station.id}</span>
+          <span class="text-[10px] text-blue-500 font-bold ml-2">[${station.type}]</span>
+          <span class="text-[10px] text-slate-600 font-mono ml-2">${station.data}</span>
         </div>
       `;
 
@@ -247,9 +255,8 @@ const MapPage = () => {
       <div className="absolute top-4 left-4 z-50">
         <Button
           onClick={() => setShowSidebar(!showSidebar)}
-          className={`h-10 px-4 gap-2 rounded-xl shadow-2xl border-none transition-all ${
-            showSidebar ? "bg-indigo-600 text-white" : "bg-white hover:bg-slate-50 text-slate-800"
-          }`}
+          className={`h-10 px-4 gap-2 rounded-xl shadow-2xl border-none transition-all ${showSidebar ? "bg-indigo-600 text-white" : "bg-white hover:bg-slate-50 text-slate-800"
+            }`}
         >
           {showSidebar ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           <span className="text-xs font-black">장비 목록</span>
@@ -346,19 +353,17 @@ const MapPage = () => {
 
       {/* 하단 컨트롤: Live 박스 + 레이어 버튼 동일 라인 (레이어 우측 끝) */}
       <div
-        className={`absolute z-[999] flex justify-between items-center gap-4 pointer-events-none ${
-          isMobile
-            ? "left-3 right-3 bottom-[calc(var(--footer-h-mobile)+180px)]"
-            : "left-6 right-6 bottom-[calc(var(--footer-h-desktop)+20px)]"
-        }`}
+        className={`absolute z-[999] flex justify-between items-center gap-4 pointer-events-none ${isMobile
+          ? "left-3 right-3 bottom-[calc(var(--footer-h-mobile)+180px)]"
+          : "left-6 right-6 bottom-[calc(var(--footer-h-desktop)+20px)]"
+          }`}
       >
         {/* 좌측: Live 박스 또는 모바일 상태 토글 버튼 */}
         <div className="pointer-events-auto flex items-center min-w-0">
           {(showStatusCard || !isMobile) ? (
             <div
-              className={`status-card relative bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-6 ${
-                isMobile ? "animate-slide-up origin-bottom" : ""
-              }`}
+              className={`status-card relative bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-6 ${isMobile ? "animate-slide-up origin-bottom" : ""
+                }`}
             >
               <div className="flex flex-col gap-0.5 pr-5 border-r border-slate-600">
                 <div className="flex items-center gap-2">
@@ -400,11 +405,10 @@ const MapPage = () => {
           ) : (
             <Button
               onClick={() => setShowStatusCard(!showStatusCard)}
-              className={`sm:hidden h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${
-                showStatusCard
-                  ? "bg-green-500 text-white ring-4 ring-green-500/30"
-                  : "bg-white text-slate-900"
-              }`}
+              className={`sm:hidden h-12 w-12 rounded-2xl shadow-xl transition-all border-none ${showStatusCard
+                ? "bg-green-500 text-white ring-4 ring-green-500/30"
+                : "bg-white text-slate-900"
+                }`}
             >
               <Activity className="h-5 w-5" />
             </Button>
@@ -415,9 +419,8 @@ const MapPage = () => {
         <div className="pointer-events-auto relative flex-shrink-0">
           {showLayerMenu && (
             <div
-              className={`absolute bottom-14 right-0 w-32 sm:w-40 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-slide-up p-1 sm:p-1.5 flex flex-col gap-1 ${
-                isMobile ? "" : "sm:block"
-              }`}
+              className={`absolute bottom-14 right-0 w-32 sm:w-40 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-slide-up p-1 sm:p-1.5 flex flex-col gap-1 ${isMobile ? "" : "sm:block"
+                }`}
             >
               {[
                 { id: "ROADMAP", name: "일반 지도", desc: "표준 벡터" },
@@ -426,11 +429,10 @@ const MapPage = () => {
                 <button
                   key={layer.id}
                   onClick={() => changeMapType(layer.id)}
-                  className={`text-[11px] sm:text-xs font-bold py-2 px-3 sm:py-2.5 sm:px-3 rounded-xl text-left w-full transition-colors flex flex-col ${
-                    currentLayer === layer.id
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
+                  className={`text-[11px] sm:text-xs font-bold py-2 px-3 sm:py-2.5 sm:px-3 rounded-xl text-left w-full transition-colors flex flex-col ${currentLayer === layer.id
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "text-slate-600 hover:bg-slate-50"
+                    }`}
                 >
                   <span>{layer.name}</span>
                   <span className="text-[9px] opacity-50 font-normal hidden sm:inline">
@@ -442,9 +444,8 @@ const MapPage = () => {
           )}
           <Button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className={`h-12 w-12 sm:h-14 sm:px-6 sm:w-auto rounded-2xl shadow-2xl border-none font-bold gap-3 transition-all ${
-              showLayerMenu ? "bg-indigo-600 text-white" : "bg-white text-slate-900 hover:bg-slate-50"
-            }`}
+            className={`h-12 w-12 sm:h-14 sm:px-6 sm:w-auto rounded-2xl shadow-2xl border-none font-bold gap-3 transition-all ${showLayerMenu ? "bg-indigo-600 text-white" : "bg-white text-slate-900 hover:bg-slate-50"
+              }`}
           >
             <Layers className="h-5 w-5" />
             <span className="hidden sm:inline">레이어</span>

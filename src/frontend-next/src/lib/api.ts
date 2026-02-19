@@ -4,7 +4,7 @@ import { ApiResponse, ControlPayload, WeatherDevice } from './types';
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
     // 서버사이드: localhost 사용
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
   }
 
   // 클라이언트사이드: 현재 호스트의 IP를 사용
@@ -12,11 +12,11 @@ const getApiBaseUrl = () => {
 
   // localhost나 127.0.0.1이면 그대로 사용
   if (host === 'localhost' || host === '127.0.0.1') {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
   }
 
   // 그 외의 경우 (192.168.0.51 등) 같은 호스트의 8080 포트 사용
-  return `http://${host}:4000/api`;
+  return `http://${host}:8080/api`;
 };
 
 export const API_BASE_URL = getApiBaseUrl();

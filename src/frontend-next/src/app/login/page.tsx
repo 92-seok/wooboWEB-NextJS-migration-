@@ -113,12 +113,12 @@ const LoginPage = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="username">이메일 계정</Label>
+              <Label htmlFor="username">아이디</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="username"
-                  placeholder="example@woobo.com"
+                  placeholder="아이디를 입력하세요"
                   type="text"
                   className="pl-10"
                   value={formData.username}
@@ -151,7 +151,7 @@ const LoginPage = () => {
               className="w-full bg-blue-700 hover:bg-blue-800 h-11 text-base"
               disabled={loading}
             >
-              {loading ? "로그인 중..." : "시스템 접속"}
+              {loading ? "로그인 중..." : "로그인"}
             </Button>
           </form>
 

@@ -1,4 +1,14 @@
-import { Controller, Get, Patch, Delete, Param, Body, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -25,7 +35,7 @@ export class AdminController {
 
   // 특정 사용자 조회하기
   // GET /admin/users/:id
-  @Get('users')
+  @Get('users/:id')
   async getUserById(@Param('id', ParseIntPipe) id: number) {
     return this.adminService.getUserById(id);
   }
@@ -97,5 +107,3 @@ export class AdminController {
     return this.adminService.getGateHistory(query);
   }
 }
-
-
