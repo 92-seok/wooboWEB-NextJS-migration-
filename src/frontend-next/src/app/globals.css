@@ -122,10 +122,14 @@
   body {
     @apply bg-background text-foreground;
   }
-  html, body {
+  html {
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
     -webkit-overflow-scrolling: touch;
+  }
+  body {
+    overflow-x: hidden;
   }
 }
 

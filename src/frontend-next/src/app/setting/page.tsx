@@ -251,11 +251,10 @@ const SettingPage = () => {
               variant={typeFilter === "all" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTypeFilter("all")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                typeFilter === "all"
-                  ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "all"
+                ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               전체 장비
             </Button>
@@ -263,11 +262,10 @@ const SettingPage = () => {
               variant={typeFilter === "broadcast" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTypeFilter("broadcast")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                typeFilter === "broadcast"
-                  ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "broadcast"
+                ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               예경보
             </Button>
@@ -275,11 +273,10 @@ const SettingPage = () => {
               variant={typeFilter === "display" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTypeFilter("display")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                typeFilter === "display"
-                  ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "display"
+                ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               전광판
             </Button>
@@ -287,11 +284,10 @@ const SettingPage = () => {
               variant={typeFilter === "gate" ? "default" : "ghost"}
               size="sm"
               onClick={() => setTypeFilter("gate")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                typeFilter === "gate"
-                  ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "gate"
+                ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               차단기
             </Button>
@@ -355,11 +351,10 @@ const SettingPage = () => {
                 return (
                   <React.Fragment key={uniqueKey}>
                     <TableRow
-                      className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${
-                        expandedRow === uniqueKey
-                          ? "bg-emerald-50/50 dark:bg-emerald-900/10"
-                          : "hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
-                      }`}
+                      className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${expandedRow === uniqueKey
+                        ? "bg-emerald-50/50 dark:bg-emerald-900/10"
+                        : "hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
+                        }`}
                       onClick={() => setExpandedRow(expandedRow === uniqueKey ? null : uniqueKey)}
                     >
                       <TableCell className="text-center px-2">
@@ -443,13 +438,13 @@ const SettingPage = () => {
                               </h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">사용자</span>
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">이름</span>
                                   <span className="text-slate-900 dark:text-slate-100 font-medium">
                                     {item.userName || item.Auth || "-"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">조작자</span>
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium">아이디</span>
                                   <span className="text-slate-900 dark:text-slate-100 font-medium">
                                     {item.Auth || "-"}
                                   </span>

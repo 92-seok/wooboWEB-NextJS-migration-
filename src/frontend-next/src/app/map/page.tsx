@@ -126,12 +126,12 @@ const MapPage = () => {
     markersRef.current = [];
 
     stations.forEach((station) => {
-      console.log('Station:', {
-        name: station.name,
-        type: station.type,
-        data: station.data,
-        status: station.status
-      });
+      // console.log('Station:', {
+      //   name: station.name,
+      //   type: station.type,
+      //   data: station.data,
+      //   status: station.status
+      // });
       const isError = station.status !== "normal";
       const imageSrc = `/markers/${station.type}_marker${isError ? "_error" : ""}.png`;
       const imageSize = new window.kakao.maps.Size(36, 51);

@@ -256,7 +256,7 @@ const AdminPage = () => {
         );
       case "operator":
         return (
-          <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">운영자</Badge>
+          <Badge variant="outline" className="border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-black text-[10px] px-2 py-1 rounded-full">일반</Badge>
         );
       default:
         return (
@@ -309,11 +309,10 @@ const AdminPage = () => {
               variant={roleFilter === "all" ? "default" : "ghost"}
               size="sm"
               onClick={() => setRoleFilter("all")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "all"
-                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${roleFilter === "all"
+                ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               전체 권한
             </Button>
@@ -321,11 +320,10 @@ const AdminPage = () => {
               variant={roleFilter === "admin" ? "default" : "ghost"}
               size="sm"
               onClick={() => setRoleFilter("admin")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "admin"
-                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${roleFilter === "admin"
+                ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               관리자
             </Button>
@@ -333,11 +331,10 @@ const AdminPage = () => {
               variant={roleFilter === "user" ? "default" : "ghost"}
               size="sm"
               onClick={() => setRoleFilter("user")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "user"
-                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${roleFilter === "user"
+                ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               사용자
             </Button>
@@ -345,23 +342,21 @@ const AdminPage = () => {
               variant={roleFilter === "operator" ? "default" : "ghost"}
               size="sm"
               onClick={() => setRoleFilter("operator")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "operator"
-                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${roleFilter === "operator"
+                ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
-              운영자
+              일반
             </Button>
             <Button
               variant={roleFilter === "guest" ? "default" : "ghost"}
               size="sm"
               onClick={() => setRoleFilter("guest")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
-                roleFilter === "guest"
-                  ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              }`}
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${roleFilter === "guest"
+                ? "bg-cyan-600 dark:bg-cyan-700 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
             >
               게스트
             </Button>

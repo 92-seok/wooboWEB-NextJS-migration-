@@ -25,6 +25,10 @@ import {
   Activity,
   Lock,
   LockOpen,
+  Navigation,
+  Megaphone,
+  MonitorPlay,
+  Construction,
 } from "lucide-react";
 import {
   Dialog,
@@ -125,6 +129,19 @@ const WeatherSIPage = () => {
       console.error("데이터 로드 실패: ", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 제어 후 로딩 표시 없이 장비 데이터만 갱신 (확장 행 유지)
+  const refreshDevices = async () => {
+    try {
+      const res = await weathersiApi.getDevices(selectedArea === "%" ? undefined : selectedArea);
+      if (res?.success) {
+        setDevices(res.data || []);
+        setLastUpdated(new Date());
+      }
+    } catch (err) {
+      console.error("장비 갱신 실패:", err);
     }
   };
 
@@ -255,8 +272,12 @@ const WeatherSIPage = () => {
         res = await weathersiApi.sendGate(payload);
       }
 
-      if (res?.success) alert("제어 명령이 전송되었습니다.");
-      else alert("전송 실패: " + (res?.message || "알 수 없는 오류"));
+      if (res?.success) {
+        alert("제어 명령이 전송되었습니다.");
+        await refreshDevices();
+      } else {
+        alert("전송 실패: " + (res?.message || "알 수 없는 오류"));
+      }
     } catch (err) {
       console.error("API 오류 상세:", err);
       alert(`API 오류 발생: ${err instanceof Error ? err.message : String(err)}`);
@@ -365,7 +386,7 @@ const WeatherSIPage = () => {
   };
 
   return (
-    <div className="page-container max-w-[1440px] mx-auto space-y-6 pb-32 lg:pb-32 px-4 sm:px-8 lg:px-12 mt-8" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom))' }}>
+    <div className="page-container max-w-[1440px] mx-auto space-y-6 pb-32 lg:pb-32 px-4 sm:px-8 lg:px-12 mt-8 overflow-x-hidden" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom))' }}>
       {/* 페이지 헤더 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
@@ -440,13 +461,13 @@ const WeatherSIPage = () => {
                       className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${selectedRegionMenu === menu.name
                         ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       {menu.name}
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                  <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto" collisionPadding={16}>
                     {menu.name === "전국" ? (
                       <DropdownMenuItem onClick={() => handleAreaChange("%", menu.name)}>
                         전국
@@ -669,451 +690,535 @@ const WeatherSIPage = () => {
                         </TableCell>
                       </TableRow>
 
-                    {expandedRow === item.IDX && (
-                      <TableRow className="bg-slate-50/30 dark:bg-slate-900/30">
-                        <TableCell colSpan={6} className="p-4 sm:p-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            {/* 기본 정보 */}
-                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                                <MapPin size={16} /> 기본 정보
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
-                                    {item.DTL_ADRES || "-"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
-                                </div>
-                                <div className="flex justify-between py-2">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono">
-                                    {item.LAT} / {item.LON}
-                                  </span>
-                                </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                                <Activity size={16} /> 로거 데이터
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">로거 시간</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
-                                    {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">부팅 시간</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
-                                    {item.LOGGER_UPTIME ? dayjs(item.LOGGER_UPTIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl text-center border border-purple-100 dark:border-purple-800">
-                                    <p className="text-xs text-purple-600 dark:text-purple-400 font-bold mb-1">GL</p>
-                                    <p className="text-lg font-black text-purple-700 dark:text-purple-300">
-                                      {item.LOGGER_GL || "0.00"} M
-                                    </p>
+                      {expandedRow === item.IDX && (
+                        <TableRow className="bg-slate-50/30 dark:bg-slate-900/30">
+                          <TableCell colSpan={6} className="p-4 sm:p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                              {/* 기본 정보 - 공통 */}
+                              <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                  <MapPin size={16} /> 기본 정보
+                                </h4>
+                                <div className="space-y-2 text-sm flex-1">
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">주소</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-medium text-right">
+                                      {item.DTL_ADRES || "-"}
+                                    </span>
                                   </div>
-                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
-                                    <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
-                                    <p className="text-lg font-black text-teal-700 dark:text-teal-300">
-                                      {item.LOGGER_FL || "0.00"} M
-                                    </p>
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">법정동코드</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono">{item.BDONG_CD || "-"}</span>
+                                  </div>
+                                  <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium">좌표</span>
+                                    <span className="text-slate-900 dark:text-slate-100 font-mono">
+                                      {item.LAT} / {item.LON}
+                                    </span>
                                   </div>
                                 </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-5 space-y-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
-                              <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                                <Activity size={16} /> 국립재난안전연구원 API 연계
-                              </h4>
-                              <div className="space-y-3 text-sm">
-                                {/* API 기본 정보 */}
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">서비스키</span>
-                                  <span className="text-slate-900 dark:text-slate-100 font-mono text-xs truncate max-w-[200px]">
-                                    {item.serviceKey || "-"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">API 연계 상태</span>
-                                  <Badge
-                                    variant="outline"
-                                    className={`${
-                                      item.ResultCode === "OK"
-                                        ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                        : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                    } font-black text-[10px] px-2 py-1 rounded-full`}
+                                {item.LAT && item.LON && (
+                                  <Button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.open(
+                                        `https://map.naver.com/p/directions/-/${item.LON},${item.LAT},${encodeURIComponent(item.NM_DIST_OBSV || "장비 위치")}/-/car`,
+                                        "_blank"
+                                      );
+                                    }}
+                                    className="w-full bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold h-11 rounded-xl gap-2 mt-4"
                                   >
-                                    {item.ResultCode || "-"}
-                                  </Badge>
-                                </div>
-                                
-                                {/* 전송 시간 정보 */}
-                                <div className="grid grid-cols-2 gap-3 py-2 border-b border-slate-100 dark:border-slate-700">
-                                  <div>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">API 전송시간</p>
-                                    <p className="text-slate-900 dark:text-slate-100 font-mono text-xs">
-                                      {item.observationDateTime ? dayjs(item.observationDateTime).format("YYYY-MM-DD HH:mm:ss") : "-"}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">상태 전송시간</p>
-                                    <p className="text-slate-900 dark:text-slate-100 font-mono text-xs">
-                                      {item.statusDateTime ? dayjs(item.statusDateTime).format("YYYY-MM-DD HH:mm:ss") : "-"}
-                                    </p>
-                                  </div>
-                                </div>
+                                    <Navigation size={16} />
+                                    네이버지도 길안내
+                                  </Button>
+                                )}
+                              </Card>
 
-                                {/* 측정 데이터 */}
-                                <div className="grid grid-cols-3 gap-2 pt-2 pb-3">
-                                  <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg text-center border border-blue-100 dark:border-blue-800">
-                                    <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold mb-1">수위(FL)</p>
-                                    <p className="text-sm font-black text-blue-700 dark:text-blue-300 mb-1.5">
-                                      {item.waterLevel || "-"}
-                                    </p>
-                                    <Badge
-                                      variant="outline"
-                                      className={`${
-                                        item.waterLevelStatusCode === "00"
-                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
-                                    >
-                                      {item.waterLevelStatusCode === "00" ? "정상" : "점검"}
-                                    </Badge>
+                              {/* 강우량계 (01) - 실시간 강우 데이터 */}
+                              {gb === "01" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 실시간 강우 데이터
+                                  </h4>
+                                  <div className="space-y-2 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">수신 시간</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-center border border-blue-100 dark:border-blue-800 mt-3">
+                                      <p className="text-xs text-blue-600 dark:text-blue-400 font-bold mb-2">현재 강우량</p>
+                                      <p className="text-3xl font-black text-blue-700 dark:text-blue-300">
+                                        {item.DATA || "0"} <span className="text-base font-bold">{item.UNIT || "mm"}</span>
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div className="bg-cyan-50 dark:bg-cyan-900/20 p-2.5 rounded-lg text-center border border-cyan-100 dark:border-cyan-800">
-                                    <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold mb-1">유량(㎧)</p>
-                                    <p className="text-sm font-black text-cyan-700 dark:text-cyan-300 mb-1.5">
-                                      {item.averageVelocity || "-"}
-                                    </p>
-                                    <Badge
-                                      variant="outline"
-                                      className={`${
-                                        item.velocityStatusCode === "10"
-                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
-                                    >
-                                      {item.velocityStatusCode === "10" ? "정상" : "점검"}
-                                    </Badge>
-                                  </div>
-                                  <div className="bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-lg text-center border border-teal-100 dark:border-teal-800">
-                                    <p className="text-[9px] text-teal-600 dark:text-teal-400 font-bold mb-1">유속(㎥/s)</p>
-                                    <p className="text-sm font-black text-teal-700 dark:text-teal-300 mb-1.5">
-                                      {item.totalDischarge || "-"}
-                                    </p>
-                                    <Badge
-                                      variant="outline"
-                                      className={`${
-                                        item.dischargeStatusCode === "20"
-                                          ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                          : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                      } font-black text-[8px] px-1.5 py-0.5 rounded-full`}
-                                    >
-                                      {item.dischargeStatusCode === "20" ? "정상" : "점검"}
-                                    </Badge>
-                                  </div>
-                                </div>
+                                </Card>
+                              )}
 
-                                {/* UPS 상태 */}
-                                <div className="flex justify-between items-center py-2">
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium">UPS 상태</span>
-                                  <Badge
-                                    variant="outline"
-                                    className={`${
-                                      item.upsStatusCode === "00"
-                                        ? "border-green-300 dark:border-green-700 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                                        : "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                                    } font-black text-[9px] px-2 py-0.5 rounded-full`}
-                                  >
-                                    {item.upsStatusCode === "00" ? "정상" : "점검"}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </Card>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                  );
+                              {/* 수위계 (02) - 실시간 수위 데이터 */}
+                              {gb === "02" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 실시간 수위 데이터
+                                  </h4>
+                                  <div className="space-y-2 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">수신 시간</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">부팅 시간</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_UPTIME ? dayjs(item.LOGGER_UPTIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl text-center border border-purple-100 dark:border-purple-800">
+                                        <p className="text-xs text-purple-600 dark:text-purple-400 font-bold mb-1">GL</p>
+                                        <p className="text-lg font-black text-purple-700 dark:text-purple-300">
+                                          {item.LOGGER_GL || "0.00"} M
+                                        </p>
+                                      </div>
+                                      <div className="bg-teal-50 dark:bg-teal-900/20 p-3 rounded-xl text-center border border-teal-100 dark:border-teal-800">
+                                        <p className="text-xs text-teal-600 dark:text-teal-400 font-bold mb-1">FL</p>
+                                        <p className="text-lg font-black text-teal-700 dark:text-teal-300">
+                                          {item.LOGGER_FL || "0.00"} M
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Card>
+                              )}
+
+                              {/* 변위계 (03) - 실시간 변위 데이터 */}
+                              {(gb === "03" || gb === "04") && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 실시간 변위 데이터
+                                  </h4>
+                                  <div className="space-y-2 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">수신 시간</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl text-center border border-orange-100 dark:border-orange-800 mt-3">
+                                      <p className="text-xs text-orange-600 dark:text-orange-400 font-bold mb-2">현재 변위량</p>
+                                      <p className="text-3xl font-black text-orange-700 dark:text-orange-300">
+                                        {item.DATA || "0"} <span className="text-base font-bold">{item.UNIT || "mm"}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+                                </Card>
+                              )}
+
+                              {/* 적설계 (06) - 실시간 적설 데이터 */}
+                              {gb === "06" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 실시간 적설 데이터
+                                  </h4>
+                                  <div className="space-y-2 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">수신 시간</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-xl text-center border border-cyan-100 dark:border-cyan-800 mt-3">
+                                      <p className="text-xs text-cyan-600 dark:text-cyan-400 font-bold mb-2">현재 적설량</p>
+                                      <p className="text-3xl font-black text-cyan-700 dark:text-cyan-300">
+                                        {item.DATA || "0"} <span className="text-base font-bold">{item.UNIT || "cm"}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+                                </Card>
+                              )}
+
+                              {/* 예경보 (17) - 마지막 표출 데이터 + 장비 테스트 */}
+                              {gb === "17" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 예경보 현황
+                                  </h4>
+                                  <div className="space-y-3 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">마지막 수신</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mb-2">마지막 표출 데이터</p>
+                                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200 break-words">
+                                        {item.DATA || "-"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  {canShowTestButton && (
+                                    <Button
+                                      onClick={(e) => { e.stopPropagation(); handleOpenControl(item); }}
+                                      className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold h-12 rounded-xl gap-2 mt-4"
+                                    >
+                                      <Megaphone size={18} /> 방송 테스트
+                                    </Button>
+                                  )}
+                                </Card>
+                              )}
+
+                              {/* 전광판 (18) - 현재 표출 이미지 + 장비 테스트 */}
+                              {gb === "18" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 전광판 현황
+                                  </h4>
+                                  <div className="space-y-3 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">마지막 수신</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="bg-slate-900 dark:bg-slate-950 p-4 rounded-xl flex items-center justify-center min-h-[120px] border border-slate-700">
+                                      {item.DATA && isImageUrl(item.DATA) ? (
+                                        <img src={item.DATA} alt="전광판 표출 이미지" className="w-full object-contain" />
+                                      ) : item.DATA && isHtmlContent(item.DATA) ? (
+                                        <DisplayRenderer htmlContent={item.DATA} size="large" />
+                                      ) : item.DATA ? (
+                                        <span className="text-green-400 text-sm font-mono font-bold">{item.DATA}</span>
+                                      ) : (
+                                        <span className="text-slate-400 text-xs">표출 데이터 없음</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {canShowTestButton && (
+                                    <Button
+                                      onClick={(e) => { e.stopPropagation(); handleOpenControl(item); }}
+                                      className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold h-12 rounded-xl gap-2 mt-4"
+                                    >
+                                      <MonitorPlay size={18} /> 전광판 테스트
+                                    </Button>
+                                  )}
+                                </Card>
+                              )}
+
+                              {/* 차단기 (20) - 현재 상태 + 장비 테스트 */}
+                              {gb === "20" && (
+                                <Card className="p-5 flex flex-col bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl">
+                                  <h4 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Activity size={16} /> 차단기 현황
+                                  </h4>
+                                  <div className="space-y-3 text-sm flex-1">
+                                    <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                                      <span className="text-slate-500 dark:text-slate-400 font-medium">마지막 수신</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
+                                        {item.LOGGER_TIME ? dayjs(item.LOGGER_TIME).format("YYYY-MM-DD HH:mm:ss") : "-"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-center py-4">
+                                      {(() => {
+                                        const gateData = String(item.DATA || "").toLowerCase();
+                                        return gateData.includes("close") || gateData.includes("닫힘");
+                                      })() ? (
+                                        <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 px-6 py-3 rounded-xl border border-red-200 dark:border-red-800">
+                                          <Lock className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                          <span className="text-lg font-black text-red-700 dark:text-red-300">닫힘</span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 px-6 py-3 rounded-xl border border-green-200 dark:border-green-800">
+                                          <LockOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                          <span className="text-lg font-black text-green-700 dark:text-green-300">열림</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {canShowTestButton && (
+                                    <Button
+                                      onClick={(e) => { e.stopPropagation(); handleOpenControl(item); }}
+                                      className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold h-12 rounded-xl gap-2 mt-4"
+                                    >
+                                      <Construction size={18} /> 차단기 제어
+                                    </Button>
+                                  )}
+                                </Card>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                          </React.Fragment>
+                          );
                 })
               )}
-            </TableBody>
+                        </TableBody>
           </Table>
-        </Card>
-
-        {totalPages > 0 && (
-          <div className="relative py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6 bg-white dark:bg-slate-900 rounded-b-3xl z-10">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              전체 <span className="font-bold text-slate-800 dark:text-slate-200">{totalItems}</span>개 중{" "}
-              <span className="font-bold text-blue-600 dark:text-blue-400">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-              </span>
-              -
-              <span className="font-bold text-blue-600 dark:text-blue-400">
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
-              </span>{" "}
-              표시
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1 || loading}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow-sm">
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{currentPage}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>
+          {/* 페이지네이션 */}
+          {totalPages > 0 && (
+            <div className="relative py-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700 px-4 sm:px-6 bg-white dark:bg-slate-900 rounded-b-3xl z-10">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                전체 <span className="font-bold text-slate-800 dark:text-slate-200">{totalItems}</span>개 중{" "}
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </span>
+                -
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}
+                </span>{" "}
+                표시
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1 || loading}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="px-3 py-1.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow-sm">
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{currentPage}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">/</span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{totalPages}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages || loading}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 w-9 p-0 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages || loading}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
             </div>
-          </div>
-        )}
+          )}
+        </Card>
       </div>
 
-      {/* 제어 Dialog */}
-      <Dialog open={controlDialogOpen} onOpenChange={setControlDialogOpen}>
-        <DialogContent className="max-w-md dark:bg-slate-800 dark:border-slate-700 p-0 overflow-hidden">
+          {/* 제어 Dialog */}
+          <Dialog open={controlDialogOpen} onOpenChange={setControlDialogOpen}>
+            <DialogContent className="max-w-md dark:bg-slate-800 dark:border-slate-700 p-0 overflow-hidden">
 
-          {/* 예경보 (17) - 텍스트 입력 */}
-          {selectedControlItem?.GB_OBSV === "17" && (
-            <>
-              <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img
-                      src="/broad.png"
-                      alt="예경보"
-                      className="h-10 w-10 object-contain drop-shadow-lg"
-                    />
+              {/* 예경보 (17) - 텍스트 입력 */}
+              {selectedControlItem?.GB_OBSV === "17" && (
+                <>
+                  <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
+                        <img
+                          src="/broad.png"
+                          alt="예경보"
+                          className="h-10 w-10 object-contain drop-shadow-lg"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black tracking-tight drop-shadow-md">예경보 방송 제어</h3>
+                        <p className="text-sm opacity-90 mt-1 font-medium">
+                          {selectedControlItem?.NM_DIST_OBSV || "-"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black tracking-tight drop-shadow-md">예경보 방송 제어</h3>
-                    <p className="text-sm opacity-90 mt-1 font-medium">
-                      {selectedControlItem?.NM_DIST_OBSV || "-"}
+                  <div className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        방송 메시지
+                      </label>
+                      <Textarea
+                        placeholder="방송 내용 입력..."
+                        value={testMessage}
+                        onChange={(e) => setTestMessage(e.target.value)}
+                        className="min-h-[120px] dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setControlDialogOpen(false)}
+                        className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                      >
+                        취소
+                      </Button>
+                      <Button
+                        onClick={handleSendControl}
+                        className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
+                      >
+                        방송 전송
+                      </Button>
+                    </DialogFooter>
+                  </div>
+                </>
+              )}
+
+              {/* 차단기 (20) - 열림/닫힘 버튼 */}
+              {selectedControlItem?.GB_OBSV === "20" && (
+                <>
+                  <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
+                        <img
+                          src="/gate.png"
+                          alt="차단기"
+                          className="h-10 w-10 object-contain drop-shadow-lg"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black tracking-tight drop-shadow-md">차단기 제어</h3>
+                        <p className="text-sm opacity-90 mt-1 font-medium">
+                          {selectedControlItem?.NM_DIST_OBSV || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
+                      차단기를 제어하시겠습니까?
                     </p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const payload = {
+                              BDONG_CD: selectedControlItem.BDONG_CD,
+                              CD_DIST_OBSV: selectedControlItem.CD_DIST_OBSV,
+                              Gate: "open",
+                              GStatus: "start",
+                            };
+                            await weathersiApi.sendGate(payload);
+                            setControlDialogOpen(false);
+                            alert("차단기 열림 명령을 전송했습니다.");
+                            await refreshDevices();
+                          } catch (err: any) {
+                            alert(err.message || "차단기 제어 실패");
+                          }
+                        }}
+                        className="h-24 flex-col gap-2 bg-gradient-to-b from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-lg font-bold"
+                      >
+                        <LockOpen className="h-8 w-8" />
+                        열기
+                      </Button>
+
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const payload = {
+                              BDONG_CD: selectedControlItem.BDONG_CD,
+                              CD_DIST_OBSV: selectedControlItem.CD_DIST_OBSV,
+                              Gate: "close",
+                              GStatus: "start",
+                            };
+                            await weathersiApi.sendGate(payload);
+                            setControlDialogOpen(false);
+                            alert("차단기 닫힘 명령을 전송했습니다.");
+                            await refreshDevices();
+                          } catch (err: any) {
+                            alert(err.message || "차단기 제어 실패");
+                          }
+                        }}
+                        className="h-24 flex-col gap-2 bg-gradient-to-b from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white text-lg font-bold"
+                      >
+                        <Lock className="h-8 w-8" />
+                        닫기
+                      </Button>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setControlDialogOpen(false)}
+                        className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                      >
+                        취소
+                      </Button>
+                    </DialogFooter>
                   </div>
-                </div>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    방송 메시지
-                  </label>
-                  <Textarea
-                    placeholder="방송 내용 입력..."
-                    value={testMessage}
-                    onChange={(e) => setTestMessage(e.target.value)}
-                    className="min-h-[120px] dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setControlDialogOpen(false)}
-                    className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                  >
-                    취소
-                  </Button>
-                  <Button
-                    onClick={handleSendControl}
-                    className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
-                  >
-                    방송 전송
-                  </Button>
-                </DialogFooter>
-              </div>
-            </>
-          )}
+                </>
+              )}
 
-          {/* 차단기 (20) - 열림/닫힘 버튼 */}
-          {selectedControlItem?.GB_OBSV === "20" && (
-            <>
-              <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img
-                      src="/gate.png"
-                      alt="차단기"
-                      className="h-10 w-10 object-contain drop-shadow-lg"
-                    />
+              {/* 전광판 (18) - 테스트 이미지 전송 */}
+              {selectedControlItem?.GB_OBSV === "18" && (
+                <>
+                  <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
+                        <img
+                          src="/display.png"
+                          alt="전광판"
+                          className="h-10 w-10 object-contain drop-shadow-lg"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black tracking-tight drop-shadow-md">전광판 테스트</h3>
+                        <p className="text-sm opacity-90 mt-1 font-medium">
+                          {selectedControlItem?.NM_DIST_OBSV || "-"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black tracking-tight drop-shadow-md">차단기 제어</h3>
-                    <p className="text-sm opacity-90 mt-1 font-medium">
-                      {selectedControlItem?.NM_DIST_OBSV || "-"}
-                    </p>
+                  <div className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        테스트 이미지
+                      </label>
+                      <div className="flex justify-center p-6 bg-slate-100 dark:bg-slate-900/50 rounded-lg">
+                        <img
+                          src="/display_test.png"
+                          alt="테스트 이미지"
+                          className="max-h-32 object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setControlDialogOpen(false)}
+                        className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                      >
+                        취소
+                      </Button>
+                      <Button
+                        onClick={handleSendControl}
+                        className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
+                      >
+                        테스트 이미지 전송
+                      </Button>
+                    </DialogFooter>
                   </div>
-                </div>
-              </div>
-              <div className="p-6 space-y-6">
-                <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
-                  차단기를 제어하시겠습니까?
-                </p>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const payload = {
-                          BDONG_CD: selectedControlItem.BDONG_CD,
-                          CD_DIST_OBSV: selectedControlItem.CD_DIST_OBSV,
-                          Gate: "open",
-                          GStatus: "start",
-                        };
-                        await weathersiApi.sendGate(payload);
-                        setControlDialogOpen(false);
-                        alert("차단기 열림 명령을 전송했습니다.");
-                        loadData();
-                      } catch (err: any) {
-                        alert(err.message || "차단기 제어 실패");
-                      }
-                    }}
-                    className="h-24 flex-col gap-2 bg-gradient-to-b from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white text-lg font-bold"
-                  >
-                    <LockOpen className="h-8 w-8" />
-                    열기
-                  </Button>
-
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const payload = {
-                          BDONG_CD: selectedControlItem.BDONG_CD,
-                          CD_DIST_OBSV: selectedControlItem.CD_DIST_OBSV,
-                          Gate: "close",
-                          GStatus: "start",
-                        };
-                        await weathersiApi.sendGate(payload);
-                        setControlDialogOpen(false);
-                        alert("차단기 닫힘 명령을 전송했습니다.");
-                        loadData();
-                      } catch (err: any) {
-                        alert(err.message || "차단기 제어 실패");
-                      }
-                    }}
-                    className="h-24 flex-col gap-2 bg-gradient-to-b from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white text-lg font-bold"
-                  >
-                    <Lock className="h-8 w-8" />
-                    닫기
-                  </Button>
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setControlDialogOpen(false)}
-                    className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                  >
-                    취소
-                  </Button>
-                </DialogFooter>
-              </div>
-            </>
-          )}
-
-          {/* 전광판 (18) - 테스트 이미지 전송 */}
-          {selectedControlItem?.GB_OBSV === "18" && (
-            <>
-              <div className="bg-gradient-to-br from-slate-600 via-slate-500 to-slate-600 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 p-6 text-white shadow-xl border-b-4 border-slate-400 dark:border-slate-600">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 dark:bg-white/10 p-3 rounded-xl shadow-lg backdrop-blur-sm">
-                    <img
-                      src="/display.png"
-                      alt="전광판"
-                      className="h-10 w-10 object-contain drop-shadow-lg"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black tracking-tight drop-shadow-md">전광판 테스트</h3>
-                    <p className="text-sm opacity-90 mt-1 font-medium">
-                      {selectedControlItem?.NM_DIST_OBSV || "-"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    테스트 이미지
-                  </label>
-                  <div className="flex justify-center p-6 bg-slate-100 dark:bg-slate-900/50 rounded-lg">
-                    <img
-                      src="/display_test.png"
-                      alt="테스트 이미지"
-                      className="max-h-32 object-contain"
-                    />
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setControlDialogOpen(false)}
-                    className="dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                  >
-                    취소
-                  </Button>
-                  <Button
-                    onClick={handleSendControl}
-                    className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 text-white font-bold"
-                  >
-                    테스트 이미지 전송
-                  </Button>
-                </DialogFooter>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* 권한 없음 Dialog */}
-      <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
-        <DialogContent className="max-w-sm dark:bg-slate-800 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="dark:text-slate-100">접근 권한이 없습니다</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            원격 제어 기능은 관리자 권한이 필요합니다.<br />
-            시스템사업부로 문의하세요.
-          </p>
-          <DialogFooter>
-            <Button
-              onClick={() => setPermissionDialogOpen(false)}
-              className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-800"
-            >
-              확인
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+          {/* 권한 없음 Dialog */}
+          <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
+            <DialogContent className="max-w-sm dark:bg-slate-800 dark:border-slate-700">
+              <DialogHeader>
+                <DialogTitle className="dark:text-slate-100">접근 권한이 없습니다</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                원격 제어 기능은 관리자 권한이 필요합니다.<br />
+                시스템사업부로 문의하세요.
+              </p>
+              <DialogFooter>
+                <Button
+                  onClick={() => setPermissionDialogOpen(false)}
+                  className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-800"
+                >
+                  확인
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+      </div>
+      );
 };
 
-export default WeatherSIPage;
+      export default WeatherSIPage;

@@ -33,16 +33,11 @@ export const usePermission = (): PermissionResult => {
       const userRole = user?.role;
 
       // 역할에 따른 권한 설정
-      // ADMIN: 모든 권한
-      // VIEWER: 테스트 버튼 표시 및 실행 가능
-      // OPERATOR: 테스트 버튼 표시만 가능 (실행 불가)
-      // guest: 권한 없음
-      if (userRole === "ADMIN" || userRole === "VIEWER") {
+      // admin, user: 테스트 버튼 표시 및 실행 가능
+      // 그 외(OPERATOR, guest 등): 권한 없음
+      if (userRole === "admin" || userRole === "user") {
         setCanShowTestButton(true);
         setCanExecuteTest(true);
-      } else if (userRole === "OPERATOR") {
-        setCanShowTestButton(true);
-        setCanExecuteTest(false);
       } else {
         setCanShowTestButton(false);
         setCanExecuteTest(false);
