@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -38,34 +38,33 @@ const SettingPage = () => {
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(20);
 
-  // 권한 체크
+  // 권한 체크 (Strict Mode 중복 실행 방지)
+  const authChecked = useRef(false);
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem("accessToken");
-      const userStr = localStorage.getItem("user");
+    if (authChecked.current) return;
+    authChecked.current = true;
 
-      if (!token || !userStr) {
-        toast.error("로그인이 필요합니다.");
-        router.push("/login");
-        return;
+    const token = localStorage.getItem("accessToken");
+    const userStr = localStorage.getItem("user");
+
+    if (!token || !userStr) {
+      toast.error("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userStr);
+      if (user.role === "admin") {
+        setIsAuthorized(true);
+      } else {
+        toast.error("관리자 권한이 필요합니다.");
+        router.push("/");
       }
-
-      try {
-        const user = JSON.parse(userStr);
-        // ADMIN만 접근 가능 (소문자로 비교)
-        if (user.role === "admin") {
-          setIsAuthorized(true);
-        } else {
-          toast.error("관리자 권한이 필요합니다.");
-          router.push("/");
-        }
-      } catch (e) {
-        console.error("User data parse error:", e);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
+    } catch (e) {
+      console.error("User data parse error:", e);
+      router.push("/login");
+    }
   }, [router]);
 
   // 제어 이력 조회
@@ -248,10 +247,10 @@ const SettingPage = () => {
           </label>
           <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
             <Button
-              variant={typeFilter === "all" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setTypeFilter("all")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "all"
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${typeFilter === "all"
                 ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                 }`}
@@ -259,10 +258,10 @@ const SettingPage = () => {
               전체 장비
             </Button>
             <Button
-              variant={typeFilter === "broadcast" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setTypeFilter("broadcast")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "broadcast"
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${typeFilter === "broadcast"
                 ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                 }`}
@@ -270,10 +269,10 @@ const SettingPage = () => {
               예경보
             </Button>
             <Button
-              variant={typeFilter === "display" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setTypeFilter("display")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "display"
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${typeFilter === "display"
                 ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                 }`}
@@ -281,10 +280,10 @@ const SettingPage = () => {
               전광판
             </Button>
             <Button
-              variant={typeFilter === "gate" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setTypeFilter("gate")}
-              className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${typeFilter === "gate"
+              className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${typeFilter === "gate"
                 ? "bg-emerald-600 dark:bg-emerald-700 text-white shadow-md"
                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                 }`}
@@ -300,7 +299,7 @@ const SettingPage = () => {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-emerald-500 dark:group-focus-within:text-emerald-400 transition-colors" />
         <Input
           placeholder="장비명, 사용자, 조작자 검색..."
-          className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-emerald-500/20 dark:focus:ring-emerald-500/30 transition-all text-sm"
+          className="h-12 pl-11 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 bg-white shadow-sm focus:ring-emerald-500/20 dark:focus:ring-emerald-500/30 transition-colors text-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -351,7 +350,7 @@ const SettingPage = () => {
                 return (
                   <React.Fragment key={uniqueKey}>
                     <TableRow
-                      className={`h-14 border-b dark:border-slate-700 transition-all cursor-pointer ${expandedRow === uniqueKey
+                      className={`h-14 border-b dark:border-slate-700 transition-colors cursor-pointer ${expandedRow === uniqueKey
                         ? "bg-emerald-50/50 dark:bg-emerald-900/10"
                         : "hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
                         }`}

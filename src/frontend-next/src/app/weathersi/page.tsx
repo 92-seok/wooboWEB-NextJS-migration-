@@ -456,10 +456,10 @@ const WeatherSIPage = () => {
                 <DropdownMenu key={menu.name}>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant={selectedRegionMenu === menu.name ? "default" : "ghost"}
+                      variant="ghost"
                       size="sm"
-                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${selectedRegionMenu === menu.name
-                        ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
+                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${selectedRegionMenu === menu.name
+                        ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md hover:bg-purple-700 dark:hover:bg-purple-800 hover:text-white"
                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                         }`}
                     >
@@ -497,11 +497,11 @@ const WeatherSIPage = () => {
               {DEVICE_TYPES.map((type) => (
                 <Button
                   key={type.name}
-                  variant={selectedType.name === type.name ? "default" : "ghost"}
+                  variant="ghost"
                   size="sm"
                   onClick={() => setSelectedType(type)}
-                  className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${selectedType.name === type.name
-                    ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md"
+                  className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${selectedType.name === type.name
+                    ? "bg-purple-600 dark:bg-purple-700 text-white shadow-md hover:bg-purple-700 dark:hover:bg-purple-800 hover:text-white"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                     }`}
                 >

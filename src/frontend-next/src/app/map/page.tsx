@@ -35,6 +35,7 @@ const MapPage = () => {
   // 현재 열려있는 단일 커스텀 오버레이와 마커들을 관리하기 위한 Ref
   const activeOverlay = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const infoOverlaysRef = useRef<any[]>([]);
 
   const loadStations = async () => {
     try {
@@ -83,8 +84,9 @@ const MapPage = () => {
             lat: parseFloat(item.LAT) || 37.4341,
             lng: parseFloat(item.LON) || 127.174,
             type: type,
-            status: Number(item.ErrorChk) === 5 ? "normal" : "error",
+            status: (Number(item.ErrorChk) || 0) > 0 ? "normal" : "error",
             data: item.DATA || "-",
+            unit: item.UNIT || "",
           };
         });
         setStations(mappedData);
@@ -121,61 +123,85 @@ const MapPage = () => {
   useEffect(() => {
     if (!map || stations.length === 0) return;
 
-    // 기존 마커 제거
+    // 기존 오버레이 모두 제거
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
+    infoOverlaysRef.current.forEach((o) => o.setMap(null));
+    infoOverlaysRef.current = [];
+    if (activeOverlay.current) {
+      activeOverlay.current.setMap(null);
+      activeOverlay.current = null;
+    }
+
+    const typeLabels: Record<string, string> = {
+      rain: "강우", water: "수위", tilt: "변위",
+      flood: "적설", snow: "적설", broad: "방송",
+      display: "전광", gate: "차단",
+    };
 
     stations.forEach((station) => {
-      // console.log('Station:', {
-      //   name: station.name,
-      //   type: station.type,
-      //   data: station.data,
-      //   status: station.status
-      // });
-      const isError = station.status !== "normal";
-      const imageSrc = `/markers/${station.type}_marker${isError ? "_error" : ""}.png`;
-      const imageSize = new window.kakao.maps.Size(36, 51);
-      const imageOption = { offset: new window.kakao.maps.Point(18, 51) };
-      const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+      const isNormal = station.status === "normal";
+      const label = typeLabels[station.type] || "기타";
+      const position = new window.kakao.maps.LatLng(station.lat, station.lng);
 
-      const marker = new window.kakao.maps.Marker({
-        map: map,
-        position: new window.kakao.maps.LatLng(station.lat, station.lng),
-        title: station.name,
-        image: markerImage,
-      });
-
-      markersRef.current.push(marker);
-
-      const content = document.createElement("div");
-      content.className = "custom-overlay animate-slide-up";
-      content.innerHTML = `
-        <div class="overlay-header">
-          <span class="overlay-title text-[13px] font-black">${station.name}</span>
-          <span class="overlay-close text-slate-400 hover:text-red-500 transition-colors cursor-pointer text-lg">×</span>
+      // CSS 기반 마커 핀 생성
+      const markerEl = document.createElement("div");
+      markerEl.className = `marker-pin marker-type-${station.type} ${isNormal ? "marker-normal" : "marker-error"}`;
+      markerEl.innerHTML = `
+        <div class="marker-head">
+          <span class="marker-label">${label}</span>
         </div>
-        <div class="overlay-body mt-1">
-          <span class="overlay-status-badge ${station.status === "normal" ? "badge-normal" : "badge-error"}">
-            ${station.status === "normal" ? "정상" : "점검요망"}
-          </span>
-          <span class="text-[10px] text-blue-500 font-bold ml-2">[${station.type}]</span>
-          <span class="text-[10px] text-slate-600 font-mono ml-2">${station.data}</span>
-        </div>
+        <div class="marker-tail"></div>
       `;
 
-      const overlay = new window.kakao.maps.CustomOverlay({
-        position: marker.getPosition(),
-        content: content,
+      const markerOverlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: markerEl,
+        yAnchor: 1,
+      });
+      markerOverlay.setMap(map);
+      markersRef.current.push(markerOverlay);
+
+      // 클릭 시 표시되는 정보 오버레이
+      const dataDisplay = station.unit
+        ? `<span class="info-data-value">${station.data}</span><span class="info-data-unit">${station.unit}</span>`
+        : `<span class="info-data-text">${station.data}</span>`;
+
+      const infoContent = document.createElement("div");
+      infoContent.className = "info-overlay";
+      infoContent.innerHTML = `
+        <div class="info-header">
+          <span class="info-title">${station.name}</span>
+          <span class="info-close">×</span>
+        </div>
+        <div class="info-divider"></div>
+        <div class="info-meta">
+          <span class="info-badge ${isNormal ? "info-badge-normal" : "info-badge-error"}">
+            ${isNormal ? "정상" : "점검"}
+          </span>
+          <span class="info-type">${label}</span>
+          <span class="info-data-inline">${station.data}${station.unit ? " " + station.unit : ""}</span>
+        </div>
+        <div class="info-arrow"></div>
+      `;
+
+      const infoOverlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: infoContent,
         yAnchor: 1.3,
       });
+      infoOverlaysRef.current.push(infoOverlay);
 
-      const closeBtn = content.querySelector(".overlay-close");
-      closeBtn?.addEventListener("click", () => overlay.setMap(null));
+      const closeBtn = infoContent.querySelector(".info-close");
+      closeBtn?.addEventListener("click", () => {
+        infoOverlay.setMap(null);
+        activeOverlay.current = null;
+      });
 
-      window.kakao.maps.event.addListener(marker, "click", () => {
+      markerEl.addEventListener("click", () => {
         if (activeOverlay.current) activeOverlay.current.setMap(null);
-        overlay.setMap(map);
-        activeOverlay.current = overlay;
+        infoOverlay.setMap(map);
+        activeOverlay.current = infoOverlay;
       });
     });
   }, [map, stations]);
@@ -301,7 +327,7 @@ const MapPage = () => {
                     <span className="text-[12px] font-bold text-slate-700 group-hover:text-indigo-600 truncate max-w-[110px]">
                       {station.name}
                     </span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">{station.id}</span>
+                    <span className="text-[9px] text-slate-400 mt-0.5">{station.data}{station.unit ? ` ${station.unit}` : ""}</span>
                   </div>
                 </button>
               ))}

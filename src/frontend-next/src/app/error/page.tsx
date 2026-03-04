@@ -247,11 +247,11 @@ const ErrorDevicesPage = () => {
                 <DropdownMenu key={menu.name}>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant={selectedRegionMenu === menu.name ? "default" : "ghost"}
+                      variant="ghost"
                       size="sm"
-                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-all ${
+                      className={`h-9 px-4 rounded-xl text-xs font-bold transition-colors ${
                         selectedRegionMenu === menu.name
-                          ? "bg-red-600 dark:bg-red-700 text-white shadow-md"
+                          ? "bg-red-600 dark:bg-red-700 text-white shadow-md hover:bg-red-700 dark:hover:bg-red-800 hover:text-white"
                           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                       }`}
                     >

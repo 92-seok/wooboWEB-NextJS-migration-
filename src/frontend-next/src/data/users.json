@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "admin123",
+    "name": "관리자",
+    "role": "admin",
+    "email": "admin@woobo.co.kr",
+    "isActive": true,
+    "lastLoginAt": "2025-03-01T09:00:00Z"
+  },
+  {
+    "id": 2,
+    "username": "user",
+    "password": "user123",
+    "name": "일반사용자",
+    "role": "user",
+    "email": "user@woobo.co.kr",
+    "isActive": true,
+    "lastLoginAt": "2025-03-01T10:00:00Z"
+  },
+  {
+    "id": 3,
+    "username": "operator1",
+    "password": "operator123",
+    "name": "운영자",
+    "role": "operator",
+    "email": "operator@woobo.co.kr",
+    "isActive": true,
+    "lastLoginAt": "2025-02-28T14:00:00Z"
+  },
+  {
+    "id": 4,
+    "username": "guest",
+    "password": "guest123",
+    "name": "게스트",
+    "role": "guest",
+    "email": "guest@woobo.co.kr",
+    "isActive": false,
+    "lastLoginAt": "2025-02-20T08:00:00Z"
+  }
+]

@@ -237,83 +237,189 @@
   } */
 }
 
-/* [6] 커스텀 오버레이 (디자인된 팝업) ✨ */
-.custom-overlay {
+/* [6] Custom Map Markers (CSS Pin) */
+.marker-pin {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.marker-pin:hover {
+  transform: scale(1.2);
+  z-index: 100 !important;
+}
+
+.marker-head {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(255, 255, 255, 0.95);
+}
+
+.marker-label {
+  font-size: 9px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.marker-tail {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  margin-top: -1px;
+}
+
+/* ── 장비 유형별 고유 색상 ── */
+.marker-type-rain .marker-head { background: linear-gradient(145deg, #60a5fa, #2563eb); }
+.marker-type-rain .marker-tail { border-top: 7px solid #2563eb; }
+
+.marker-type-water .marker-head { background: linear-gradient(145deg, #2dd4bf, #0d9488); }
+.marker-type-water .marker-tail { border-top: 7px solid #0d9488; }
+
+.marker-type-tilt .marker-head { background: linear-gradient(145deg, #fbbf24, #d97706); }
+.marker-type-tilt .marker-tail { border-top: 7px solid #d97706; }
+
+.marker-type-flood .marker-head { background: linear-gradient(145deg, #38bdf8, #0284c7); }
+.marker-type-flood .marker-tail { border-top: 7px solid #0284c7; }
+
+.marker-type-snow .marker-head { background: linear-gradient(145deg, #38bdf8, #0284c7); }
+.marker-type-snow .marker-tail { border-top: 7px solid #0284c7; }
+
+.marker-type-broad .marker-head { background: linear-gradient(145deg, #c084fc, #9333ea); }
+.marker-type-broad .marker-tail { border-top: 7px solid #9333ea; }
+
+.marker-type-display .marker-head { background: linear-gradient(145deg, #818cf8, #4f46e5); }
+.marker-type-display .marker-tail { border-top: 7px solid #4f46e5; }
+
+.marker-type-gate .marker-head { background: linear-gradient(145deg, #a1a1aa, #52525b); }
+.marker-type-gate .marker-tail { border-top: 7px solid #52525b; }
+
+/* ── 상태: 정상 = 흰 테두리(기본), 점검 = 빨강 테두리 + 글로우 ── */
+.marker-error .marker-head {
+  border-color: #f87171;
+  animation: marker-glow 2s ease-in-out infinite;
+}
+
+@keyframes marker-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.35); }
+}
+
+/* [7] 인포 오버레이 (마커 클릭 팝업) */
+.info-overlay {
   position: absolute;
   bottom: 50px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  padding: 16px 20px 12px;
   box-shadow:
-    0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  min-width: 160px;
+    0 12px 32px -4px rgba(0, 0, 0, 0.15),
+    0 4px 12px -2px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 220px;
   pointer-events: auto;
+  animation: info-appear 0.2s ease-out;
 }
 
-/* 말꼬리 부분 */
-.custom-overlay::after {
-  content: "";
+@keyframes info-appear {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* 말꼬리 화살표 */
+.info-arrow {
   position: absolute;
   bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid rgba(255, 255, 255, 0.95);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid rgba(255, 255, 255, 0.97);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.06));
 }
 
-.overlay-header {
+.info-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  gap: 1rem;
+  gap: 12px;
 }
 
-.overlay-title {
-  font-size: 14px;
+.info-title {
+  font-size: 15px;
   font-weight: 900;
-  color: #1e293b;
+  color: #0f172a;
+  letter-spacing: -0.3px;
 }
 
-.overlay-close {
+.info-close {
   color: #94a3b8;
   cursor: pointer;
-  transition: color 0.2s;
+  font-size: 20px;
+  line-height: 1;
+  transition: color 0.15s;
+  padding: 2px;
 }
 
-.overlay-close:hover {
+.info-close:hover {
   color: #ef4444;
 }
 
-.overlay-body {
-  font-size: 11px;
-  color: #64748b;
+.info-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 10px 0;
+}
+
+.info-meta {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
-.overlay-status-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
+.info-badge {
+  padding: 3px 10px;
+  border-radius: 6px;
   font-weight: 800;
-  font-size: 9px;
-  text-transform: uppercase;
+  font-size: 12px;
 }
 
-.badge-normal {
-  background-color: #f0fdf4;
-  color: #166534;
+.info-badge-normal {
+  background: #ecfdf5;
+  color: #047857;
 }
-.badge-error {
-  background-color: #fef2f2;
-  color: #991b1b;
+
+.info-badge-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.info-type {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.info-data-inline {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
 }
 
 /* =========================================
