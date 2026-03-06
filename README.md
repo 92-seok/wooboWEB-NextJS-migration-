@@ -9,7 +9,7 @@
 
 <br />
 
-## 📌 프로젝트 개요
+## 프로젝트 개요
 
 재난 장비 운영 현장에서 사용하던 Vue 3 기반 관리자 시스템을 **Next.js App Router** 구조로 직접 마이그레이션했습니다.
 
@@ -17,7 +17,7 @@
 
 <br />
 
-## 🖥️ 화면 미리보기
+## 화면 미리보기
 
 > 아래 이미지를 실제 스크린샷으로 교체해주세요.
 > GitHub에 `/public/screenshots/` 폴더 만들고 이미지 업로드 후 경로 수정하면 됩니다.
@@ -44,7 +44,7 @@
 
 <br />
 
-## 📁 프로젝트 구조
+## 프로젝트 구조
 
 ```
 woobo-web/
@@ -65,7 +65,7 @@ woobo-web/
 
 <br />
 
-## ✨ 주요 기능
+## 주요 기능
 
 - **JWT 인증** — 로그인 및 토큰 기반 인증 처리
 - **장비 상태 대시보드** — 실시간 장비 상태 조회 및 시각화
@@ -74,7 +74,7 @@ woobo-web/
 
 <br />
 
-## 🔄 마이그레이션 주요 작업
+## 마이그레이션 주요 작업
 
 기존 Vue 3 시스템과의 주요 변경점입니다.
 
@@ -88,12 +88,12 @@ woobo-web/
 
 <br />
 
-## 🚀 로컬 실행 방법
+## 로컬 실행 방법
 
 ```bash
 # 저장소 클론
-git clone https://github.com/92-seok/woobo-web.git
-cd woobo-web
+git clone https://github.com/92-seok/wooboWEB-NextJS-migration-.git
+cd frontend-next
 
 # 패키지 설치
 npm install
@@ -110,7 +110,7 @@ npm run dev
 
 <br />
 
-## 🔗 관련 링크
+## 관련 링크
 
 - 배포 주소: [https://woobo-web.vercel.app](https://woobo-web.vercel.app)
 - Vue 3 원본 시스템: [http://woobo.online](http://woobo.online)
