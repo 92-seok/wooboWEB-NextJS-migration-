@@ -23,13 +23,13 @@
 |--------|----------|
 | ![로그인](./src/frontend-next/public/screenshot/login.png) | ![대시보드](./src/frontend-next/public/screenshot/dashboard.png) |
 
-| 지도 (장비 위치) | 점검 이력 |
+| 관리자 페이지 | 점검 이력 |
 |-----------------|----------|
-| ![지도](./src/frontend-next/public/screenshot/map.png) | ![점검이력](./src/frontend-next/public/screenshot/history.png) |
+| ![지도](./src/frontend-next/public/screenshot/admin.png) | ![점검이력](./src/frontend-next/public/screenshot/history.png) |
 
-| 관리자 페이지 | 장비 정보 |
-|--------------|----------|
-| ![관리자](./src/frontend-next/public/screenshot/admin.png) | ![장비정보](./src/frontend-next/public/screenshot/broad.png) |
+| 지도 (장비 위치) | 
+|--------------|
+| ![관리자](./src/frontend-next/public/screenshot/map.png) 
 
 <br />
 
