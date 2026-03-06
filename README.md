@@ -19,14 +19,17 @@
 
 ## 화면 미리보기
 
-> 아래 이미지를 실제 스크린샷으로 교체해주세요.
-> GitHub에 `/public/screenshots/` 폴더 만들고 이미지 업로드 후 경로 수정하면 됩니다.
+| 로그인 | 대시보드 |
+|--------|----------|
+| ![로그인](./src/frontend-next/public/screenshot/login.png) | ![대시보드](./src/frontend-next/public/screenshot/dashboard.png) |
 
-| 스크린샷 | `./frontend-next/public/screenshots/login.png` | `./frontend-next/public/screenshots/dashboard.png` |
+| 지도 (장비 위치) | 점검 이력 |
+|-----------------|----------|
+| ![지도](./src/frontend-next/public/screenshot/map.png) | ![점검이력](./src/frontend-next/public/screenshot/history.png) |
 
-| 점검 이력 | 장비 상태 |
-|-----------|----------|
-| ![점검이력](./frontend-next/public/screenshots/history.png) | ![장비상태](./frontend-next/public/screenshots/status.png) |
+| 관리자 페이지 | 장비 정보 |
+|--------------|----------|
+| ![관리자](./src/frontend-next/public/screenshot/admin.png) | ![장비정보](./src/frontend-next/public/screenshot/broad.png) |
 
 <br />
 
